@@ -13,7 +13,7 @@ python -m http.server 8765
 Buka `http://localhost:8765`. Halaman harus dibuka lewat server (bukan langsung dari file) karena memuat `data.js`.
 Untuk GitHub Pages: Settings → Pages → Deploy from a branch → `main` / root.
 
-Kode, metodologi, dan cara reproduksi: GANTI_URL_REPO_METODOLOGI
+Kode, metodologi, dan cara reproduksi: https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste
 
 ## Tim
 
