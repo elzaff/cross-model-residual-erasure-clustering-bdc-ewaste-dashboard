@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catatan Lapangan E-Waste</title>
+<meta name="description" content="Dashboard hasil clustering citra sampah elektronik tanpa label (BDC Satria Data 2026).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;1,8..60,400&family=Inter:wght@400..500&display=swap">
+<style>
+/* Style reference: DESIGN.md (Steep, "serif analytics on warm paper"). Light theme only, as the reference specifies. */
+:root {
+  --ink: #17191c; --paper: #ffffff; --mist: #f2f2f3; --fog: #fafafb; --line: #ececec;
+  --slate: #6d717b; --ash: #707278; --smoke: #a3a6af; --peach: #fbe1d1; --sienna: #5d2a1a;
+  /* chart roles: focus = series highlighted for this comparison, context = its comparators */
+  --focus: #5d2a1a; --context: #8b8f98; --grid: #ececec; --axis: #d6d7db;
+  --serif: "Source Serif 4", "Tiempos Headline", Georgia, ui-serif, serif;
+  --sans: "Inter", "Söhne", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --artifact: 0 0 0 1px rgba(4,23,43,.05), 0 20px 25px -5px rgba(0,0,0,.1), 0 8px 10px -6px rgba(0,0,0,.1);
+  --pop: 0 0 0 1px rgba(0,0,0,.05), 0 4px 24px rgba(0,0,0,.08);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 17px/1.5 var(--sans); -webkit-font-smoothing: antialiased; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }
+h1, h2 { font-family: var(--serif); font-weight: 400; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(44px, 7.4vw, 90px); letter-spacing: -.025em; line-height: 1.05; }
+h2 { font-size: clamp(34px, 5vw, 64px); letter-spacing: -.015em; }
+h1 em, h2 em { font-style: italic; }
+h3 { font: 450 22px/1.25 var(--sans); letter-spacing: -.005em; margin: 0; }
+p { margin: 8px 0; }
+a { color: var(--ink); text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 6px; }
+code { font-size: .88em; background: var(--mist); padding: 1px 6px; border-radius: 6px; }
+.wrap { width: min(1200px, 100% - 32px); margin: 0 auto; }
+.muted { color: var(--slate); }
+.tag { font-size: 14px; color: var(--ash); margin: 0 0 12px; }
+.lead { font-size: 20px; line-height: 1.4; color: var(--slate); max-width: 60ch; margin-top: 16px; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* buttons: filled + ghost pill pair */
+.pill { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 20px; border-radius: 9999px; font: 400 16px var(--sans); cursor: pointer; border: 1px solid var(--ink); background: transparent; color: var(--ink); text-decoration: none; white-space: nowrap; }
+.pill:hover { background: var(--mist); text-decoration: none; }
+.pill.fill { background: var(--ink); color: var(--paper); }
+.pill.fill:hover { background: #2c2f34; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 8px; }
+.seg button { min-height: 40px; padding: 0 16px; border-radius: 9999px; border: 1px solid var(--line); background: var(--paper); font: 400 15px var(--sans); color: var(--ink); cursor: pointer; }
+.seg button:hover { border-color: var(--smoke); }
+.seg button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.seg#tsClass button[data-c]:not([data-c="all"]) { display: inline-flex; align-items: center; }
+.seg#tsClass button[data-c]:not([data-c="all"])::before { content: ""; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; background: var(--class-color); }
+
+/* top bar: transparent, no border */
+header.top { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.92); backdrop-filter: blur(8px); }
+.top .wrap { display: flex; align-items: center; gap: 24px; min-height: 64px; }
+.brand { font: 400 22px var(--serif); letter-spacing: -.01em; white-space: nowrap; }
+nav.links { display: flex; gap: 20px; margin: 0 auto; }
+nav.links a { font-size: 15px; padding: 2px 0; white-space: nowrap; }
+#menuBtn { display: none; margin-left: auto; }
+@media (max-width: 1080px) {
+  #menuBtn { display: inline-flex; }
+  nav.links { display: none; position: absolute; top: 64px; left: 0; right: 0; background: var(--paper); box-shadow: var(--pop); flex-direction: column; gap: 4px; padding: 12px 16px 16px; }
+  nav.links.open { display: flex; }
+  nav.links a { min-height: 40px; display: flex; align-items: center; }
+}
+section { padding: 80px 0; scroll-margin-top: 64px; }
+section.fog { background: var(--fog); }
+.head { max-width: 820px; margin-bottom: 40px; }
+@media (max-width: 720px) { section { padding: 56px 0; } .head { margin-bottom: 28px; } }
+
+/* cards */
+.card { background: var(--mist); border-radius: 24px; padding: 24px; }
+.artifact { background: var(--paper); border-radius: 20px; box-shadow: var(--artifact); padding: 20px; }
+.panel { background: var(--paper); border-radius: 20px; padding: 24px; box-shadow: var(--artifact); }
+.peach { background: var(--peach); color: var(--sienna); border-radius: 24px; padding: 40px; }
+.peach h3 { color: var(--sienna); font-size: 26px; letter-spacing: -.009em; }
+#headline { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, .9fr); align-items: center; gap: 18px 44px; }
+#headline .tag { color: var(--sienna); margin-bottom: 12px; }
+#headline .headline-intro { font-size: 16px; line-height: 1.5; margin: 12px 0 0; }
+#headline .headline-values { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; text-align: center; }
+#headline .metric-label { display: block; font-size: 14px; font-weight: 500; }
+#headline .metric-value { display: block; font-size: clamp(42px, 5vw, 64px); line-height: 1.05; font-weight: 500; letter-spacing: -.03em; margin-top: 6px; }
+#headline .metric-ci { display: block; font-size: 13px; line-height: 1.35; margin-top: 4px; }
+#headline .metric-arrow { font-size: 30px; }
+#headline .headline-context { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 32px; border-top: 1px solid rgba(93, 42, 26, .18); padding-top: 16px; }
+#headline .headline-context p { font-size: 14px; line-height: 1.5; margin: 0; }
+@media (max-width: 860px) {
+  #headline { grid-template-columns: 1fr; padding: 28px; }
+  #headline .headline-context { grid-template-columns: 1fr; }
+  #headline .headline-values { gap: 6px; }
+}
+
+/* hero */
+.hero { text-align: center; padding: 72px 0 40px; }
+.hero h1 { max-width: 17ch; margin: 0 auto; text-wrap: balance; }
+.hero .lead { margin: 24px auto 0; }
+.hero .cta { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 32px; }
+.hero .official { font-size: 14px; color: var(--ash); max-width: 70ch; margin: 28px auto 0; }
+.floaters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; margin-top: 64px; text-align: left; align-items: start; }
+.floaters .artifact:nth-child(2) { margin-top: 40px; }
+.stat .label { font-size: 14px; color: var(--slate); }
+.stat .value { font: 500 32px/1.1 var(--sans); letter-spacing: -.01em; margin: 6px 0 4px; }
+.stat .delta { font-size: 14px; color: var(--slate); }
+.stat svg { display: block; width: 100%; height: 56px; margin-top: 12px; }
+@media (max-width: 860px) { .floaters { grid-template-columns: 1fr 1fr; } .floaters .artifact:nth-child(2) { margin-top: 0; } }
+@media (max-width: 520px) { .floaters { grid-template-columns: 1fr; } }
+
+/* problem */
+.facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.facts .value { font: 500 44px/1 var(--sans); letter-spacing: -.02em; margin-bottom: 12px; }
+.facts cite { display: block; font-style: normal; font-size: 14px; color: var(--ash); margin-top: 12px; }
+.faces { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 16px; }
+.faces figure { margin: 0; }
+.faces img { width: 100%; display: block; aspect-ratio: 3 / 1; object-fit: cover; object-position: left center; border-radius: 12px; background: var(--mist); }
+.faces figcaption { font-size: 15px; margin-top: 8px; }
+@media (max-width: 860px) { .facts, .faces { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .facts, .faces { grid-template-columns: 1fr; } }
+
+/* charts */
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.chart text { font-family: var(--sans); font-size: 14px; fill: var(--slate); }
+.chart text.ink { fill: var(--ink); }
+.chart text.strong { fill: var(--ink); font-weight: 500; }
+.chart .grid { stroke: var(--grid); stroke-width: 1; }
+.chart .base { stroke: var(--axis); stroke-width: 1; }
+.chart .hit { fill: transparent; }
+.chart .row:hover .bar, .chart .row:focus .bar { opacity: .8; }
+.chart .row:focus { outline: none; }
+.chart .row:focus-visible .hit { stroke: var(--ink); stroke-width: 1; }
+.ctitle { font: 450 18px/1.3 var(--sans); margin: 0; }
+.csub { font-size: 14px; color: var(--slate); margin: 4px 0 16px; }
+.key { display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 14px; color: var(--slate); margin: 0 0 12px; }
+.key span { display: inline-flex; align-items: center; gap: 8px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.sw.focus { background: var(--focus); } .sw.context { background: var(--context); }
+.sw.dot { border-radius: 50%; }
+.sw.tri { width: 0; height: 0; border-radius: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 11px solid var(--ink); }
+.sw.source { background: var(--ink); }
+.sw.line { width: 18px; height: 2px; border-radius: 1px; }
+.sw.ramp { width: 84px; height: 10px; border-radius: 999px; background: linear-gradient(90deg, #8b8f98, #88776f, #7c5d52, #704536, #5d2a1a); vertical-align: middle; }
+.chart-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.dataset-chart > .chart { min-width: 420px; }
+.cluster-chart > .chart { min-width: 940px; }
+#dsGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+#dsGrid .dataset-card { min-width: 0; background: var(--mist); border-radius: 16px; padding: 20px; }
+#dsGrid .ctitle { font-size: 20px; font-weight: 500; margin-bottom: 4px; }
+#dsGrid .csub { font-size: 15px; line-height: 1.45; }
+#dsGrid .chart text.num { fill: var(--ink); font-weight: 500; }
+.dataset-intro { margin: 28px 0 20px; }
+.dataset-overview { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 12px; }
+.dataset-overview article { min-width: 0; padding: 20px 24px; border-radius: 20px; background: var(--mist); }
+.dataset-overview .dataset-role { margin: 0 0 8px; color: var(--slate); font-size: 14px; }
+.dataset-overview h3 { margin: 0 0 8px; font-size: 20px; font-weight: 500; line-height: 1.25; }
+.dataset-overview article > p:last-child { margin: 0; color: var(--slate); font-size: 15px; line-height: 1.5; }
+.dataset-overview b { color: var(--ink); font-weight: 500; }
+#clusterKey { gap: 8px 16px; margin-top: 16px; font-size: 13px; }
+.chart-hint { display: none; font-size: 13px; color: var(--slate); margin: 0 0 8px; }
+@media (max-width: 1080px) { .chart-hint { display: block; } }
+@media (max-width: 720px) { #dsGrid { grid-template-columns: 1fr; } }
+@media (max-width: 720px) { .dataset-overview { grid-template-columns: 1fr; gap: 12px; } .dataset-overview article { padding: 18px; } }
+details.tbl { margin-top: 12px; font-size: 14px; }
+details.tbl summary { cursor: pointer; color: var(--slate); list-style: none; display: inline-flex; min-height: 32px; align-items: center; }
+details.tbl summary::-webkit-details-marker { display: none; }
+details.tbl summary::after { content: "\00a0→"; }
+details.tbl[open] summary::after { content: "\00a0↓"; }
+details.tbl summary:hover { color: var(--ink); }
+details.tbl .scroll { overflow-x: auto; }
+details.tbl table { border-collapse: collapse; width: 100%; margin-top: 8px; }
+details.tbl th, details.tbl td { text-align: left; padding: 6px 12px 6px 0; border-bottom: 1px solid var(--line); white-space: nowrap; }
+details.tbl th { font-weight: 450; color: var(--slate); }
+details.tbl td.r, details.tbl th.r { text-align: right; font-variant-numeric: tabular-nums; }
+.tip { position: fixed; z-index: 50; pointer-events: none; background: var(--paper); box-shadow: var(--pop); border-radius: 12px; padding: 8px 12px; font-size: 14px; line-height: 1.4; max-width: 260px; opacity: 0; transition: opacity .12s; }
+.tip.on { opacity: 1; }
+.tip b { font-weight: 500; }
+
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+@media (max-width: 1120px) { .four { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 1000px) { .three { grid-template-columns: 1fr; } }
+@media (max-width: 720px) { .two, .four { grid-template-columns: 1fr; } .panel { padding: 16px; } .peach { padding: 28px; } }
+
+.scope-note { margin-top: 20px; padding: 16px 20px; border-radius: 16px; background: var(--mist); color: var(--slate); font-size: 15px; }
+.ood-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin: 24px 0; }
+.ood-summary .card { min-height: 168px; }
+.ood-summary .value { font: 500 40px/1.1 var(--sans); letter-spacing: -.02em; margin: 6px 0; }
+.ood-summary .label { font-size: 15px; color: var(--slate); margin: 0; }
+.ood-summary .detail { font-size: 15px; color: var(--slate); }
+@media (max-width: 720px) { .ood-summary { grid-template-columns: 1fr; } }
+
+/* pipeline */
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.step { position: relative; z-index: 1; text-align: left; font: inherit; color: inherit; cursor: pointer; border: 1px solid transparent; background: var(--mist); border-radius: 24px; padding: 20px; min-height: 148px; display: flex; flex-direction: column; gap: 6px; }
+.step::after { position: absolute; z-index: 2; width: 16px; height: 16px; color: var(--sienna); font: 500 18px/16px var(--sans); text-align: center; pointer-events: none; }
+.step:nth-child(-n+3)::after { content: "→"; top: calc(50% - 8px); right: -16px; }
+.step:nth-child(4)::after { content: "↓"; bottom: -16px; left: calc(50% - 8px); }
+.step:nth-child(5) { grid-column: 4; grid-row: 2; }
+.step:nth-child(6) { grid-column: 3; grid-row: 2; }
+.step:nth-child(7) { grid-column: 2; grid-row: 2; }
+.step:nth-child(8) { grid-column: 1; grid-row: 2; }
+.step:nth-child(5)::after, .step:nth-child(6)::after, .step:nth-child(7)::after { content: "←"; top: calc(50% - 8px); left: -16px; }
+.step:hover { border-color: var(--smoke); }
+.step .n { font: 400 32px/1 var(--serif); color: var(--slate); }
+.step h3 { font-size: 18px; font-weight: 480; }
+.step .s { font-size: 15px; color: var(--slate); }
+.step .novel { font-size: 14px; color: var(--ink); margin-top: auto; }
+.step .novel::before { content: "● "; color: var(--sienna); }
+.step[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
+.step[aria-expanded="true"] .n, .step[aria-expanded="true"] .s, .step[aria-expanded="true"] .novel { color: #c9cbd1; }
+.step[aria-expanded="true"] .novel::before { color: var(--peach); }
+.stepdetail { margin-top: 16px; min-height: 96px; }
+@media (max-width: 860px) {
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .step:nth-child(n) { grid-column: auto; grid-row: auto; }
+  .step:nth-child(odd):not(:last-child)::after { content: "→"; top: calc(50% - 8px); right: -16px; left: auto; bottom: auto; }
+  .step:nth-child(even):not(:last-child)::after { content: "↙"; left: 12px; bottom: -16px; top: auto; right: auto; }
+}
+@media (max-width: 520px) {
+  .steps { grid-template-columns: 1fr; }
+  .step:nth-child(n):not(:last-child)::after { content: "↓"; left: calc(50% - 8px); right: auto; bottom: -16px; top: auto; }
+}
+
+/* clusters */
+.filters { margin: 0 0 24px; }
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.ccard { text-align: left; font: inherit; color: inherit; cursor: pointer; border: 0; background: var(--mist); border-radius: 24px; padding: 12px 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+.ccard:hover { background: #ebebed; }
+.strip { aspect-ratio: 4 / 1; overflow: hidden; border-radius: 12px; background: var(--paper); }
+.strip img { width: 200%; display: block; }
+.ccard .t { font-weight: 480; padding: 0 4px; }
+.ccard .meta { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; color: var(--slate); padding: 0 4px; }
+.b3 { font-size: 14px; color: var(--ink); white-space: nowrap; }
+.b3::before { content: "⚠ "; }
+.empty, .err { padding: 20px; border-radius: 16px; background: var(--mist); }
+.err { background: var(--peach); color: var(--sienna); }
+@media (max-width: 1000px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 720px) { .cards { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .cards { grid-template-columns: 1fr; } }
+.split p { margin: 4px 0; }
+
+dialog { border: none; padding: 0; background: transparent; width: min(980px, 100% - 24px); max-height: calc(100vh - 24px); }
+dialog::backdrop { background: rgba(23,25,28,.45); }
+dialog .artifact { padding: 24px; box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 8px 40px rgba(0,0,0,.1); }
+dialog img { width: 100%; display: block; border-radius: 12px; background: var(--mist); margin-top: 12px; }
+.dlghead { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.dlghead h3 { font: 400 32px/1.15 var(--serif); letter-spacing: -.01em; }
+.facts2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+.facts2 .card { padding: 16px 20px; border-radius: 16px; font-size: 15px; }
+.facts2 .label { font-size: 14px; color: var(--slate); }
+@media (max-width: 600px) { .facts2 { grid-template-columns: 1fr; } }
+
+.oodimg { width: 100%; display: block; border-radius: 12px; }
+.sources { padding: 0; margin: 0; list-style: none; columns: 2; column-gap: 40px; }
+.sources li { padding: 10px 0; border-bottom: 1px solid var(--line); break-inside: avoid; font-size: 15px; }
+@media (max-width: 720px) { .sources { columns: 1; } }
+footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
+
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#pembuka">Catatan Lapangan E-Waste</a>
+    <nav class="links" id="navlinks" aria-label="Bagian">
+      <a href="#masalah">Masalah</a><a href="#cara">Cara kerja</a><a href="#hasil">Hasil</a><a href="#galeri">Kelompok</a>
+      <a href="#ood">Kategori baru</a><a href="#uji">Uji ketahanan</a><a href="#tim">Tim</a><a href="#sumber">Sumber</a>
+    </nav>
+    <button class="pill" id="menuBtn" aria-expanded="false" aria-controls="navlinks">Menu</button>
+  </div>
+</header>
+<div id="dataError" class="wrap" hidden><p class="err">data.js tidak ditemukan atau rusak. Jalankan <code>python code/make_dashboard_data.py</code> lalu muat ulang halaman ini.</p></div>
+<div class="tip" id="tip" role="status" aria-live="polite"></div>
+
+<main>
+<section id="pembuka" style="padding-top:0">
+  <div class="wrap hero">
+    <p class="tag">BDC Satria Data 2026 · babak semifinal</p>
+    <h1><span id="heroK">16</span> kelompok e&#8209;waste, ditemukan dari foto <em>tanpa label kelas</em>.</h1>
+    <p class="lead">3.792 foto dipetakan ke K = 16. K dipilih sebagai median sembilan hasil SCMax; label kelas dipakai hanya untuk evaluasi, bukan untuk membentuk kelompok.</p>
+    <div class="cta"><a class="pill fill" href="#hasil">Lihat hasilnya</a><a class="pill" href="#masalah">Mulai dari masalahnya</a></div>
+    <p class="official">Unsupervised Discovery Kategori Sampah Elektronik dari Citra Multi-Sumber Menggunakan Cross-Model Residual Erasure dan Spectral Clustering Berbasis Consensus Maximization</p>
+    <div class="floaters" id="floaters"></div>
+  </div>
+</section>
+
+<section id="masalah">
+  <div class="wrap">
+    <div class="head">
+      <p class="tag">Masalah</p>
+      <h2>Timbulan e-waste dan <em>ragam sumber foto</em>.</h2>
+    </div>
+    <div class="facts">
+      <div class="card"><div class="value">2 juta ton</div><p>timbulan e-waste Indonesia pada 2021.</p><cite>KLHK, dikutip Defitri (2022), Waste4Change</cite></div>
+      <div class="card"><div class="value">17,4%</div><p>yang baru dikelola dengan baik. Sisanya tersimpan di rumah atau tercampur sampah lain.</p><cite>KLHK, dikutip Defitri (2022)</cite></div>
+      <div class="card"><div class="value">3.200 kt</div><p>proyeksi timbulan pada 2040. E-waste tergolong sampah spesifik mengandung B3 (PP 27/2020).</p><cite>KLHK, dikutip Defitri (2022)</cite></div>
+    </div>
+
+    <div class="head" style="margin:80px 0 24px">
+      <h3 style="font-size:26px">Mouse yang sama, empat wajah foto</h3>
+      <p class="lead" style="font-size:18px">Foto dari masyarakat tidak seragam: foto katalog berlatar putih, foto HP di lantai, foto lapangan. Model AI bisa terkecoh dan mengelompokkan <em>cara memotret</em>, bukan bendanya.</p>
+    </div>
+    <div class="faces">
+      <figure><img src="assets/src_bdc.jpg" alt="Foto mouse dari data BDC" loading="lazy"><figcaption><b>BDC</b> <span class="muted">· thumbnail 150 px</span></figcaption></figure>
+      <figure><img src="assets/src_kaan.jpg" alt="Foto mouse dari katalog Kaan" loading="lazy"><figcaption><b>Katalog</b> <span class="muted">· latar putih</span></figcaption></figure>
+      <figure><img src="assets/src_bangla.jpg" alt="Foto mouse dari kamera HP (Bangladesh)" loading="lazy"><figcaption><b>Foto HP</b> <span class="muted">· 640 px</span></figcaption></figure>
+      <figure><img src="assets/src_oh_realworld.jpg" alt="Foto mouse dunia nyata (Office-Home)" loading="lazy"><figcaption><b>Foto nyata</b> <span class="muted">· Office-Home</span></figcaption></figure>
+    </div>
+
+    <div class="panel" style="margin-top:80px">
+      <p class="ctitle">Sebaran embedding foto (t-SNE) menurut kelas dan sumber</p>
+      <p class="csub" id="tsSub"></p>
+      <div style="display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="key" style="margin:0"><span><i class="sw dot source"></i>lingkaran = foto katalog (Kaan)</span><span><i class="sw tri"></i>segitiga = foto HP (Bangladesh)</span></div>
+        <div class="seg" id="tsClass" role="group" aria-label="Sorot satu kelas"></div>
+      </div>
+      <div class="two">
+        <div><p class="ctitle" style="font-size:16px">Fusi mentah</p><p class="csub" id="tsRawSub"></p><svg id="tsRaw" class="chart" viewBox="0 0 480 400" role="img"></svg></div>
+        <div><p class="ctitle" style="font-size:16px">Setelah CMRE</p><p class="csub" id="tsCmreSub"></p><svg id="tsCmre" class="chart" viewBox="0 0 480 400" role="img"></svg></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="cara" class="fog">
+  <div class="wrap">
+    <div class="head">
+      <p class="tag">Cara kerja</p>
+      <h2>Tahapan dari foto ke kelompok.</h2>
+      <p class="lead">Klik tahap untuk detail. Pelatihan tidak memakai label kelas atau teks; label hanya dipakai saat evaluasi.</p>
+    </div>
+    <div class="steps" id="steps"></div>
+    <div class="card stepdetail" id="stepDetail" aria-live="polite"><p class="muted">Pilih satu langkah untuk membaca penjelasan prosesnya.</p></div>
+  </div>
+</section>
+
+<section id="hasil">
+  <div class="wrap">
+    <div class="head">
+      <p class="tag">Hasil</p>
+      <h2>Perbandingan hasil pada <em>empat dataset</em>.</h2>
+      <p class="lead"><b>xsrc</b> adalah rata-rata per kelas dari proporsi foto sumber target yang masuk ke kelompok mayoritas Kaan untuk kelas sejenis. Nilai lebih tinggi berarti lebih banyak kesepakatan lintas sumber. <b>Purity</b> mengukur kecocokan label mayoritas dalam kelompok; keduanya dihitung setelah clustering dan bukan masukan pelatihan.</p>
+    </div>
+    <div class="dataset-intro">
+      <p class="ctitle">Semua dataset dan perannya</p>
+      <p class="csub">Cluster K = 16 dibentuk dari BDC. Sumber foto lain digunakan setelahnya untuk mengukur konsistensi sumber, kategori di luar cakupan, atau perpindahan domain.</p>
+      <div class="dataset-overview">
+        <article>
+          <p class="dataset-role">Input clustering · 3.792 foto</p>
+          <h3>BDC Satria Data</h3>
+          <p><b>Lima kelas</b>: baterai, keyboard, ponsel, mouse, dan PCB. Terdiri dari 3.604 foto latih setelah deduplikasi serta 188 foto e-waste dari data uji. Label kelas ditahan untuk evaluasi.</p>
+        </article>
+        <article>
+          <p class="dataset-role">Acuan xsrc · 1.794 foto katalog</p>
+          <h3>Kaan · Waste Classification</h3>
+          <p>Menjadi <b>sumber acuan</b>: foto dari sumber lain dinilai berdasarkan kelompok Kaan untuk kelas yang sama pada lima kelas BDC.</p>
+        </article>
+        <article>
+          <p class="dataset-role">Target xsrc · 480 foto HP</p>
+          <h3>Custom Bangladeshi E-Waste</h3>
+          <p>Foto amatir dari kamera HP menjadi <b>sumber target</b>, untuk mengukur apakah objek sejenis tetap masuk kelompok yang sama meski gaya fotonya berbeda.</p>
+        </article>
+        <article>
+          <p class="dataset-role">Evaluasi eksternal · 499 foto baterai</p>
+          <h3>Karan · Garbage Classification</h3>
+          <p>Sumber tambahan dalam pemeriksaan tingkat foto yang ditandai sebagai kandidat kategori di luar cakupan (OOD).</p>
+        </article>
+        <article>
+          <p class="dataset-role">Evaluasi OOD · 1.000 foto lapangan</p>
+          <h3>GIZ E-Waste Database</h3>
+          <p>Memuat benda yang belum ada di BDC. Contoh menonjol yang ditandai adalah AC, kulkas, dan kompresor.</p>
+        </article>
+        <article>
+          <p class="dataset-role">Benchmark pengembangan · 1.751 crop</p>
+          <h3>Iliev</h3>
+          <p>Roboflow versi 44 memiliki 69 kelas sumber. xsrc memakai 10 kelas yang dapat dipetakan ke BDC. Data ini juga dipakai memilih setelan OOD, jadi bukan uji segar.</p>
+        </article>
+        <article>
+          <p class="dataset-role">Benchmark uji segar · 300 crop</p>
+          <h3>Shubha</h3>
+          <p>Lima kategori tersedia dengan 60 crop per kategori: keyboard, ponsel, mouse, remote, dan headphone. Tiga kategori pertama sepadan dengan BDC; dua lainnya menguji OOD.</p>
+        </article>
+        <article>
+          <p class="dataset-role">Benchmark lintas domain · 2.917 foto</p>
+          <h3>Office-Home</h3>
+          <p>Memakai 20 kelas terpilih dari domain Product dan Real World. Dataset umum ini menguji konsistensi saat tampilan bergeser dari foto produk ke objek dunia nyata.</p>
+        </article>
+      </div>
+    </div>
+    <div class="peach" id="headline"></div>
+    <p class="scope-note">Panel xsrc per metode di bawah merangkum BDC (5 kelas), Iliev (10), Shubha (3), dan Office-Home (20). Untuk xsrc BDC, Kaan menjadi sumber acuan dan Bangladesh sumber target; Karan dan GIZ ditampilkan pada evaluasi sumber/OOD. Bandingkan metode di dalam panel masing-masing, bukan sebagai peringkat lintas dataset. Semua panel memakai skala 0–1; interval bootstrap 95% ditampilkan bila tersedia.</p>
+    <div class="panel">
+      <p class="ctitle">xsrc menurut metode dan dataset</p>
+      <p class="csub">Cokelat = CMRE; abu-abu = pembanding. Whisker pada CMRE = interval kepercayaan bootstrap 95%; Office-Home tidak memiliki interval.</p>
+      <div class="key"><span><i class="sw focus"></i>CMRE usulan</span><span><i class="sw context"></i>pembanding</span></div>
+      <p class="chart-hint">Di layar sempit, geser grafik ke samping untuk membaca semua label.</p>
+      <div class="four" id="dsGrid"></div>
+      <div id="dsTbl"></div>
+    </div>
+
+    <div class="panel" style="margin-top:24px">
+      <p class="ctitle">xsrc pada 12 backbone tunggal</p>
+      <p class="csub">Diurutkan dari xsrc tertinggi ke terendah. Warna menunjukkan urutan nilai; keluarga model tersedia di tabel.</p>
+      <div class="key"><span><i class="sw ramp"></i>xsrc rendah → tinggi</span></div>
+      <svg id="bbChart" class="chart" role="img" aria-label="xsrc 12 backbone tunggal, diurutkan dari tinggi ke rendah"></svg>
+      <div id="bbTbl"></div>
+    </div>
+  </div>
+</section>
+
+<section id="galeri" class="fog">
+  <div class="wrap">
+    <div class="head">
+      <p class="tag">Kelompok</p>
+      <h2>Profil dan ukuran <em>16 kelompok</em>.</h2>
+      <p class="lead">Nama kategori ditinjau dari galeri foto. Klik baris atau kartu untuk melihat 24 foto representatif dan catatan penanganan.</p>
+    </div>
+    <div class="panel">
+      <p class="ctitle">Ukuran dan stabilitas 16 kelompok</p>
+      <p class="csub">Panjang batang = jumlah foto; warna = kategori hasil peninjauan. Titik menunjukkan Jaccard bootstrap (0,6–1,0); hitam memenuhi acuan 0,85, cokelat di bawahnya. Ini bukan uji signifikansi.</p>
+      <div class="key" id="clusterKey" role="group" aria-label="Warna kategori kelompok"></div>
+      <p class="chart-hint">Di layar sempit, geser grafik ke samping untuk membaca semua label dan sumbu.</p>
+      <div class="chart-scroll cluster-chart" role="region" tabindex="0" aria-label="Grafik lebar; geser horizontal untuk melihat semua label dan sumbu">
+        <svg id="clChart" class="chart" role="img" aria-label="Jumlah foto per kelompok, warna menunjukkan kategori, serta stabilitas Jaccard"></svg>
+      </div>
+      <div id="clTbl"></div>
+    </div>
+    <div class="panel" style="margin-top:24px">
+      <p class="ctitle">Peta persebaran 3.792 foto BDC dalam 16 kelompok</p>
+      <p class="csub">Satu titik = satu foto BDC. Posisi = t-SNE dari fitur final (PCA-32 setelah CMRE); warna = kategori; label = kelompok. Segitiga = 188 foto dari data uji. Arahkan ke label untuk menyorot kelompok, klik untuk membuka galerinya. Jarak antarkelompok pada t-SNE hanya kira-kira.</p>
+      <div class="key" id="mapKey"><span><i class="sw dot source"></i>foto latih</span><span><i class="sw tri"></i>foto dari data uji</span></div>
+      <p class="chart-hint">Di layar sempit, geser peta ke samping.</p>
+      <div class="chart-scroll cluster-chart" role="region" tabindex="0" aria-label="Peta lebar; geser horizontal untuk melihat semua kelompok">
+        <svg id="clMap" class="chart" viewBox="0 0 760 520" role="img" aria-label="Peta t-SNE 3.792 foto BDC, warna menunjukkan kategori dan label menunjukkan 16 kelompok"></svg>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:24px">
+      <p class="ctitle">Data 16 kelompok</p>
+      <p class="csub">Label BDC dominan, latar putih, dan foto GIZ dihitung setelah clustering dan hanya untuk evaluasi. Sepakat 3 algoritma = porsi foto yang juga dikelompokkan sama oleh K-Means dan Ward. Jaccard = stabilitas bootstrap (acuan 0,85).</p>
+      <div id="grpTbl"></div>
+      <p style="margin-top:16px"><a class="pill" href="assets/kelompok_bdc.csv" download>Unduh keanggotaan 3.792 foto (CSV)</a></p>
+    </div>
+    <div class="seg filters" role="group" aria-label="Filter kategori" id="filters" style="margin-top:40px"></div>
+    <div class="cards" id="cards"></div>
+    <div class="four" style="margin-top:40px">
+      <div class="card split"><p class="tag" style="margin:0 0 8px">Jenis objek yang terpisah</p><h3>Baterai</h3><p>C0 aki · C1 pack laptop · C4 baterai HP/kamera</p><p class="muted">Tiga bentuk baterai dengan cara penanganan berbeda.</p></div>
+      <div class="card split"><p class="tag" style="margin:0 0 8px">Jenis objek yang terpisah</p><h3>Televisi</h3><p>C3 CRT · C7 layar datar</p><p class="muted">Kaca CRT bertimbal perlu perlakuan khusus.</p></div>
+      <div class="card split"><p class="tag" style="margin:0 0 8px">Jenis objek yang terpisah</p><h3>Pemutar audio</h3><p>C2 turntable · C5 CD/radio</p><p class="muted">Dua kelompok perangkat dengan bentuk berbeda.</p></div>
+      <div class="card split"><p class="tag" style="margin:0 0 8px">Jenis objek yang terpisah</p><h3>Mesin cuci</h3><p>C6 bukaan atas · C8 front-load</p><p class="muted">Pemisahan mengikuti bentuk perangkat.</p></div>
+    </div>
+  </div>
+</section>
+
+<dialog id="dlg" aria-labelledby="dlgTitle">
+  <div class="artifact">
+    <div class="dlghead"><h3 id="dlgTitle"></h3><button class="pill" id="dlgClose">Tutup</button></div>
+    <p id="dlgMeta" class="muted"></p>
+    <p id="dlgLoading" class="muted">Memuat galeri...</p>
+    <img id="dlgImg" alt="">
+    <div class="facts2" id="dlgFacts"></div>
+  </div>
+</dialog>
+
+<section id="ood">
+  <div class="wrap">
+    <div class="head">
+      <p class="tag">Foto di luar data utama</p>
+      <h2>Deteksi kategori <em>di luar cakupan</em>.</h2>
+      <p class="lead">Foto yang berbeda jauh dari data utama ditandai sebagai kandidat kategori baru agar ditinjau. Skor memakai jarak ke 10 tetangga di PCA-32; ambang ditetapkan pada persentil ke-95 data utama.</p>
+    </div>
+    <div class="ood-summary" id="oodSummary"></div>
+    <div class="panel">
+      <p class="ctitle">Foto yang ditandai, menurut kategori</p>
+      <p class="csub">Proporsi per kategori; angka foto dan set data tersedia di tabel. Dua panel memakai skala 0–100% yang sama.</p>
+      <div class="two"><svg id="oodKnown" class="chart" role="img"></svg><svg id="oodNew" class="chart" role="img"></svg></div>
+      <div id="oodTbl"></div>
+    </div>
+    <div class="two" style="margin-top:24px;align-items:start">
+      <div class="panel">
+        <p class="ctitle">Proporsi ditandai menurut sumber</p>
+        <p class="csub">Persentase foto yang melewati ambang dan jumlah foto per sumber. Komposisi kategori berbeda antarsumber, jadi selisih ini bukan efek sumber foto saja.</p>
+        <svg id="oodSrc" class="chart" role="img" aria-label="Proporsi foto ditandai per sumber"></svg>
+        <div id="srcTbl"></div>
+      </div>
+      <div class="panel">
+        <img class="oodimg" src="assets/giz_ood.jpg" alt="Contoh foto lapangan GIZ di luar cakupan data utama: AC, kulkas, kompresor" loading="lazy">
+        <p class="muted" style="font-size:15px;margin-top:12px">Foto GIZ yang ditandai didominasi AC, kulkas, dan kompresor: alat penukar suhu yang belum ada di data BDC, padahal umum di rumah tangga Indonesia.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="uji" class="fog">
+  <div class="wrap">
+    <div class="head">
+      <p class="tag">Uji ketahanan</p>
+      <h2>Sensitivitas terhadap <em>parameter dan algoritma</em>.</h2>
+      <p class="lead">Sembilan seed SCMax memilih K antara 13 dan 19 (median 16). Stabilitas bootstrap tidak menunjuk satu K sebagai pemenang; K = 16 dipakai sebagai partisi utama dan K = 13 sebagai ringkasan kasar.</p>
+    </div>
+    <div class="three">
+      <div class="panel"><p class="ctitle">Pilihan jumlah kelompok K</p><p class="csub">xsrc dan purity BDC; titik di bawah sumbu = sembilan pilihan SCMax. Sumbu nilai 0,4–1,0.</p>
+        <div class="key"><span><i class="sw line focus"></i>xsrc</span><span><i class="sw line context"></i>purity BDC</span></div>
+        <svg id="kChart" class="chart" role="img" aria-label="xsrc dan purity terhadap K"></svg><div id="kTbl"></div></div>
+      <div class="panel"><p class="ctitle">Parameter r pada CMRE</p><p class="csub">xsrc menurut jumlah arah residu yang dihapus (sumbu r logaritmik). Nilai r = 16–64 berada pada plateau; r = 64 berasal dari aturan tanpa label (50% varians residu, batas 64 arah), bukan dipilih dari grafik ini.</p>
+        <svg id="rChart" class="chart" role="img" aria-label="xsrc terhadap r"></svg><div id="rTbl"></div></div>
+      <div class="panel"><p class="ctitle">Algoritma clustering, K = 16</p><p class="csub">xsrc pada representasi dan K yang sama. Batang mulai dari nol.</p>
+        <svg id="aChart" class="chart" role="img" aria-label="xsrc per algoritma"></svg><div id="aTbl"></div></div>
+    </div>
+
+    <div class="head" style="margin:72px 0 24px">
+      <h3 style="font-size:26px">Pemeriksaan setelah partisi final dibekukan</h3>
+      <p class="lead" style="font-size:18px">Tidak ada pemeriksaan di bawah ini yang mengubah K, r, atau metode. Tujuannya menguji apakah klaim bertahan.</p>
+    </div>
+    <div class="two">
+      <div class="panel"><p class="ctitle">Metode clustering terbaru pada fitur yang sama</p><p class="csub">xsrc BDC dengan fitur CMRE dan K = 16 yang identik; rata-rata 3 seed. DECMCV hanya memberi kelompok pada sebagian foto.</p>
+        <svg id="blChart" class="chart" role="img" aria-label="xsrc metode clustering pada fitur yang sama"></svg><div id="blTbl"></div></div>
+      <div class="panel"><p class="ctitle">Model acuan CMRE, dipilih tanpa label</p><p class="csub">Diurutkan menurut R² ridge: seberapa baik acuan memprediksi embedding VLM, dihitung tanpa label. Batang = xsrc BDC setelah CMRE.</p>
+        <svg id="refChart" class="chart" role="img" aria-label="xsrc CMRE per model acuan, diurutkan menurut R² ridge"></svg><div id="refTbl"></div></div>
+    </div>
+    <div class="panel" style="margin-top:24px"><p class="ctitle">Bootstrap berpasangan: selisih xsrc usulan dikurangi pembanding</p>
+      <p class="csub">2.000 ulangan pada foto yang sama. Interval yang memuat nol berarti tidak berbeda nyata: CMRE setara INLP, tetapi tanpa proksi gaya.</p><div id="prTbl"></div></div>
+    <div class="two" style="margin-top:24px">
+      <div class="card" id="ntCard"></div>
+      <div class="card" id="fastCard"></div>
+    </div>
+  </div>
+</section>
+
+<section id="tim">
+  <div class="wrap">
+    <div class="head">
+      <p class="tag">Tim</p>
+      <h2>Tim <em>SD2026040000100</em>.</h2>
+      <p class="lead">Big Data Challenge (BDC) Satria Data 2026 · Institut Teknologi Sepuluh Nopember · Program Studi Rekayasa Kecerdasan Artifisial.</p>
+    </div>
+    <div class="three">
+      <div class="card"><p class="tag" style="margin:0 0 8px">Anggota</p><h3>Berliana Sarlita Rahajeng</h3><p class="muted">NRP 5054241023</p></div>
+      <div class="card"><p class="tag" style="margin:0 0 8px">Ketua</p><h3>Fazle Mawla Wahyuhanda</h3><p class="muted">NRP 5054241020</p></div>
+      <div class="card"><p class="tag" style="margin:0 0 8px">Anggota</p><h3>Muhammad Fatih Al Fawwaz</h3><p class="muted">NRP 5054241007</p></div>
+    </div>
+    <div class="card" style="margin-top:24px"><p class="tag" style="margin:0 0 8px">Pembimbing</p><h3>Dini Adni Navastra, S.Kom., M.Sc.</h3><p class="muted">0349763664230223</p></div>
+  </div>
+</section>
+
+<section id="sumber">
+  <div class="wrap">
+    <div class="head"><p class="tag">Sumber</p><h2>Data dan kode.</h2></div>
+    <ul class="sources">
+      <li>BDC Satria Data 2026: data babak penyisihan (panitia).</li>
+      <li><a href="https://www.kaggle.com/datasets/kaanerkez/waste-classfication-dataset">Kaan, Waste Classification →</a> <span class="muted">CDLA-Permissive-1.0</span></li>
+      <li><a href="https://data.mendeley.com/datasets/77383kmdnw/1">Custom Bangladeshi E-Waste →</a> <span class="muted">CC BY 4.0</span></li>
+      <li><a href="https://www.kaggle.com/datasets/karansolanki01/garbage-classification">Garbage Classification →</a> <span class="muted">Apache 2.0</span></li>
+      <li><a href="https://huggingface.co/datasets/GIZ/E-Waste-Database">GIZ E-Waste Database →</a> <span class="muted">CC BY 4.0</span></li>
+      <li><a href="https://universe.roboflow.com/electronic-waste-detection/e-waste-dataset-r0ojc">E-Waste Dataset, Iliev →</a> <span class="muted">CC BY 4.0</span></li>
+      <li><a href="https://universe.roboflow.com/shubha-to6ii/e-waste-1sn3k">E-waste, Shubha →</a> <span class="muted">CC BY 4.0</span></li>
+      <li><a href="https://huggingface.co/datasets/flwrlabs/office-home">Office-Home →</a> <span class="muted">riset non-komersial</span></li>
+      <li><a href="https://waste4change.com/blog/pengelolaan-sampah-elektronik-dan-peraturannya-di-indonesia/">Defitri (2022), Waste4Change →</a> <span class="muted">statistik e-waste Indonesia</span></li>
+      <li><a href="GANTI_URL_REPO_METODOLOGI">Kode, metodologi, dan cara reproduksi →</a></li>
+    </ul>
+  </div>
+</section>
+</main>
+<script src="data.js"></script>
+<script>
+(() => {
+  const E = window.EWASTE;
+  if (!E) { document.getElementById("dataError").hidden = false; return; }
+  const NS = "http://www.w3.org/2000/svg", $ = id => document.getElementById(id);
+  const FOCUS = "#5d2a1a", CONTEXT = "#8b8f98", INK = "#17191c";
+  const fmt = (v, d = 3) => v == null ? "–" : v.toFixed(d).replace(".", ",");
+  const pct = v => (Math.round(v * 1000) / 10).toString().replace(".", ",") + "%";
+  const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+  const txt = (parent, x, y, s, attrs = {}) => { const t = el("text", { x, y, ...attrs }, parent); t.textContent = s; return t; };
+  // bar with a 4px rounded data end, square at the zero baseline
+  const hbarPath = (x, y, w, h, r = 4) => { r = Math.min(r, w, h / 2); return `M${x} ${y}H${x + w - r}Q${x + w} ${y} ${x + w} ${y + r}V${y + h - r}Q${x + w} ${y + h} ${x + w - r} ${y + h}H${x}Z`; };
+
+  // ---- shared tooltip: hover and keyboard focus show the same thing; every value is also in a table
+  const tip = $("tip");
+  const showTip = (html, x, y) => { tip.innerHTML = html; tip.classList.add("on");
+    const w = tip.offsetWidth, h = tip.offsetHeight; tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, x + 14)) + "px"; tip.style.top = Math.max(8, y - h - 10) + "px"; };
+  const hideTip = () => tip.classList.remove("on");
+  const bindTip = (node, html) => {
+    node.addEventListener("mousemove", e => showTip(html, e.clientX, e.clientY));
+    node.addEventListener("mouseleave", hideTip);
+    node.setAttribute("tabindex", "0");
+    node.addEventListener("focus", () => { const b = node.getBoundingClientRect(); showTip(html, b.left + b.width * .6, b.top); });
+    node.addEventListener("blur", hideTip);
+  };
+  const table = (host, head, rows, open = false) => {
+    const isNum = c => typeof c === "number" || /^[\d,.%–-]+$/.test(c ?? "–");
+    const cell = c => typeof c === "number" ? `<td class="r">${fmt(c)}</td>` : `<td class="${isNum(c) ? "r" : ""}">${c ?? "–"}</td>`;
+    $(host).innerHTML = `<details class="tbl"${open ? " open" : ""}><summary>Lihat sebagai tabel</summary><div class="scroll"><table><thead><tr>${head.map((h, i) => `<th${i && isNum(rows[0] && rows[0][i]) ? ' class="r"' : ""}>${h}</th>`).join("")}</tr></thead>
+      <tbody>${rows.map(row => `<tr>${row.map(cell).join("")}</tr>`).join("")}</tbody></table></div></details>`;
+  };
+
+  // horizontal bars on a zero baseline. rows = [{label, value, focus, ci, tip, onclick}]; groups = {rowIndex: heading}
+  function hbars(svg, rows, { W, left, right = 56, top = 8, rowH = 30, barH = 16, max = 1, ticks = [0, .25, .5, .75, 1], tickFmt = v => fmt(v, 2), valueFmt = v => fmt(v, 3), groups, dy = 0 } = {}) {
+    const width = W - left - right, X = v => left + width * Math.min(v, max) / max;
+    let y = top + dy; const placed = [];
+    rows.forEach((r, i) => { if (groups && groups[i]) y += (i ? 16 : 0) + 24; placed.push(y); y += rowH; });
+    const bottom = y;
+    ticks.forEach(t => { el("line", { x1: X(t), x2: X(t), y1: top + dy, y2: bottom, class: t ? "grid" : "base" }, svg); txt(svg, X(t), bottom + 18, tickFmt(t), { "text-anchor": "middle", class: "num" }); });
+    rows.forEach((r, i) => {
+      const y0 = placed[i], cy = y0 + rowH / 2;
+      if (groups && groups[i]) txt(svg, 0, y0 - 8, groups[i], { class: "strong" });
+      const g = el("g", { class: "row" }, svg);
+      el("rect", { x: 0, y: y0, width: W, height: rowH, class: "hit" }, g);
+      txt(g, left - 10, cy + 4, r.label, { "text-anchor": "end", class: r.focus ? "strong" : "ink" });
+      if (r.value != null && r.value > 0) el("path", { d: hbarPath(left, cy - barH / 2, Math.max(1, X(r.value) - left), barH), fill: r.color || (r.focus ? FOCUS : CONTEXT), class: "bar" }, g);
+      if (r.ci) { el("line", { x1: X(r.ci[0]), x2: X(r.ci[1]), y1: cy, y2: cy, stroke: INK, "stroke-width": 1.5 }, g);
+                  r.ci.forEach(c => el("line", { x1: X(c), x2: X(c), y1: cy - 5, y2: cy + 5, stroke: INK, "stroke-width": 1.5 }, g)); }
+      const valueX = r.value == null ? left + 6 : Math.max(X(r.value), r.ci ? X(r.ci[1]) : 0) + 6;
+      txt(g, valueX, cy + 4, valueFmt(r.value), { class: (r.focus ? "strong" : "ink") + " num" });
+      bindTip(g, r.tip || `<b>${r.label}</b><br>${valueFmt(r.value)}`);
+      if (r.onclick) { g.style.cursor = "pointer"; g.setAttribute("role", "button"); g.addEventListener("click", r.onclick);
+        g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); r.onclick(); } }); }
+    });
+    return bottom + 26;
+  }
+  const fit = (svg, W, H) => svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+
+  const bdc = E.datasets.find(d => d.id === "bdc"), oh = E.datasets.find(d => d.id === "oh"), shubha = E.datasets.find(d => d.id === "shubha");
+  $("heroK").textContent = E.clusters.length;
+
+  // ---- hero floating artifacts: gestural marks only; the full charts with axes live further down
+  const B3n = E.clusters.filter(c => c.b3).length, total = E.clusters.reduce((s, c) => s + c.n, 0), nmax = Math.max(...E.clusters.map(c => c.n));
+  $("floaters").innerHTML = `
+    <div class="artifact stat"><div class="label">BDC · xsrc lima kelas</div><div class="value">${fmt(bdc.raw, 2)} → ${fmt(bdc.cmre, 2)}</div><div class="delta">fusi mentah → CMRE · K = 16</div>
+      <svg viewBox="0 0 300 56" preserveAspectRatio="none" aria-hidden="true"><path d="M6 ${52 - 48 * bdc.raw} C 110 ${52 - 48 * bdc.raw}, 190 ${52 - 48 * bdc.cmre}, 292 ${52 - 48 * bdc.cmre}" fill="none" stroke="${FOCUS}" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg></div>
+    <div class="artifact stat"><div class="label">Foto dikelompokkan</div><div class="value">${total.toLocaleString("id-ID")}</div><div class="delta">${E.clusters.length} kelompok · <span style="color:${FOCUS}">■</span> ${B3n} mengandung B3</div>
+      <svg viewBox="0 0 300 56" aria-hidden="true">${[...E.clusters].sort((a, b) => b.n - a.n).map((c, i) => `<rect x="${i * 18.75 + 1}" y="${56 - 52 * c.n / nmax}" width="16.75" height="${52 * c.n / nmax}" rx="3" fill="${c.b3 ? FOCUS : CONTEXT}"/>`).join("")}</svg></div>
+    <div class="artifact stat"><div class="label">Uji segar · Shubha</div><div class="value">${fmt(shubha.cmre, 2)}</div><div class="delta">xsrc CMRE · IK95% ${shubha.ci} · ${shubha.n} foto</div>
+      <svg viewBox="0 0 300 56" aria-hidden="true"><rect x="2" y="6" width="${296 * shubha.raw}" height="14" rx="3" fill="${CONTEXT}"/><rect x="2" y="30" width="${296 * shubha.cmre}" height="14" rx="3" fill="${FOCUS}"/></svg></div>
+    <div class="artifact stat"><div class="label">Purity pada BDC</div><div class="value">${fmt(bdc.purity, 2)}</div><div class="delta">Kecocokan dengan label mayoritas kelompok; label dipakai hanya untuk evaluasi.</div></div>`;
+
+  // ---- t-SNE small multiples: colour = class, shape = photo source
+  const NAMES = { battery: "Baterai", keyboard: "Keyboard", mobile: "Ponsel", mouse: "Mouse", pcb: "PCB" };
+  const CLASS_COLORS = { battery: "#5d2a1a", keyboard: "#0072b2", mobile: "#009e73", mouse: "#75658f", pcb: "#9a6500" };
+  const range = i => { const v = E.tsne.map(p => p[i]); return [Math.min(...v), Math.max(...v)]; };
+  const R = [0, 1, 2, 3].map(range);
+  const sx = (v, r) => 20 + 440 * (v - r[0]) / (r[1] - r[0]), sy = (v, r) => 380 - 356 * (v - r[0]) / (r[1] - r[0]);
+  const tsMarks = { raw: [], cmre: [] }, tsLabels = { raw: [], cmre: [] };
+  const order = E.tsne.map((p, i) => i).sort((a, b) => (E.tsne[a][5] === "kaan" ? 0 : 1) - (E.tsne[b][5] === "kaan" ? 0 : 1));
+  [["raw", $("tsRaw"), 0], ["cmre", $("tsCmre"), 2]].forEach(([key, svg, o]) => {
+    el("rect", { x: .5, y: .5, width: 479, height: 399, rx: 12, fill: "none", stroke: "#ececec" }, svg);
+    // catalogue photos first, phone photos on top: the phone photos are the minority the story is about
+    order.forEach(i => { const p = E.tsne[i], x = sx(p[o], R[o]), y = sy(p[o + 1], R[o + 1]);
+      const m = p[5] === "kaan" ? el("circle", { cx: x, cy: y, r: 3, fill: CLASS_COLORS[p[4]], "fill-opacity": .68 }, svg)
+                                : el("path", { d: `M${x} ${y - 4.5}l4 7h-8z`, fill: CLASS_COLORS[p[4]], "fill-opacity": .95, stroke: "#fff", "stroke-width": .8 }, svg);
+      m.dataset.cls = p[4]; tsMarks[key].push(m); });
+    // one direct label per class at its medoid (the point nearest the class mean), so the label always sits on real data
+    Object.keys(NAMES).forEach(c => {
+      const pts = E.tsne.filter(p => p[4] === c).map(p => [sx(p[o], R[o]), sy(p[o + 1], R[o + 1])]);
+      const mx = pts.reduce((s, p) => s + p[0], 0) / pts.length, my = pts.reduce((s, p) => s + p[1], 0) / pts.length;
+      const [lx, ly] = pts.reduce((b, p) => Math.hypot(p[0] - mx, p[1] - my) < Math.hypot(b[0] - mx, b[1] - my) ? p : b);
+      const t = txt(svg, Math.max(30, Math.min(450, lx)), Math.max(16, ly - 10), NAMES[c], { "text-anchor": "middle", class: "strong", "paint-order": "stroke", stroke: "#fff", "stroke-width": 4, "stroke-linejoin": "round" });
+      t.dataset.cls = c; tsLabels[key].push(t);
+    });
+    svg.setAttribute("aria-label", `t-SNE ${key === "raw" ? "fusi mentah" : "setelah CMRE"}: warna menunjukkan kelas dan bentuk menunjukkan sumber foto`);
+  });
+  $("tsRawSub").innerHTML = `Fusi mentah · xsrc <b>${fmt(bdc.raw, 2)}</b>`;
+  $("tsCmreSub").innerHTML = `CMRE · xsrc <b>${fmt(bdc.cmre, 2)}</b>`;
+  $("tsSub").textContent = `${E.tsne.length.toLocaleString("id-ID")} foto, satu titik = satu foto. Warna menunjukkan kelas evaluasi; bentuk menunjukkan sumber. Ini peta embedding t-SNE, bukan label 16 cluster; hasil cluster berwarna ada di bagian Kelompok. Pilih kelas untuk menyorotnya. Koordinat dan posisi antarpeta tidak dapat dibandingkan langsung.`;
+  const tsClass = $("tsClass");
+  const pickClass = c => {
+    tsClass.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.c === c));
+    ["raw", "cmre"].forEach(k => { tsMarks[k].forEach(m => m.style.opacity = c === "all" || m.dataset.cls === c ? 1 : .07);
+                                   tsLabels[k].forEach(t => t.style.opacity = c === "all" || t.dataset.cls === c ? 1 : 0); });
+  };
+  [["all", "Semua kelas"], ...Object.entries(NAMES)].forEach(([c, l]) => { const b = document.createElement("button"); b.dataset.c = c; b.textContent = l; if (CLASS_COLORS[c]) b.style.setProperty("--class-color", CLASS_COLORS[c]); b.onclick = () => pickClass(c); tsClass.appendChild(b); });
+  pickClass("all");
+
+  // ---- pipeline steps
+  const STEPS = [
+    ["Input", "3.792 foto e-waste", "3.604 foto data latih BDC setelah deduplikasi, ditambah 188 foto uji yang dipilah otomatis oleh model penyisihan tim. Label nama berkas hanya dipakai untuk evaluasi."],
+    ["Pra-pemrosesan", "dedup, resize, flip", "Foto kembar dibuang dengan perceptual hash (Hamming ≤ 6). Tiap foto diproses dua kali (asli dan dicerminkan), lalu embedding-nya dirata-rata."],
+    ["Ekstraksi fitur", "3 model fondasi", "SigLIP2-So400m dan PE-Core-G (visi-bahasa) kaya makna, DINOv3-H+ (self-supervised) paling tahan bias sumber. Hanya menara citra yang dipakai, tanpa teks."],
+    ["CMRE", "kurangi dominasi sumber relatif terhadap objek", "Embedding visi-bahasa diprediksi dari DINOv3 dengan regresi ridge. Lalu 64 arah utama residu dikurangi. Langkah ini meningkatkan kesepakatan lintas sumber pada kelas yang diuji, tetapi tidak menghapus seluruh informasi sumber. Tidak memakai label kelas atau proksi gaya.", true],
+    ["Fusi + PCA-32", "3 embedding jadi satu", "Embedding yang sudah dibersihkan digabung, diringkas menjadi 32 dimensi dengan PCA, lalu dinormalisasi."],
+    ["Pilih K", "SCMax, 9 seed", "SCMax (AAAI-26) memilih jumlah kelompok tanpa label: 13, 16, 13, 16, 19, 16, 15, 19, 19. Mediannya 16, dengan 13 sebagai tingkat kasar.", true],
+    ["Clustering", "Spectral-kNN", "Graf 15 tetangga terdekat dipartisi dengan Spectral clustering. K-Means, Ward, dan GMM diuji sebagai pembanding."],
+    ["Output", "16 kelompok + cek kategori baru", "Nama kelompok ditinjau lewat galeri. Foto yang berbeda dari data utama ditandai dengan jarak ke 10 tetangga di PCA-32; ambangnya persentil ke-95 data utama."]
+  ];
+  const stepsBox = $("steps"), detail = $("stepDetail");
+  STEPS.forEach(([t, s, d, key], i) => {
+    const b = document.createElement("button"); b.className = "step";
+    b.setAttribute("aria-expanded", "false"); b.setAttribute("aria-controls", "stepDetail");
+    b.innerHTML = `<span class="n">${i + 1}</span><h3>${t}</h3><span class="s">${s}</span>${key ? '<span class="novel">inti kebaruan</span>' : ""}`;
+    b.onclick = () => { stepsBox.querySelectorAll(".step").forEach(x => x.setAttribute("aria-expanded", "false")); b.setAttribute("aria-expanded", "true");
+                        detail.innerHTML = `<h3>${i + 1}. ${t}</h3><p>${d}</p>`; };
+    stepsBox.appendChild(b);
+  });
+
+  // ---- results: one restrained peach card carries the headline comparison
+  $("headline").innerHTML = `
+    <div class="headline-copy">
+      <p class="tag">BDC · data pengembangan · K = 16</p>
+      <h3>Lebih banyak foto sekelas masuk ke kelompok yang sama.</h3>
+      <p class="headline-intro"><b>xsrc</b> rata-rata lima kelas bersama; nilai lebih tinggi berarti kesepakatan lintas sumber lebih besar.</p>
+    </div>
+    <div class="headline-values" role="img" aria-label="xsrc BDC naik dari ${fmt(bdc.raw, 2)} sebelum CMRE menjadi ${fmt(bdc.cmre, 2)} sesudah CMRE">
+      <div><span class="metric-label">Fusi mentah</span><strong class="metric-value">${fmt(bdc.raw, 2)}</strong></div>
+      <span class="metric-arrow" aria-hidden="true">→</span>
+      <div><span class="metric-label">CMRE usulan</span><strong class="metric-value">${fmt(bdc.cmre, 2)}</strong><small class="metric-ci">IK95% ${bdc.ci}</small></div>
+    </div>
+    <div class="headline-context">
+      <p><b>Pada BDC:</b> INLP ×3 juga mencapai ${fmt(bdc.inlp, 3)}.</p>
+      <p><b>Uji segar Shubha:</b> CMRE ${fmt(shubha.cmre, 3)} [${shubha.ci.replace(" sampai ", "–")}] vs INLP ×3 ${fmt(shubha.inlp, 3)}.</p>
+      <p><b>Office-Home:</b> fusi mentah ${fmt(oh.raw, 3)}; CMRE ${fmt(oh.cmre, 3)}.</p>
+    </div>`;
+
+  // small multiples: 4 datasets x 5 methods on one shared 0-1 scale
+  const METHODS = [["raw", "Fusi mentah"], ["dino", "DINOv3"], ["inlp", "INLP ×3"], ["light", "CMRE ringan"], ["fast", "CMRE cepat"], ["cmre", "CMRE usulan"]];
+  const parseCI = s => s ? s.split(" sampai ").map(v => +v.replace(",", ".")) : null;
+  E.datasets.forEach(d => {
+    const box = document.createElement("div"); box.className = "dataset-card";
+    box.innerHTML = `<p class="ctitle">${d.name}</p><p class="csub" style="margin-bottom:8px">${d.role} · ${d.n.toLocaleString("id-ID")} foto</p>`;
+    const chartWrap = document.createElement("div"); chartWrap.className = "chart-scroll dataset-chart";
+    const svg = el("svg", { class: "chart", role: "img", "aria-label": `xsrc per metode, ${d.name}` }, chartWrap);
+    box.appendChild(chartWrap);
+    $("dsGrid").appendChild(box);
+    fit(svg, 300, hbars(svg, METHODS.map(([k, l]) => ({ label: l, value: d[k], focus: k === "cmre", ci: k === "cmre" ? parseCI(d.ci) : null,
+      tip: `<b>${l}</b> · ${d.name}<br>xsrc ${d[k] == null ? "tidak tersedia" : fmt(d[k])}${k === "inlp" ? "<br>memakai proksi label sumber" : ""}${k === "cmre" && d.ci ? `<br>IK95% ${d.ci}` : ""}` })),
+      { W: 420, left: 125, right: 56, rowH: 32, barH: 16, ticks: [0, .5, 1], tickFmt: v => fmt(v, 1), valueFmt: v => v == null ? "–" : fmt(v, 2) }));
+    box.insertAdjacentHTML("beforeend", `<p class="csub" style="margin-top:4px">${d.metric}.</p>`);
+  });
+  table("dsTbl", ["Metode", ...E.datasets.map(d => d.name)], METHODS.map(([k, l]) => [l, ...E.datasets.map(d => d[k] ?? "–")]));
+
+  // backbone audit: rank by xsrc; sequential color carries the same low-to-high ordering
+  (() => {
+    const FAM = [["ssl", "Self-supervised"], ["sup", "Terawasi (ImageNet-22k)"], ["vlm", "Visi-bahasa"]];
+    const USED = ["DINOv3-H+", "PE-Core-G", "SigLIP2-So400m"];
+    const palette = ["#8b8f98", "#88776f", "#7c5d52", "#704536", "#5d2a1a"];
+    const ranked = [...E.backbones].sort((a, b) => b.xsrc - a.xsrc), low = Math.min(...ranked.map(b => b.xsrc)), span = Math.max(...ranked.map(b => b.xsrc)) - low || 1;
+    const rows = ranked.map(b => {
+      const color = palette[Math.round((b.xsrc - low) / span * (palette.length - 1))];
+      return { label: b.name.replace(" (IN-22k)", "") + (USED.includes(b.name) ? " *" : ""), value: b.xsrc, color, focus: USED.includes(b.name),
+               tip: `<b>${b.name}</b> · ${FAM.find(f => f[0] === b.fam)[1]}<br>xsrc ${fmt(b.xsrc)}${USED.includes(b.name) ? "<br>dipakai di pipeline usulan" : ""}` };
+    });
+    const svg = $("bbChart"), h = hbars(svg, rows, { W: 760, left: 190, right: 58, rowH: 28, barH: 14 });
+    txt(svg, 190, h + 6, "* dipakai di pipeline usulan", {}); fit(svg, 760, h + 14);
+    table("bbTbl", ["Model", "Keluarga", "xsrc"], [...E.backbones].sort((a, b) => b.xsrc - a.xsrc).map(b => [b.name, FAM.find(f => f[0] === b.fam)[1], b.xsrc]));
+  })();
+
+  // ---- clusters: overview chart, filter, cards, dialog
+  const CATS = [["semua", "Semua"], ["baterai", "Baterai"], ["layar", "Layar"], ["besar", "Peralatan besar"], ["kecil", "Peralatan kecil"], ["ti", "TI kecil"], ["komponen", "Komponen"], ["b3", "Mengandung B3"]];
+  const CATNAME = { baterai: "Baterai", layar: "WEEE 2: layar", besar: "WEEE 4: peralatan besar", kecil: "WEEE 5: peralatan kecil", ti: "WEEE 6: TI kecil", komponen: "Komponen" };
+  const CATSHORT = { baterai: "Baterai", layar: "Layar", besar: "Peralatan besar", kecil: "Peralatan kecil", ti: "TI kecil", komponen: "Komponen" };
+  const CATCOLORS = { baterai: "#5d2a1a", layar: "#009e73", besar: "#75658f", kecil: "#0072b2", ti: "#cc79a7", komponen: "#9a6500" };
+  $("clusterKey").innerHTML = Object.entries(CATCOLORS).map(([k, color]) => `<span><i class="sw" style="background:${color}"></i>${CATSHORT[k]}</span>`).join("");
+  const filters = $("filters"), cards = $("cards"), dlg = $("dlg");
+  const gal = c => `assets/c${String(c.id).padStart(2, "0")}.jpg`;
+  function openCluster(c, opener) {
+    dlg._opener = opener;
+    $("dlgTitle").textContent = `C${c.id} · ${c.name}`;
+    $("dlgMeta").textContent = `${c.n} foto · kelompok induk (K = 13): ${c.parent} · kategori: ${CATNAME[c.cat]}`;
+    const img = $("dlgImg"), load = $("dlgLoading");
+    load.hidden = false; load.className = "muted"; load.textContent = "Memuat galeri..."; img.hidden = true;
+    img.alt = `24 foto representatif kelompok ${c.name}`;
+    img.onload = () => { load.hidden = true; img.hidden = false; };
+    img.onerror = () => { load.className = "err"; load.textContent = `Galeri tidak ditemukan: ${gal(c)}`; };
+    img.src = gal(c);
+    $("dlgFacts").innerHTML =
+      `<div class="card"><div class="label">Penanganan</div><p>${c.handling}</p></div>
+       <div class="card"><div class="label">B3</div><p>${c.b3 ? '<span class="b3">mengandung B3</span>' : "tidak termasuk kategori B3 utama"}</p></div>
+       <div class="card"><div class="label">Stabilitas (Jaccard bootstrap)</div><p><b>${fmt(c.jaccard, 2)}</b> · ${c.jaccard >= .85 ? "memenuhi acuan 0,85" : "di bawah acuan 0,85"}</p></div>`;
+    hideTip(); dlg.showModal();
+  }
+  $("dlgClose").onclick = () => dlg.close();
+  dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
+  dlg.addEventListener("close", () => dlg._opener && dlg._opener.focus());
+
+  // ---- map of the 3,792 BDC photos: t-SNE of the final features; colour = category, one label per cluster at its medoid
+  (() => {
+    const svg = $("clMap"), P = E.clusterMap, W = 760, H = 520, C = E.clusters;
+    const xs = P.map(p => p[0]), ys = P.map(p => p[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const X = v => 28 + (W - 56) * (v - x0) / (x1 - x0), Y = v => H - 28 - (H - 56) * (v - y0) / (y1 - y0);
+    el("rect", { x: .5, y: .5, width: W - 1, height: H - 1, rx: 12, fill: "none", stroke: "#ececec" }, svg);
+    const marks = P.map(([x, y, c, t]) => { const cx = X(x), cy = Y(y), fill = CATCOLORS[C[c].cat];
+      const m = t ? el("path", { d: `M${cx} ${cy - 4}l3.5 6h-7z`, fill, stroke: "#fff", "stroke-width": .6 }, svg)
+                  : el("circle", { cx, cy, r: 2.4, fill, "fill-opacity": .72 }, svg);
+      m.dataset.c = c; return m; });
+    const focus = c => marks.forEach(m => m.style.opacity = c == null || +m.dataset.c === c ? 1 : .08);
+    const tipFor = cl => `<b>C${cl.id} · ${cl.name}</b><br>${cl.n} foto · ${CATNAME[cl.cat]}<br>klik untuk membuka galeri`;
+    C.forEach(cl => {
+      const pts = P.filter(p => p[2] === cl.id).map(p => [X(p[0]), Y(p[1])]);
+      const mx = pts.reduce((s, p) => s + p[0], 0) / pts.length, my = pts.reduce((s, p) => s + p[1], 0) / pts.length;
+      const [lx, ly] = pts.reduce((b, p) => Math.hypot(p[0] - mx, p[1] - my) < Math.hypot(b[0] - mx, b[1] - my) ? p : b);
+      const g = el("g", { tabindex: 0, role: "button", "aria-label": `C${cl.id} ${cl.name}, ${cl.n} foto. Buka galeri`, style: "cursor:pointer" }, svg);
+      txt(g, lx, ly + 4, `C${cl.id}`, { "text-anchor": "middle", class: "strong", "paint-order": "stroke", stroke: "#fff", "stroke-width": 5, "stroke-linejoin": "round" });
+      g.onmouseenter = e => { focus(cl.id); showTip(tipFor(cl), e.clientX, e.clientY); };
+      g.onmouseleave = () => { focus(null); hideTip(); };
+      g.onfocus = () => focus(cl.id); g.onblur = () => focus(null);
+      g.onclick = () => openCluster(cl, g);
+      g.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openCluster(cl, g); } };
+    });
+    svg.addEventListener("mousemove", e => { const c = e.target.dataset && e.target.dataset.c; if (c != null) showTip(tipFor(C[+c]), e.clientX, e.clientY); });
+    svg.addEventListener("click", e => { const c = e.target.dataset && e.target.dataset.c; if (c != null) openCluster(C[+c], svg); });
+    svg.addEventListener("mouseleave", hideTip);
+    const nTest = C.map(cl => P.filter(p => p[2] === cl.id && p[3]).length);
+    table("grpTbl", ["Kelompok", "Nama", "Kategori", "B3", "Foto", "Latih", "Uji", "Label BDC dominan", "Sepakat 3 algoritma", "Latar putih", "Jaccard", "Foto GIZ masuk"],
+      C.map((cl, i) => [`C${cl.id}`, cl.name, CATSHORT[cl.cat], cl.b3 ? "ya" : "tidak", String(cl.n), String(cl.n - nTest[i]), String(nTest[i]),
+                        cl.top_share == null ? "–" : `${cl.top_label} (${pct(cl.top_share)})`, pct(cl.agree3), pct(cl.white_bg), fmt(cl.jaccard, 2), String(cl.giz_n)]), true);
+  })();
+
+  // overview: category-colored size bars + stability dots on their own labeled scale
+  (() => {
+    const svg = $("clChart"), list = [...E.clusters].sort((a, b) => b.n - a.n);
+    const left = 320, X = v => left + 280 * v / 700, jx0 = 690, jx1 = 870, J = v => jx0 + (jx1 - jx0) * (v - .6) / .4, rowH = 30, top = 40;
+    const bottom = top + list.length * rowH;
+    txt(svg, left, 16, "Jumlah foto", { class: "strong" }); txt(svg, jx0, 16, "Stabilitas (Jaccard)", { class: "strong" });
+    [0, 200, 400, 600].forEach(t => { el("line", { x1: X(t), x2: X(t), y1: top, y2: bottom, class: t ? "grid" : "base" }, svg); txt(svg, X(t), bottom + 18, t.toLocaleString("id-ID"), { "text-anchor": "middle", class: "num" }); });
+    [.6, .8, 1].forEach(t => { el("line", { x1: J(t), x2: J(t), y1: top, y2: bottom, class: "grid" }, svg); txt(svg, J(t), bottom + 18, fmt(t, 1), { "text-anchor": "middle", class: "num" }); });
+    el("line", { x1: J(.85), x2: J(.85), y1: top - 4, y2: bottom, stroke: INK, "stroke-width": 1 }, svg); txt(svg, J(.85), top - 8, "0,85", { "text-anchor": "middle", class: "ink num" });
+    list.forEach((c, i) => {
+      const y = top + i * rowH, cy = y + rowH / 2, g = el("g", { class: "row", role: "button", "aria-label": `Buka galeri C${c.id} ${c.name}` }, svg);
+      el("rect", { x: 0, y, width: 940, height: rowH, class: "hit" }, g);
+      if (c.b3) txt(g, 0, cy + 4, "B3", { class: "ink strong" });
+      txt(g, left - 10, cy + 4, `C${c.id} · ${c.name}`, { "text-anchor": "end", class: "ink" });
+      el("path", { d: hbarPath(left, cy - 7, X(c.n) - left, 14), fill: CATCOLORS[c.cat], class: "bar" }, g);
+      txt(g, X(c.n) + 6, cy + 4, c.n, { class: "ink num" });
+      el("circle", { cx: J(c.jaccard), cy, r: 5, fill: c.jaccard >= .85 ? INK : FOCUS, stroke: "#fff", "stroke-width": 2 }, g);
+      bindTip(g, `<b>C${c.id} · ${c.name}</b><br>${CATSHORT[c.cat]} · ${c.n} foto · Jaccard ${fmt(c.jaccard, 2)}${c.b3 ? "<br>B3" : ""}<br><span style="color:#777b86">klik untuk galeri</span>`);
+      g.style.cursor = "pointer"; g.addEventListener("click", () => openCluster(c, g));
+      g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openCluster(c, g); } });
+    });
+    fit(svg, 940, bottom + 28);
+    table("clTbl", ["Kelompok", "Foto", "Jaccard", "B3"], list.map(c => [`C${c.id} · ${c.name}`, String(c.n), c.jaccard, c.b3 ? "ya" : "tidak"]));
+  })();
+
+  function showCards(cat) {
+    filters.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.cat === cat));
+    cards.innerHTML = "";
+    const list = E.clusters.filter(c => cat === "semua" || (cat === "b3" ? c.b3 : c.cat === cat));
+    if (!list.length) { cards.innerHTML = '<p class="empty">Tidak ada kelompok untuk filter ini.</p>'; return; }
+    list.forEach(c => {
+      const b = document.createElement("button"); b.className = "ccard";
+      b.setAttribute("aria-label", `Buka galeri kelompok ${c.id}: ${c.name}, ${c.n} foto`);
+      b.innerHTML = `<div class="strip"><img src="${gal(c)}" alt="" loading="lazy"></div>
+        <span class="t">C${c.id} · ${c.name}</span>
+        <span class="meta"><span class="num">${c.n} foto</span>${c.b3 ? '<span class="b3">B3</span>' : `<span>${CATNAME[c.cat].split(":").pop().trim()}</span>`}</span>`;
+      const im = b.querySelector("img");
+      im.onerror = () => { im.parentElement.outerHTML = `<p class="err">Gambar tidak ditemukan: ${gal(c)}</p>`; };
+      b.onclick = () => openCluster(c, b);
+      cards.appendChild(b);
+    });
+  }
+  CATS.forEach(([k, l]) => { const b = document.createElement("button"); b.dataset.cat = k; b.textContent = l; b.onclick = () => showCards(k); filters.appendChild(b); });
+  showCards("semua");
+
+  // ---- OOD: two panels on the same 0-100% scale; flagged new categories in focus
+  const pctTick = v => Math.round(v * 100) + "%";
+  const od = E.oodSummary, oi = od.iliev, os = od.shubha;
+  $("oodSummary").innerHTML = `
+    <div class="card"><p class="tag">Iliev · data pengembangan</p><p class="label">AUROC · kNN k = 10, PCA-32</p><div class="value">${fmt(oi.auc, 3)}</div><p class="detail">${oi.n.toLocaleString("id-ID")} foto. Pembanding jarak centroid: ${fmt(oi.centroid_auc, 3)}. Iliev dipakai memilih setelan deteksi kategori baru.</p></div>
+    <div class="card"><p class="tag">Shubha · uji segar</p><p class="label">AUROC · kNN k = 10, PCA-32</p><div class="value">${fmt(os.auc, 3)} <span class="muted" style="font-size:18px">[${fmt(os.ci[0], 3)}–${fmt(os.ci[1], 3)}]</span></div><p class="detail">${os.n} foto · ${os.known_classes} kelas sepadan · ${os.ood_classes} kelas di luar cakupan. Ditandai: ${pct(os.in_flag)} foto sepadan dan ${pct(os.out_flag)} foto dari kelas di luar cakupan.</p></div>`;
+  [["oodKnown", true, "Kategori yang ada di BDC"], ["oodNew", false, "Kategori baru (di luar BDC)"]].forEach(([id, known, title]) => {
+    const svg = $(id), rows = E.ood.filter(o => o.known === known).sort((a, b) => b.flag - a.flag);
+    txt(svg, 0, 14, title, { class: "strong" });
+    fit(svg, 440, hbars(svg, rows.map(o => ({ label: o.label, value: o.flag, focus: !known, tip: `<b>${o.label}</b> · ${o.dataset}<br>${pct(o.flag)} ditandai dari ${o.n} foto` })),
+      { W: 440, left: 130, right: 52, rowH: 28, barH: 14, dy: 22, ticks: [0, .5, 1], tickFmt: pctTick, valueFmt: pct }));
+    svg.setAttribute("aria-label", `${title}: proporsi foto di luar cakupan yang ditandai untuk ditinjau`);
+  });
+  table("oodTbl", ["Kategori", "Set data", "Ada di BDC", "N foto", "Ditandai"], E.ood.map(o => [o.label, o.dataset, o.known ? "ya" : "tidak", String(o.n), pct(o.flag)]));
+  const S = E.oodSources, SRC = [["kaan", "Kaan"], ["bangla", "Bangladesh"], ["karan", "Karan"], ["giz", "GIZ"]].sort((a, b) => S[b[0]].flag - S[a[0]].flag);
+  fit($("oodSrc"), 440, hbars($("oodSrc"), SRC.map(([k, l]) => ({ label: l, value: S[k].flag, focus: k === "giz", tip: `<b>${l}</b><br>${pct(S[k].flag)} ditandai dari ${S[k].n.toLocaleString("id-ID")} foto` })),
+    { W: 440, left: 150, right: 52, rowH: 32, barH: 16, ticks: [0, .5, 1], tickFmt: pctTick, valueFmt: pct }));
+  table("srcTbl", ["Sumber", "N foto", "Ditandai"], SRC.map(([k, l]) => [l, String(S[k].n), pct(S[k].flag)]));
+
+  // ---- robustness: line charts with crosshair tooltip, and bars from zero
+  function lineChart(svg, pts, series, { xs, xmin, xmax, xlog, band, mark, dots, xname }) {
+    const L = 40, Rt = 324, T = 14, Bm = 200, ymin = .4;
+    const X = v => L + (Rt - L) * (xlog ? (Math.log2(v) - Math.log2(xmin)) / (Math.log2(xmax) - Math.log2(xmin)) : (v - xmin) / (xmax - xmin));
+    const Y = v => Bm - (Bm - T) * (v - ymin) / (1 - ymin);
+    if (band) el("rect", { x: X(band[0]), y: T, width: X(band[1]) - X(band[0]), height: Bm - T, fill: "#f2f2f3" }, svg);
+    [.4, .6, .8, 1].forEach(v => { el("line", { x1: L, x2: Rt, y1: Y(v), y2: Y(v), class: v === ymin ? "base" : "grid" }, svg); txt(svg, L - 8, Y(v) + 4, fmt(v, 1), { "text-anchor": "end", class: "num" }); });
+    xs.forEach(v => txt(svg, X(v), Bm + 18, v, { "text-anchor": "middle", class: "num" }));
+    if (mark) { el("line", { x1: X(mark[0]), x2: X(mark[0]), y1: T, y2: Bm, stroke: INK, "stroke-width": 1 }, svg); txt(svg, X(mark[0]) + 5, T + 10, mark[1], { class: "ink" }); }
+    series.forEach(([key, col]) => {
+      el("path", { d: pts.map((p, i) => `${i ? "L" : "M"}${X(p.x)} ${Y(p[key])}`).join(" "), fill: "none", stroke: col, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
+      pts.forEach(p => el("circle", { cx: X(p.x), cy: Y(p[key]), r: 2.5, fill: col }, svg));
+    });
+    let h = Bm + 30;
+    if (dots) { // dot histogram of the SCMax picks, on the same x scale as the lines
+      const c = {}; dots.forEach(k => { c[k] = (c[k] || 0) + 1; el("circle", { cx: X(k), cy: Bm + 34 + (c[k] - 1) * 11, r: 4, fill: FOCUS, stroke: "#fff", "stroke-width": 1.5 }, svg); });
+      txt(svg, L - 8, Bm + 38, "SCMax", { "text-anchor": "end" }); h = Bm + 34 + 2 * 11 + 12;
+    }
+    const cross = el("line", { y1: T, y2: Bm, stroke: INK, "stroke-width": 1, opacity: 0 }, svg);
+    const ring = series.map(([, col]) => el("circle", { r: 5, fill: col, stroke: "#fff", "stroke-width": 2, opacity: 0 }, svg));
+    const hit = el("rect", { x: L - 10, y: T, width: Rt - L + 20, height: Bm - T, fill: "transparent", tabindex: 0, "aria-label": "Geser dengan panah kiri/kanan untuk membaca nilai" }, svg);
+    const tipFor = p => `<b>${xname} = ${p.x}</b><br>${series.map(([k, , l]) => `${l} ${fmt(p[k])}`).join("<br>")}`;
+    const focusPt = (p, cx, cy) => { cross.setAttribute("x1", X(p.x)); cross.setAttribute("x2", X(p.x)); cross.setAttribute("opacity", .3);
+      series.forEach(([k], i) => { ring[i].setAttribute("cx", X(p.x)); ring[i].setAttribute("cy", Y(p[k])); ring[i].setAttribute("opacity", 1); }); showTip(tipFor(p), cx, cy); };
+    const off = () => { cross.setAttribute("opacity", 0); ring.forEach(r => r.setAttribute("opacity", 0)); hideTip(); };
+    const toClient = v => { const b = svg.getBoundingClientRect(); return b.left + v * b.width / svg.viewBox.baseVal.width; };
+    hit.addEventListener("mousemove", e => { const b = svg.getBoundingClientRect(), cx = (e.clientX - b.left) * svg.viewBox.baseVal.width / b.width;
+      focusPt(pts.reduce((a, p) => Math.abs(X(p.x) - cx) < Math.abs(X(a.x) - cx) ? p : a), e.clientX, e.clientY); });
+    hit.addEventListener("mouseleave", off); hit.addEventListener("blur", off);
+    let ki = 0; hit.addEventListener("keydown", e => { const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0; if (!d) return; e.preventDefault();
+      ki = Math.max(0, Math.min(pts.length - 1, ki + d)); focusPt(pts[ki], toClient(X(pts[ki].x)), svg.getBoundingClientRect().top + 30); });
+    fit(svg, 340, h);
+  }
+  lineChart($("kChart"), E.robust.k.map(p => ({ x: p.K, xsrc: p.xsrc, purity: p.purity })), [["purity", CONTEXT, "purity BDC"], ["xsrc", FOCUS, "xsrc"]],
+            { xs: [8, 12, 16, 20, 24], xmin: 8, xmax: 24, mark: [16, "K = 16"], dots: E.robust.scmax, xname: "K" });
+  table("kTbl", ["K", "xsrc", "purity BDC"], E.robust.k.map(p => [String(p.K), p.xsrc, p.purity]));
+  lineChart($("rChart"), E.robust.r.map(p => ({ x: p.r, xsrc: p.xsrc })), [["xsrc", FOCUS, "xsrc"]],
+            { xs: [4, 8, 16, 32, 64, 128, 256], xmin: 4, xmax: 256, xlog: true, band: [16, 64], mark: [64, "r = 64 dipakai"], xname: "r" });
+  table("rTbl", ["r", "xsrc"], E.robust.r.map(p => [String(p.r), p.xsrc]));
+  fit($("aChart"), 340, hbars($("aChart"), E.robust.algo.map((a, i) => ({ label: a.name.replace(" (usulan)", ""), value: a.xsrc, focus: !i, tip: `<b>${a.name}</b><br>xsrc ${fmt(a.xsrc)}<br>purity ${fmt(a.purity)} · silhouette ${fmt(a.sil)}` })),
+    { W: 340, left: 76, right: 48, rowH: 44, barH: 16, ticks: [0, .5, 1], tickFmt: v => fmt(v, 1) }));
+  table("aTbl", ["Algoritma", "xsrc", "purity", "silhouette"], E.robust.algo.map(a => [a.name, a.xsrc, a.purity, a.sil]));
+
+  // ---- checks after the final partition was frozen
+  const X8 = E.extra, sgn = v => (v > 0 ? "+" : v < 0 ? "−" : "") + fmt(Math.abs(v));
+  fit($("blChart"), 420, hbars($("blChart"), X8.baselines.map((b, i) => ({ label: b.name.replace(" (usulan)", ""), value: b.xsrc, focus: !i,
+    tip: `<b>${b.name}</b><br>xsrc BDC ${fmt(b.xsrc)} · Iliev ${fmt(b.iliev)} · Shubha ${fmt(b.shubha)}<br>stabilitas seed ${fmt(b.ari, 2)} · cakupan ${pct(b.coverage)}` })),
+    { W: 420, left: 90, right: 52, rowH: 40, barH: 16, ticks: [0, .5, 1], tickFmt: v => fmt(v, 1) }));
+  table("blTbl", ["Metode", "xsrc BDC", "Iliev", "Shubha", "Stabilitas", "Cakupan"], X8.baselines.map(b => [b.name, b.xsrc, b.iliev, b.shubha, b.ari, pct(b.coverage)]));
+  fit($("refChart"), 420, hbars($("refChart"), X8.refs.map(r => ({ label: r.name.replace(" (supervisi)", "").replace(" (v4)", " (usulan)"), value: r.xsrc, focus: r.name.includes("(v4)"),
+    tip: `<b>${r.name}</b><br>R² ridge ${fmt(r.r2)} (tanpa label)<br>xsrc mentah ${fmt(r.raw)} → CMRE ${fmt(r.xsrc)}${r.ssl ? "" : "<br>acuan berlabel: dikecualikan"}` })),
+    { W: 420, left: 150, right: 52, rowH: 28, barH: 14, ticks: [0, .5, 1], tickFmt: v => fmt(v, 1) }));
+  table("refTbl", ["Model acuan", "R² ridge", "xsrc mentah", "xsrc CMRE"], X8.refs.map(r => [r.name, r.r2, r.raw, r.xsrc]));
+  table("prTbl", ["Pembanding", "BDC", "Iliev", "Shubha"], X8.paired.map(p => [p.vs, ...["BDC", "Iliev", "Shubha"].map(d => `${sgn(p[d][0])} [${sgn(p[d][1])}; ${sgn(p[d][2])}]`)]), true);
+  const nt = X8.notest, sp = X8.speed;
+  $("ntCard").innerHTML = `<p class="tag" style="margin:0 0 8px">Tanpa 188 foto data uji</p><h3>xsrc tetap ${fmt(nt.bdc)}</h3>
+    <p>Pipeline dijalankan ulang hanya dengan 3.604 foto latih. Iliev ${fmt(nt.iliev)}, Shubha ${fmt(nt.shubha)}, purity ${fmt(nt.purity)}. Partisinya hampir sama: ARI ${fmt(nt.ari_train, 2)} pada foto latih dan ${fmt(nt.ari_test, 2)} pada 188 foto uji.</p>`;
+  const fast = E.datasets.map(d => d.fast).filter(v => v != null);
+  $("fastCard").innerHTML = `<p class="tag" style="margin:0 0 8px">Versi cepat tanpa PE-Core-G</p><h3>${fmt(sp.fast / sp.full, 0)}× lebih cepat</h3>
+    <p>CMRE(SigLIP2) + DINOv3: sekitar ${fmt(sp.fast, 0)} foto/detik pada GPU L4 (pipeline penuh ${fmt(sp.full, 1)}). xsrc ${fast.map(v => fmt(v, 3)).join(" · ")} (BDC · Iliev · Shubha), turun 0,02–0,03 dari versi penuh.</p>`;
+
+  // ---- responsive navigation menu
+  const menuBtn = $("menuBtn"), links = $("navlinks");
+  menuBtn.onclick = () => { const o = links.classList.toggle("open"); menuBtn.setAttribute("aria-expanded", o); };
+  links.querySelectorAll("a").forEach(a => a.addEventListener("click", () => { links.classList.remove("open"); menuBtn.setAttribute("aria-expanded", "false"); }));
+})();
+</script>
+</body>
+</html>
