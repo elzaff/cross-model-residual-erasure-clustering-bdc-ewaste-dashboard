@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Catatan Lapangan E-Waste</title>
+<title>CMRE E-Waste Clustering Dashboard</title>
 <meta name="description" content="Dashboard hasil clustering citra sampah elektronik tanpa label (BDC Satria Data 2026).">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -68,7 +68,14 @@ nav.links a { font-size: 15px; padding: 2px 0; white-space: nowrap; }
 section { padding: 80px 0; scroll-margin-top: 64px; }
 section.fog { background: var(--fog); }
 .head { max-width: 820px; margin-bottom: 40px; }
+.glossary { margin-top: 24px; padding: 20px 24px; border-radius: 20px; background: var(--mist); }
+.glossary summary { cursor: pointer; font-weight: 500; }
+.glossary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 24px; margin: 18px 0 0; }
+.glossary-grid > div { padding-top: 12px; border-top: 1px solid var(--line); }
+.glossary-grid dt { font-size: 15px; font-weight: 500; }
+.glossary-grid dd { margin: 4px 0 0; color: var(--slate); font-size: 14px; line-height: 1.5; }
 @media (max-width: 720px) { section { padding: 56px 0; } .head { margin-bottom: 28px; } }
+@media (max-width: 720px) { .glossary { padding: 18px; } .glossary-grid { grid-template-columns: 1fr; gap: 12px; } }
 
 /* cards */
 .card { background: var(--mist); border-radius: 24px; padding: 24px; }
@@ -98,13 +105,14 @@ section.fog { background: var(--fog); }
 .hero .lead { margin: 24px auto 0; }
 .hero .cta { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 32px; }
 .hero .official { font-size: 14px; color: var(--ash); max-width: 70ch; margin: 28px auto 0; }
-.floaters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; margin-top: 64px; text-align: left; align-items: start; }
-.floaters .artifact:nth-child(2) { margin-top: 40px; }
+.floaters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; margin-top: 64px; text-align: left; align-items: stretch; }
+/* same row structure in every card: label, value, note, then the mini chart pinned to the bottom so the four cards line up */
+.floaters .stat { display: flex; flex-direction: column; }
 .stat .label { font-size: 14px; color: var(--slate); }
-.stat .value { font: 500 32px/1.1 var(--sans); letter-spacing: -.01em; margin: 6px 0 4px; }
-.stat .delta { font-size: 14px; color: var(--slate); }
-.stat svg { display: block; width: 100%; height: 56px; margin-top: 12px; }
-@media (max-width: 860px) { .floaters { grid-template-columns: 1fr 1fr; } .floaters .artifact:nth-child(2) { margin-top: 0; } }
+.stat .value { font: 500 30px/1.1 var(--sans); letter-spacing: -.01em; margin: 6px 0 4px; white-space: nowrap; }
+.stat .delta { font-size: 14px; color: var(--slate); min-height: 4.3em; }
+.stat svg { display: block; width: 100%; height: 56px; margin-top: auto; padding-top: 12px; }
+@media (max-width: 860px) { .floaters { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 520px) { .floaters { grid-template-columns: 1fr; } }
 
 /* problem */
@@ -262,10 +270,10 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
 <body>
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#pembuka">Catatan Lapangan E-Waste</a>
+    <a class="brand" href="#pembuka">CMRE · E-Waste Clustering</a>
     <nav class="links" id="navlinks" aria-label="Bagian">
-      <a href="#masalah">Masalah</a><a href="#cara">Cara kerja</a><a href="#hasil">Hasil</a><a href="#galeri">Kelompok</a>
-      <a href="#ood">Kategori baru</a><a href="#uji">Uji ketahanan</a><a href="#tim">Tim</a><a href="#sumber">Sumber</a>
+      <a href="#abstrak">Abstract</a><a href="#masalah">Masalah</a><a href="#data">Data</a><a href="#cara">Cara kerja</a><a href="#hasil">Hasil</a><a href="#galeri">Clusters</a>
+      <a href="#ood">OOD</a><a href="#uji">Uji ketahanan</a><a href="#tim">Tim</a><a href="#sumber">Sumber</a>
     </nav>
     <button class="pill" id="menuBtn" aria-expanded="false" aria-controls="navlinks">Menu</button>
   </div>
@@ -276,12 +284,50 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
 <main>
 <section id="pembuka" style="padding-top:0">
   <div class="wrap hero">
-    <p class="tag">BDC Satria Data 2026 · babak semifinal</p>
-    <h1><span id="heroK">16</span> kelompok e&#8209;waste, ditemukan dari foto <em>tanpa label kelas</em>.</h1>
-    <p class="lead">3.792 foto dipetakan ke K = 16. K dipilih sebagai median sembilan hasil SCMax; label kelas dipakai hanya untuk evaluasi, bukan untuk membentuk kelompok.</p>
+      <p class="tag">BDC Satria Data 2026 · babak semifinal</p>
+    <h1><span id="heroK">16</span> cluster e&#8209;waste, ditemukan dari foto <em>tanpa class labels</em>.</h1>
+    <p class="lead">Dataset BDC berisi 3.792 foto yang dipetakan ke K = 16. SCMax memilih K dari sembilan run; class labels hanya dipakai untuk evaluasi, bukan untuk membentuk cluster.</p>
     <div class="cta"><a class="pill fill" href="#hasil">Lihat hasilnya</a><a class="pill" href="#masalah">Mulai dari masalahnya</a></div>
     <p class="official">Unsupervised Discovery Kategori Sampah Elektronik dari Citra Multi-Sumber Menggunakan Cross-Model Residual Erasure dan Spectral Clustering Berbasis Consensus Maximization</p>
     <div class="floaters" id="floaters"></div>
+  </div>
+</section>
+
+<section id="abstrak" class="fog">
+  <div class="wrap">
+    <div class="head">
+      <p class="tag">Abstract</p>
+      <h2>Clustering e-waste lintas sumber foto.</h2>
+      <p class="lead">Studi ini mencari 16 clusters e-waste dari 3.792 foto pada dataset BDC Satria Data 2026, tanpa memakai class labels saat clustering. Pipeline menggabungkan image embeddings dari SigLIP2-So400m, PE-Core-G, dan DINOv3-H+; CMRE mengurangi pengaruh photo source relatif terhadap object class, lalu SCMax menentukan cluster count. Pada dataset BDC, xsrc (cross-source consistency) naik dari 0,524 pada raw fusion menjadi 0,975 setelah CMRE. Pada dataset Shubha sebagai fresh test, xsrc mencapai 0,956. Metrik ini menunjukkan konsistensi cluster lintas photo source, bukan class accuracy; class labels hanya dipakai setelah clustering untuk evaluasi.</p>
+    </div>
+    <details class="glossary">
+      <summary>Buka arti xsrc, CMRE, OOD, dan istilah teknis lainnya</summary>
+      <dl class="glossary-grid">
+        <div><dt>xsrc · cross-source consistency</dt><dd>xsrc menjawab: seberapa sering foto sekelas dari target source masuk ke cluster yang sama dengan foto reference source? Contoh untuk mouse: cari cluster yang paling banyak berisi foto katalog dari dataset Kaan, lalu hitung berapa proporsi foto mouse dari dataset Custom Bangladeshi E-Waste yang masuk ke cluster itu. Ulangi untuk tiap object class di kedua dataset dan ambil rata-ratanya. Ini bukan class accuracy.</dd></div>
+        <div><dt>Purity</dt><dd>Proporsi foto di dalam cluster yang class label evaluasinya sama dengan label terbanyak di cluster itu. Purity dihitung setelah clustering; class labels tidak dipakai untuk membentuk cluster.</dd></div>
+        <div><dt>Cluster, K, dan seed</dt><dd>Cluster adalah grup foto yang dianggap mirip oleh model. K adalah jumlah cluster. Seed mengatur unsur acak pada satu run supaya hasilnya bisa diulang.</dd></div>
+        <div><dt>Image embedding, backbone, dan feature fusion</dt><dd>Image embedding adalah deretan angka yang merangkum ciri visual foto. Backbone adalah image encoder yang membuat embedding. Feature fusion menggabungkan embedding dari beberapa backbone; raw fusion adalah gabungan sebelum CMRE.</dd></div>
+        <div><dt>Vision-language, self-supervised, dan model yang dipakai</dt><dd>Vision-language model (VLM) belajar hubungan antara image dan text; studi ini hanya memakai image encoder-nya. Self-supervised berarti model belajar dari pola pada data tanpa class labels. SigLIP2-So400m dan PE-Core-G adalah backbone vision-language; DINOv3-H+ adalah backbone self-supervised.</dd></div>
+        <div><dt>CMRE · Cross-Model Residual Erasure</dt><dd>CMRE memprediksi embedding vision-language dari DINOv3 reference, lalu menekan residual directions utama, yaitu bagian yang masih berbeda dari prediksi. Tujuannya mengurangi pengaruh photo source relatif terhadap object class, bukan menghapus semua informasi source. Parameter r menyatakan jumlah residual directions yang ditekan.</dd></div>
+        <div><dt>SCMax dan Spectral clustering</dt><dd>Spectral clustering membuat cluster dari graph kemiripan antar-foto. SCMax memilih K tanpa class labels: tetangga terdekat digabung secara bertingkat, lalu dipilih tingkat yang paling konsisten antara embedding asli dan embedding yang diberi gangguan kecil (perturbation). Sembilan seed SCMax menghasilkan median K = 16.</dd></div>
+        <div><dt>INLP ×3</dt><dd>Iterative Nullspace Projection (INLP) adalah baseline yang menekan arah embedding yang bisa memprediksi gaya foto. Di studi ini INLP memakai proksi gaya berbasis piksel yang dirancang manual (white background × tiga kelompok resolusi, enam grup), bukan class labels. ×3 berarti INLP diterapkan pada masing-masing dari tiga image embeddings.</dd></div>
+        <div><dt>OOD · out-of-distribution</dt><dd>Foto yang berbeda dari cakupan dataset utama. OOD score hanya menandai kandidat untuk ditinjau; flag OOD tidak otomatis memastikan ada kategori baru.</dd></div>
+        <div><dt>kNN, centroid, dan threshold</dt><dd>k-nearest neighbors (kNN) mencari embedding foto yang paling dekat. Centroid adalah titik pusat cluster. Threshold adalah batas score untuk memberi flag; dashboard memakai percentile ke-95 jarak foto pada dataset BDC, yaitu nilai yang mencakup 95% jarak di data acuan.</dd></div>
+        <div><dt>PCA-32</dt><dd>Principal Component Analysis (PCA) merangkum embedding menjadi 32 dimensions. PCA-32 dipakai sebelum Spectral clustering dan saat menghitung jarak kNN pada OOD check.</dd></div>
+        <div><dt>t-SNE</dt><dd>t-distributed Stochastic Neighbor Embedding memproyeksikan embedding ke bidang 2D agar pola tetangga lokal terlihat. Jarak dan posisi pada peta hanya perkiraan, tidak bisa dibandingkan antar-peta, dan bukan label cluster.</dd></div>
+        <div><dt>AUROC</dt><dd>Area Under the Receiver Operating Characteristic curve. AUROC menilai seberapa baik OOD score menempatkan foto OOD di atas foto yang mirip dataset utama pada berbagai threshold. Nilai mendekati 1 berarti ranking lebih baik; ini bukan persentase prediksi yang benar.</dd></div>
+        <div><dt>Bootstrap CI 95%</dt><dd>Confidence interval 95% adalah rentang ketidakpastian metrik dari banyak pengambilan ulang (resample) foto. Whisker pada grafik menunjukkan rentang ini bila tersedia.</dd></div>
+        <div><dt>Jaccard stability dan cluster membership</dt><dd>Jaccard mengukur seberapa banyak cluster membership yang sama pada beberapa bootstrap run, dari 0 sampai 1. Nilai lebih tinggi berarti foto lebih konsisten mendapat cluster assignment yang sama. Acuan 0,85 bukan uji signifikansi.</dd></div>
+        <div><dt>pHash dan Hamming distance</dt><dd>Perceptual hash (pHash) merangkum pola visual foto untuk mencari near-duplicates. Hamming distance menghitung perbedaan antar-hash; batas ≤ 6 dipakai untuk menandai foto duplikat.</dd></div>
+        <div><dt>Ridge regression dan R²</dt><dd>Ridge regression memprediksi embedding vision-language dari DINOv3 reference. R² menunjukkan seberapa dekat prediksi dengan nilai aktual; ini bukan clustering score atau class accuracy.</dd></div>
+        <div><dt>TTA · test-time augmentation</dt><dd>Foto diproses dalam bentuk asli dan horizontal flip. Kedua image embeddings dirata-ratakan agar representasi tidak bergantung pada arah foto.</dd></div>
+        <div><dt>ARI dan silhouette score</dt><dd>Adjusted Rand Index (ARI) membandingkan dua cluster assignments; 1 berarti sama, sekitar 0 berarti kesepakatan setara tebakan acak. Silhouette score menilai apakah foto lebih dekat dengan cluster-nya sendiri daripada cluster lain; rentangnya −1 sampai 1.</dd></div>
+        <div><dt>K-Means, Ward, dan GMM</dt><dd>Alternatif algoritma clustering yang dipakai sebagai pembanding. GMM adalah Gaussian Mixture Model, yang memperkirakan beberapa kelompok distribusi pada data.</dd></div>
+        <div><dt>DECMCV</dt><dd>Dual-Encoder Contrastive Learning with Multi-Clustering Voting adalah metode pembanding untuk klasifikasi sampah. Protokolnya menjalankan K-Means, Ward, dan BIRCH, lalu hanya mempertahankan foto yang disepakati ketiganya. Di dashboard, xsrc DECMCV dihitung pada semua foto; coverage menunjukkan porsi foto yang disepakati ketiga algoritma (81%). Lihat <a href="https://arxiv.org/abs/2503.02241" target="_blank" rel="noopener">paper DECMCV</a>.</dd></div>
+        <div><dt>Crop dan domain</dt><dd>Crop adalah potongan gambar yang berfokus pada objek. Domain menunjukkan konteks foto; pada dataset Office-Home, Product berisi foto katalog dan Real World berisi foto dari kondisi nyata.</dd></div>
+        <div><dt>WEEE, Small IT, dan B3</dt><dd>WEEE adalah singkatan dari Waste Electrical and Electronic Equipment, istilah untuk limbah perangkat listrik dan elektronik. WEEE 6 bernama Small IT and Telecom equipment. B3 berarti bahan berbahaya dan beracun.</dd></div>
+      </dl>
+    </details>
   </div>
 </section>
 
@@ -303,31 +349,85 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
     </div>
     <div class="faces">
       <figure><img src="assets/src_bdc.jpg" alt="Foto mouse dari data BDC" loading="lazy"><figcaption><b>BDC</b> <span class="muted">· thumbnail 150 px</span></figcaption></figure>
-      <figure><img src="assets/src_kaan.jpg" alt="Foto mouse dari katalog Kaan" loading="lazy"><figcaption><b>Katalog</b> <span class="muted">· latar putih</span></figcaption></figure>
-      <figure><img src="assets/src_bangla.jpg" alt="Foto mouse dari kamera HP (Bangladesh)" loading="lazy"><figcaption><b>Foto HP</b> <span class="muted">· 640 px</span></figcaption></figure>
-      <figure><img src="assets/src_oh_realworld.jpg" alt="Foto mouse dunia nyata (Office-Home)" loading="lazy"><figcaption><b>Foto nyata</b> <span class="muted">· Office-Home</span></figcaption></figure>
+      <figure><img src="assets/src_kaan.jpg" alt="Foto mouse dari dataset Kaan" loading="lazy"><figcaption><b>Katalog</b> <span class="muted">· dataset Kaan · latar putih</span></figcaption></figure>
+      <figure><img src="assets/src_bangla.jpg" alt="Foto mouse dari dataset Custom Bangladeshi E-Waste" loading="lazy"><figcaption><b>Foto HP</b> <span class="muted">· dataset Custom Bangladeshi E-Waste · 640 px</span></figcaption></figure>
+      <figure><img src="assets/src_oh_realworld.jpg" alt="Foto mouse dari domain Real World pada dataset Office-Home" loading="lazy"><figcaption><b>Foto nyata</b> <span class="muted">· dataset Office-Home · Real World</span></figcaption></figure>
     </div>
 
     <div class="panel" style="margin-top:80px">
-      <p class="ctitle">Sebaran embedding foto (t-SNE) menurut kelas dan sumber</p>
+      <p class="ctitle">Image embedding t-SNE menurut class dan photo source</p>
       <p class="csub" id="tsSub"></p>
       <div style="display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div class="key" style="margin:0"><span><i class="sw dot source"></i>lingkaran = foto katalog (Kaan)</span><span><i class="sw tri"></i>segitiga = foto HP (Bangladesh)</span></div>
+        <div class="key" style="margin:0"><span><i class="sw dot source"></i>lingkaran = foto katalog (dataset Kaan)</span><span><i class="sw tri"></i>segitiga = foto HP (dataset Custom Bangladeshi E-Waste)</span></div>
         <div class="seg" id="tsClass" role="group" aria-label="Sorot satu kelas"></div>
       </div>
       <div class="two">
-        <div><p class="ctitle" style="font-size:16px">Fusi mentah</p><p class="csub" id="tsRawSub"></p><svg id="tsRaw" class="chart" viewBox="0 0 480 400" role="img"></svg></div>
+        <div><p class="ctitle" style="font-size:16px">Raw fusion</p><p class="csub" id="tsRawSub"></p><svg id="tsRaw" class="chart" viewBox="0 0 480 400" role="img"></svg></div>
         <div><p class="ctitle" style="font-size:16px">Setelah CMRE</p><p class="csub" id="tsCmreSub"></p><svg id="tsCmre" class="chart" viewBox="0 0 480 400" role="img"></svg></div>
       </div>
     </div>
   </div>
 </section>
 
-<section id="cara" class="fog">
+<section id="data" class="fog">
+  <div class="wrap">
+    <div class="head">
+      <p class="tag">Data</p>
+      <h2>Delapan dataset dan <em>perannya</em>.</h2>
+      <p class="lead">Cluster hanya dibentuk dari dataset BDC. Tujuh dataset lain dipakai setelah clustering untuk evaluasi: konsistensi lintas photo source, deteksi OOD, dan perpindahan domain.</p>
+    </div>
+    <div class="dataset-intro">
+      <div class="dataset-overview">
+        <article>
+          <p class="dataset-role">Input clustering · 3.792 foto</p>
+          <h3>Dataset BDC Satria Data</h3>
+          <p>3.604 foto latih setelah deduplikasi ditambah 188 foto e-waste dari data uji. Label nama berkas tersedia untuk 2.331 foto dalam <b>10 class</b> dan hanya dipakai untuk evaluasi. Lima di antaranya (baterai, keyboard, ponsel, mouse, PCB) juga ada di dataset Kaan dan dataset Custom Bangladeshi E-Waste, sehingga dipakai untuk xsrc.</p>
+        </article>
+        <article>
+          <p class="dataset-role">Acuan xsrc · 1.794 foto katalog</p>
+          <h3>Dataset Kaan · Waste Classification</h3>
+          <p>Menjadi <b>sumber acuan</b>: foto dari source lain dinilai berdasarkan cluster mayoritas pada dataset Kaan untuk class yang sama di lima kelas dataset BDC.</p>
+        </article>
+        <article>
+          <p class="dataset-role">Target xsrc · 480 foto HP</p>
+          <h3>Dataset Custom Bangladeshi E-Waste</h3>
+          <p>Foto kamera HP menjadi <b>sumber target</b>, untuk mengukur apakah object class yang sama tetap masuk cluster yang sama meski gaya fotonya berbeda.</p>
+        </article>
+        <article>
+          <p class="dataset-role">Evaluasi eksternal · 499 foto baterai</p>
+          <h3>Dataset Karan · Garbage Classification</h3>
+          <p>Sumber tambahan untuk memeriksa foto yang ditandai sebagai kandidat OOD (out-of-distribution).</p>
+        </article>
+        <article>
+          <p class="dataset-role">Evaluasi OOD · 1.000 foto lapangan</p>
+          <h3>Dataset GIZ E-Waste Database</h3>
+          <p>Memuat benda yang belum ada pada dataset BDC. Contoh menonjol yang ditandai adalah AC, kulkas, dan kompresor.</p>
+        </article>
+        <article>
+          <p class="dataset-role">Benchmark pengembangan · 1.751 crop</p>
+          <h3>Dataset Iliev · Roboflow v44</h3>
+          <p>Memiliki 69 source classes. xsrc memakai 10 class yang dapat dipetakan ke dataset BDC. Dataset ini juga dipakai memilih setelan OOD, jadi bukan fresh test.</p>
+        </article>
+        <article>
+          <p class="dataset-role">Benchmark uji segar · 300 crop</p>
+          <h3>Dataset Shubha</h3>
+          <p>Lima kategori tersedia dengan 60 crop per kategori: keyboard, ponsel, mouse, remote, dan headphone. Tiga class pertama sepadan dengan dataset BDC; dua lainnya menguji OOD.</p>
+        </article>
+        <article>
+          <p class="dataset-role">Benchmark lintas domain · 2.917 foto</p>
+          <h3>Dataset Office-Home</h3>
+          <p>Memakai 20 class terpilih dari domain Product dan Real World. Dataset ini menguji konsistensi saat tampilan bergeser dari foto produk ke objek dunia nyata.</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="cara">
   <div class="wrap">
     <div class="head">
       <p class="tag">Cara kerja</p>
-      <h2>Tahapan dari foto ke kelompok.</h2>
+      <h2>Tahapan dari foto ke cluster.</h2>
       <p class="lead">Klik tahap untuk detail. Pelatihan tidak memakai label kelas atau teks; label hanya dipakai saat evaluasi.</p>
     </div>
     <div class="steps" id="steps"></div>
@@ -335,111 +435,65 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
   </div>
 </section>
 
-<section id="hasil">
+<section id="hasil" class="fog">
   <div class="wrap">
     <div class="head">
       <p class="tag">Hasil</p>
       <h2>Perbandingan hasil pada <em>empat dataset</em>.</h2>
-      <p class="lead"><b>xsrc</b> adalah rata-rata per kelas dari proporsi foto sumber target yang masuk ke kelompok mayoritas Kaan untuk kelas sejenis. Nilai lebih tinggi berarti lebih banyak kesepakatan lintas sumber. <b>Purity</b> mengukur kecocokan label mayoritas dalam kelompok; keduanya dihitung setelah clustering dan bukan masukan pelatihan.</p>
-    </div>
-    <div class="dataset-intro">
-      <p class="ctitle">Semua dataset dan perannya</p>
-      <p class="csub">Cluster K = 16 dibentuk dari BDC. Sumber foto lain digunakan setelahnya untuk mengukur konsistensi sumber, kategori di luar cakupan, atau perpindahan domain.</p>
-      <div class="dataset-overview">
-        <article>
-          <p class="dataset-role">Input clustering · 3.792 foto</p>
-          <h3>BDC Satria Data</h3>
-          <p><b>Lima kelas</b>: baterai, keyboard, ponsel, mouse, dan PCB. Terdiri dari 3.604 foto latih setelah deduplikasi serta 188 foto e-waste dari data uji. Label kelas ditahan untuk evaluasi.</p>
-        </article>
-        <article>
-          <p class="dataset-role">Acuan xsrc · 1.794 foto katalog</p>
-          <h3>Kaan · Waste Classification</h3>
-          <p>Menjadi <b>sumber acuan</b>: foto dari sumber lain dinilai berdasarkan kelompok Kaan untuk kelas yang sama pada lima kelas BDC.</p>
-        </article>
-        <article>
-          <p class="dataset-role">Target xsrc · 480 foto HP</p>
-          <h3>Custom Bangladeshi E-Waste</h3>
-          <p>Foto amatir dari kamera HP menjadi <b>sumber target</b>, untuk mengukur apakah objek sejenis tetap masuk kelompok yang sama meski gaya fotonya berbeda.</p>
-        </article>
-        <article>
-          <p class="dataset-role">Evaluasi eksternal · 499 foto baterai</p>
-          <h3>Karan · Garbage Classification</h3>
-          <p>Sumber tambahan dalam pemeriksaan tingkat foto yang ditandai sebagai kandidat kategori di luar cakupan (OOD).</p>
-        </article>
-        <article>
-          <p class="dataset-role">Evaluasi OOD · 1.000 foto lapangan</p>
-          <h3>GIZ E-Waste Database</h3>
-          <p>Memuat benda yang belum ada di BDC. Contoh menonjol yang ditandai adalah AC, kulkas, dan kompresor.</p>
-        </article>
-        <article>
-          <p class="dataset-role">Benchmark pengembangan · 1.751 crop</p>
-          <h3>Iliev</h3>
-          <p>Roboflow versi 44 memiliki 69 kelas sumber. xsrc memakai 10 kelas yang dapat dipetakan ke BDC. Data ini juga dipakai memilih setelan OOD, jadi bukan uji segar.</p>
-        </article>
-        <article>
-          <p class="dataset-role">Benchmark uji segar · 300 crop</p>
-          <h3>Shubha</h3>
-          <p>Lima kategori tersedia dengan 60 crop per kategori: keyboard, ponsel, mouse, remote, dan headphone. Tiga kategori pertama sepadan dengan BDC; dua lainnya menguji OOD.</p>
-        </article>
-        <article>
-          <p class="dataset-role">Benchmark lintas domain · 2.917 foto</p>
-          <h3>Office-Home</h3>
-          <p>Memakai 20 kelas terpilih dari domain Product dan Real World. Dataset umum ini menguji konsistensi saat tampilan bergeser dari foto produk ke objek dunia nyata.</p>
-        </article>
-      </div>
+      <p class="lead"><b>xsrc (cross-source consistency)</b> merangkum seberapa sering foto dari dua photo source dengan object class yang sama masuk ke cluster yang sama. Nilainya dirata-ratakan pada class yang tersedia di kedua source. Untuk dataset BDC, reference source adalah dataset Kaan dan target source adalah dataset Custom Bangladeshi E-Waste. <b>Purity</b> mengukur kecocokan class label dengan label mayoritas cluster; keduanya dihitung setelah clustering, bukan sebagai training input.</p>
     </div>
     <div class="peach" id="headline"></div>
-    <p class="scope-note">Panel xsrc per metode di bawah merangkum BDC (5 kelas), Iliev (10), Shubha (3), dan Office-Home (20). Untuk xsrc BDC, Kaan menjadi sumber acuan dan Bangladesh sumber target; Karan dan GIZ ditampilkan pada evaluasi sumber/OOD. Bandingkan metode di dalam panel masing-masing, bukan sebagai peringkat lintas dataset. Semua panel memakai skala 0–1; interval bootstrap 95% ditampilkan bila tersedia.</p>
+    <p class="scope-note">Panel xsrc per metode merangkum dataset BDC (5 shared classes), dataset Iliev (10), dataset Shubha (3), dan dataset Office-Home (20). Untuk xsrc dataset BDC, dataset Kaan menjadi sumber acuan dan dataset Custom Bangladeshi E-Waste sumber target; dataset Karan dan dataset GIZ ditampilkan pada evaluasi source/OOD. Bandingkan metode di dalam panel masing-masing, bukan sebagai ranking lintas dataset. Semua panel memakai sumbu yang sama, 0,3–1,0, sehingga posisi titik bisa dibandingkan antarpanel; bootstrap CI 95% ditampilkan bila tersedia.</p>
     <div class="panel">
       <p class="ctitle">xsrc menurut metode dan dataset</p>
-      <p class="csub">Cokelat = CMRE; abu-abu = pembanding. Whisker pada CMRE = interval kepercayaan bootstrap 95%; Office-Home tidak memiliki interval.</p>
-      <div class="key"><span><i class="sw focus"></i>CMRE usulan</span><span><i class="sw context"></i>pembanding</span></div>
+      <p class="csub">Titik cokelat = CMRE; titik abu-abu = pembanding. Sumbu dimulai dari 0,3, bukan nol, agar selisih antarmetode terbaca; nilai terendah adalah 0,356. Whisker pada CMRE = bootstrap CI 95%; dataset Office-Home tidak memiliki interval.</p>
+      <div class="key"><span><i class="sw focus"></i>Proposed CMRE</span><span><i class="sw context"></i>Comparators</span></div>
       <p class="chart-hint">Di layar sempit, geser grafik ke samping untuk membaca semua label.</p>
       <div class="four" id="dsGrid"></div>
       <div id="dsTbl"></div>
     </div>
 
     <div class="panel" style="margin-top:24px">
-      <p class="ctitle">xsrc pada 12 backbone tunggal</p>
+      <p class="ctitle">xsrc pada 12 single-backbone models</p>
       <p class="csub">Diurutkan dari xsrc tertinggi ke terendah. Warna menunjukkan urutan nilai; keluarga model tersedia di tabel.</p>
       <div class="key"><span><i class="sw ramp"></i>xsrc rendah → tinggi</span></div>
-      <svg id="bbChart" class="chart" role="img" aria-label="xsrc 12 backbone tunggal, diurutkan dari tinggi ke rendah"></svg>
+      <svg id="bbChart" class="chart" role="img" aria-label="xsrc pada 12 single-backbone models, diurutkan dari tinggi ke rendah"></svg>
       <div id="bbTbl"></div>
     </div>
   </div>
 </section>
 
-<section id="galeri" class="fog">
+<section id="galeri">
   <div class="wrap">
     <div class="head">
-      <p class="tag">Kelompok</p>
-      <h2>Profil dan ukuran <em>16 kelompok</em>.</h2>
+      <p class="tag">Clusters</p>
+      <h2>Profil dan ukuran <em>16 clusters</em>.</h2>
       <p class="lead">Nama kategori ditinjau dari galeri foto. Klik baris atau kartu untuk melihat 24 foto representatif dan catatan penanganan.</p>
     </div>
     <div class="panel">
-      <p class="ctitle">Ukuran dan stabilitas 16 kelompok</p>
+      <p class="ctitle">Ukuran cluster dan Jaccard stability</p>
       <p class="csub">Panjang batang = jumlah foto; warna = kategori hasil peninjauan. Titik menunjukkan Jaccard bootstrap (0,6–1,0); hitam memenuhi acuan 0,85, cokelat di bawahnya. Ini bukan uji signifikansi.</p>
-      <div class="key" id="clusterKey" role="group" aria-label="Warna kategori kelompok"></div>
+      <div class="key" id="clusterKey" role="group" aria-label="Warna kategori cluster"></div>
       <p class="chart-hint">Di layar sempit, geser grafik ke samping untuk membaca semua label dan sumbu.</p>
       <div class="chart-scroll cluster-chart" role="region" tabindex="0" aria-label="Grafik lebar; geser horizontal untuk melihat semua label dan sumbu">
-        <svg id="clChart" class="chart" role="img" aria-label="Jumlah foto per kelompok, warna menunjukkan kategori, serta stabilitas Jaccard"></svg>
+        <svg id="clChart" class="chart" role="img" aria-label="Jumlah foto per cluster, warna menunjukkan kategori, serta Jaccard stability"></svg>
       </div>
       <div id="clTbl"></div>
     </div>
     <div class="panel" style="margin-top:24px">
-      <p class="ctitle">Peta persebaran 3.792 foto BDC dalam 16 kelompok</p>
-      <p class="csub">Satu titik = satu foto BDC. Posisi = t-SNE dari fitur final (PCA-32 setelah CMRE); warna = kategori; label = kelompok. Segitiga = 188 foto dari data uji. Arahkan ke label untuk menyorot kelompok, klik untuk membuka galerinya. Jarak antarkelompok pada t-SNE hanya kira-kira.</p>
+      <p class="ctitle">Peta t-SNE dari 3.792 foto pada dataset BDC</p>
+      <p class="csub">Satu titik = satu foto dataset BDC. Posisi = t-SNE dari final features (PCA-32 setelah CMRE); warna = kategori hasil review; label = cluster. Segitiga = 188 foto dari data uji. Arahkan ke label untuk menyorot cluster, klik untuk membuka galerinya. Jarak antarkelompok pada t-SNE hanya perkiraan.</p>
       <div class="key" id="mapKey"><span><i class="sw dot source"></i>foto latih</span><span><i class="sw tri"></i>foto dari data uji</span></div>
       <p class="chart-hint">Di layar sempit, geser peta ke samping.</p>
-      <div class="chart-scroll cluster-chart" role="region" tabindex="0" aria-label="Peta lebar; geser horizontal untuk melihat semua kelompok">
-        <svg id="clMap" class="chart" viewBox="0 0 760 520" role="img" aria-label="Peta t-SNE 3.792 foto BDC, warna menunjukkan kategori dan label menunjukkan 16 kelompok"></svg>
+       <div class="chart-scroll cluster-chart" role="region" tabindex="0" aria-label="Peta lebar; geser horizontal untuk melihat semua cluster">
+         <svg id="clMap" class="chart" viewBox="0 0 760 520" role="img" aria-label="Peta t-SNE 3.792 foto pada dataset BDC, warna menunjukkan kategori dan label menunjukkan 16 clusters"></svg>
       </div>
     </div>
     <div class="panel" style="margin-top:24px">
-      <p class="ctitle">Data 16 kelompok</p>
-      <p class="csub">Label BDC dominan, latar putih, dan foto GIZ dihitung setelah clustering dan hanya untuk evaluasi. Sepakat 3 algoritma = porsi foto yang juga dikelompokkan sama oleh K-Means dan Ward. Jaccard = stabilitas bootstrap (acuan 0,85).</p>
+      <p class="ctitle">Data 16 clusters</p>
+      <p class="csub">Label BDC dominan, white background, dan foto dari dataset GIZ dihitung setelah clustering hanya untuk evaluasi. 3-algorithm agreement = porsi foto yang juga mendapat cluster assignment sama oleh K-Means dan Ward. Jaccard = bootstrap stability (acuan 0,85).</p>
       <div id="grpTbl"></div>
-      <p style="margin-top:16px"><a class="pill" href="assets/kelompok_bdc.csv" download>Unduh keanggotaan 3.792 foto (CSV)</a></p>
+      <p style="margin-top:16px"><a class="pill" href="assets/kelompok_bdc.csv" download>Download cluster membership · 3.792 foto (CSV)</a></p>
     </div>
     <div class="seg filters" role="group" aria-label="Filter kategori" id="filters" style="margin-top:40px"></div>
     <div class="cards" id="cards"></div>
@@ -462,17 +516,17 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
   </div>
 </dialog>
 
-<section id="ood">
+<section id="ood" class="fog">
   <div class="wrap">
     <div class="head">
       <p class="tag">Foto di luar data utama</p>
-      <h2>Deteksi kategori <em>di luar cakupan</em>.</h2>
-      <p class="lead">Foto yang berbeda jauh dari data utama ditandai sebagai kandidat kategori baru agar ditinjau. Skor memakai jarak ke 10 tetangga di PCA-32; ambang ditetapkan pada persentil ke-95 data utama.</p>
+      <h2>Deteksi <em>OOD (out-of-distribution)</em>.</h2>
+      <p class="lead">Foto yang berbeda jauh dari dataset BDC ditandai sebagai kandidat untuk ditinjau, bukan otomatis diputuskan sebagai kategori baru. OOD score memakai jarak ke 10 nearest neighbors pada PCA-32; threshold ditetapkan pada persentil ke-95 jarak foto dataset BDC.</p>
     </div>
     <div class="ood-summary" id="oodSummary"></div>
     <div class="panel">
       <p class="ctitle">Foto yang ditandai, menurut kategori</p>
-      <p class="csub">Proporsi per kategori; angka foto dan set data tersedia di tabel. Dua panel memakai skala 0–100% yang sama.</p>
+      <p class="csub">Proporsi foto per kategori; jumlah foto dan nama dataset tersedia di tabel. Dua panel memakai skala 0–100% yang sama.</p>
       <div class="two"><svg id="oodKnown" class="chart" role="img"></svg><svg id="oodNew" class="chart" role="img"></svg></div>
       <div id="oodTbl"></div>
     </div>
@@ -484,14 +538,14 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
         <div id="srcTbl"></div>
       </div>
       <div class="panel">
-        <img class="oodimg" src="assets/giz_ood.jpg" alt="Contoh foto lapangan GIZ di luar cakupan data utama: AC, kulkas, kompresor" loading="lazy">
-        <p class="muted" style="font-size:15px;margin-top:12px">Foto GIZ yang ditandai didominasi AC, kulkas, dan kompresor: alat penukar suhu yang belum ada di data BDC, padahal umum di rumah tangga Indonesia.</p>
+        <img class="oodimg" src="assets/giz_ood.jpg" alt="Contoh foto lapangan dari dataset GIZ E-Waste Database di luar cakupan data utama: AC, kulkas, kompresor" loading="lazy">
+        <p class="muted" style="font-size:15px;margin-top:12px">Foto dari dataset GIZ yang ditandai didominasi AC, kulkas, dan kompresor: alat penukar suhu yang belum ada di dataset BDC, padahal umum di rumah tangga Indonesia.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section id="uji" class="fog">
+<section id="uji">
   <div class="wrap">
     <div class="head">
       <p class="tag">Uji ketahanan</p>
@@ -499,7 +553,7 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
       <p class="lead">Sembilan seed SCMax memilih K antara 13 dan 19 (median 16). Stabilitas bootstrap tidak menunjuk satu K sebagai pemenang; K = 16 dipakai sebagai partisi utama dan K = 13 sebagai ringkasan kasar.</p>
     </div>
     <div class="three">
-      <div class="panel"><p class="ctitle">Pilihan jumlah kelompok K</p><p class="csub">xsrc dan purity BDC; titik di bawah sumbu = sembilan pilihan SCMax. Sumbu nilai 0,4–1,0.</p>
+      <div class="panel"><p class="ctitle">Pilihan cluster count K</p><p class="csub">xsrc dan purity pada dataset BDC; titik di bawah sumbu = sembilan pilihan SCMax. Sumbu nilai 0,4–1,0.</p>
         <div class="key"><span><i class="sw line focus"></i>xsrc</span><span><i class="sw line context"></i>purity BDC</span></div>
         <svg id="kChart" class="chart" role="img" aria-label="xsrc dan purity terhadap K"></svg><div id="kTbl"></div></div>
       <div class="panel"><p class="ctitle">Parameter r pada CMRE</p><p class="csub">xsrc menurut jumlah arah residu yang dihapus (sumbu r logaritmik). Nilai r = 16–64 berada pada plateau; r = 64 berasal dari aturan tanpa label (50% varians residu, batas 64 arah), bukan dipilih dari grafik ini.</p>
@@ -513,7 +567,7 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
       <p class="lead" style="font-size:18px">Tidak ada pemeriksaan di bawah ini yang mengubah K, r, atau metode. Tujuannya menguji apakah klaim bertahan.</p>
     </div>
     <div class="two">
-      <div class="panel"><p class="ctitle">Metode clustering terbaru pada fitur yang sama</p><p class="csub">xsrc BDC dengan fitur CMRE dan K = 16 yang identik; rata-rata 3 seed. DECMCV hanya memberi kelompok pada sebagian foto.</p>
+      <div class="panel"><p class="ctitle">Metode clustering terbaru pada fitur yang sama</p><p class="csub">xsrc pada dataset BDC dengan CMRE features dan K = 16 yang sama; rata-rata 3 seed. DECMCV hanya memberi cluster assignment pada sebagian foto.</p>
         <svg id="blChart" class="chart" role="img" aria-label="xsrc metode clustering pada fitur yang sama"></svg><div id="blTbl"></div></div>
       <div class="panel"><p class="ctitle">Model acuan CMRE, dipilih tanpa label</p><p class="csub">Diurutkan menurut R² ridge: seberapa baik acuan memprediksi embedding VLM, dihitung tanpa label. Batang = xsrc BDC setelah CMRE.</p>
         <svg id="refChart" class="chart" role="img" aria-label="xsrc CMRE per model acuan, diurutkan menurut R² ridge"></svg><div id="refTbl"></div></div>
@@ -527,7 +581,7 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
   </div>
 </section>
 
-<section id="tim">
+<section id="tim" class="fog">
   <div class="wrap">
     <div class="head">
       <p class="tag">Tim</p>
@@ -547,16 +601,18 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
   <div class="wrap">
     <div class="head"><p class="tag">Sumber</p><h2>Data dan kode.</h2></div>
     <ul class="sources">
-      <li>BDC Satria Data 2026: data babak penyisihan (panitia).</li>
-      <li><a href="https://www.kaggle.com/datasets/kaanerkez/waste-classfication-dataset">Kaan, Waste Classification →</a> <span class="muted">CDLA-Permissive-1.0</span></li>
-      <li><a href="https://data.mendeley.com/datasets/77383kmdnw/1">Custom Bangladeshi E-Waste →</a> <span class="muted">CC BY 4.0</span></li>
-      <li><a href="https://www.kaggle.com/datasets/karansolanki01/garbage-classification">Garbage Classification →</a> <span class="muted">Apache 2.0</span></li>
-      <li><a href="https://huggingface.co/datasets/GIZ/E-Waste-Database">GIZ E-Waste Database →</a> <span class="muted">CC BY 4.0</span></li>
-      <li><a href="https://universe.roboflow.com/electronic-waste-detection/e-waste-dataset-r0ojc">E-Waste Dataset, Iliev →</a> <span class="muted">CC BY 4.0</span></li>
-      <li><a href="https://universe.roboflow.com/shubha-to6ii/e-waste-1sn3k">E-waste, Shubha →</a> <span class="muted">CC BY 4.0</span></li>
-      <li><a href="https://huggingface.co/datasets/flwrlabs/office-home">Office-Home →</a> <span class="muted">riset non-komersial</span></li>
+      <li>Dataset BDC Satria Data 2026: data babak penyisihan (panitia).</li>
+      <li><a href="https://www.kaggle.com/datasets/kaanerkez/waste-classfication-dataset">Dataset Kaan · Waste Classification →</a> <span class="muted">CDLA-Permissive-1.0</span></li>
+      <li><a href="https://data.mendeley.com/datasets/77383kmdnw/1">Dataset Custom Bangladeshi E-Waste →</a> <span class="muted">CC BY 4.0</span></li>
+      <li><a href="https://www.kaggle.com/datasets/karansolanki01/garbage-classification">Dataset Karan · Garbage Classification →</a> <span class="muted">Apache 2.0</span></li>
+      <li><a href="https://huggingface.co/datasets/GIZ/E-Waste-Database">Dataset GIZ E-Waste Database →</a> <span class="muted">CC BY 4.0</span></li>
+      <li><a href="https://universe.roboflow.com/electronic-waste-detection/e-waste-dataset-r0ojc">Dataset E-Waste, Iliev →</a> <span class="muted">CC BY 4.0</span></li>
+      <li><a href="https://universe.roboflow.com/shubha-to6ii/e-waste-1sn3k">Dataset E-Waste, Shubha →</a> <span class="muted">CC BY 4.0</span></li>
+      <li><a href="https://huggingface.co/datasets/flwrlabs/office-home">Dataset Office-Home →</a> <span class="muted">riset non-komersial</span></li>
       <li><a href="https://waste4change.com/blog/pengelolaan-sampah-elektronik-dan-peraturannya-di-indonesia/">Defitri (2022), Waste4Change →</a> <span class="muted">statistik e-waste Indonesia</span></li>
-      <li><a href="https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste">Kode, metodologi, dan cara reproduksi →</a></li>
+      <li><a href="../README.md">README repositori: hasil, cara reproduksi, dan keterbatasan →</a></li>
+      <li><a href="../code/pipeline/final_max.py">Kode pipeline final →</a> <span class="muted">tahap ekstraksi, fusi, dan clustering</span></li>
+      <li><a href="../code/pipeline/rq_fix2.py">Kode evaluasi kategori baru dan stabilitas →</a></li>
     </ul>
   </div>
 </section>
@@ -618,6 +674,26 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
     });
     return bottom + 26;
   }
+  // dot plot for values that sit close together: a bar has to start at zero, a dot does not, so the shared axis can
+  // start at min and the gaps between methods stay readable. rows = [{label, value, focus, ci, tip}]
+  function dots(svg, rows, { W, left, right = 60, top = 8, rowH = 32, min = 0, max = 1, ticks, tickFmt = v => fmt(v, 1), valueFmt = v => fmt(v, 3) } = {}) {
+    const width = W - left - right, X = v => left + width * (Math.max(min, Math.min(v, max)) - min) / (max - min);
+    const bottom = top + rows.length * rowH;
+    ticks.forEach(t => { el("line", { x1: X(t), x2: X(t), y1: top, y2: bottom, class: t === min ? "base" : "grid" }, svg); txt(svg, X(t), bottom + 18, tickFmt(t), { "text-anchor": "middle", class: "num" }); });
+    rows.forEach((r, i) => {
+      const cy = top + i * rowH + rowH / 2, g = el("g", { class: "row" }, svg);
+      el("rect", { x: 0, y: cy - rowH / 2, width: W, height: rowH, class: "hit" }, g);
+      el("line", { x1: X(min), x2: X(max), y1: cy, y2: cy, stroke: "#ececec", "stroke-width": 1 }, g);
+      txt(g, left - 10, cy + 4, r.label, { "text-anchor": "end", class: r.focus ? "strong" : "ink" });
+      if (r.ci) { el("line", { x1: X(r.ci[0]), x2: X(r.ci[1]), y1: cy, y2: cy, stroke: INK, "stroke-width": 1.5 }, g);
+                  r.ci.forEach(c => el("line", { x1: X(c), x2: X(c), y1: cy - 5, y2: cy + 5, stroke: INK, "stroke-width": 1.5 }, g)); }
+      if (r.value != null) el("circle", { cx: X(r.value), cy, r: r.focus ? 6 : 5, fill: r.focus ? FOCUS : CONTEXT }, g);
+      const valueX = r.value == null ? left + 6 : Math.max(X(r.value), r.ci ? X(r.ci[1]) : 0) + 10;
+      txt(g, valueX, cy + 4, valueFmt(r.value), { class: (r.focus ? "strong" : "ink") + " num" });
+      bindTip(g, r.tip || `<b>${r.label}</b><br>${valueFmt(r.value)}`);
+    });
+    return bottom + 26;
+  }
   const fit = (svg, W, H) => svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
 
   const bdc = E.datasets.find(d => d.id === "bdc"), oh = E.datasets.find(d => d.id === "oh"), shubha = E.datasets.find(d => d.id === "shubha");
@@ -626,13 +702,14 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
   // ---- hero floating artifacts: gestural marks only; the full charts with axes live further down
   const B3n = E.clusters.filter(c => c.b3).length, total = E.clusters.reduce((s, c) => s + c.n, 0), nmax = Math.max(...E.clusters.map(c => c.n));
   $("floaters").innerHTML = `
-    <div class="artifact stat"><div class="label">BDC · xsrc lima kelas</div><div class="value">${fmt(bdc.raw, 2)} → ${fmt(bdc.cmre, 2)}</div><div class="delta">fusi mentah → CMRE · K = 16</div>
+    <div class="artifact stat"><div class="label">xsrc · dataset BDC</div><div class="value">${fmt(bdc.raw)} → ${fmt(bdc.cmre)}</div><div class="delta">raw fusion → CMRE · K = 16</div>
       <svg viewBox="0 0 300 56" preserveAspectRatio="none" aria-hidden="true"><path d="M6 ${52 - 48 * bdc.raw} C 110 ${52 - 48 * bdc.raw}, 190 ${52 - 48 * bdc.cmre}, 292 ${52 - 48 * bdc.cmre}" fill="none" stroke="${FOCUS}" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg></div>
-    <div class="artifact stat"><div class="label">Foto dikelompokkan</div><div class="value">${total.toLocaleString("id-ID")}</div><div class="delta">${E.clusters.length} kelompok · <span style="color:${FOCUS}">■</span> ${B3n} mengandung B3</div>
+    <div class="artifact stat"><div class="label">Cluster membership · dataset BDC</div><div class="value">${total.toLocaleString("id-ID")}</div><div class="delta">${E.clusters.length} clusters · <span style="color:${FOCUS}">■</span> ${B3n} mengandung B3</div>
       <svg viewBox="0 0 300 56" aria-hidden="true">${[...E.clusters].sort((a, b) => b.n - a.n).map((c, i) => `<rect x="${i * 18.75 + 1}" y="${56 - 52 * c.n / nmax}" width="16.75" height="${52 * c.n / nmax}" rx="3" fill="${c.b3 ? FOCUS : CONTEXT}"/>`).join("")}</svg></div>
-    <div class="artifact stat"><div class="label">Uji segar · Shubha</div><div class="value">${fmt(shubha.cmre, 2)}</div><div class="delta">xsrc CMRE · IK95% ${shubha.ci} · ${shubha.n} foto</div>
+    <div class="artifact stat"><div class="label">xsrc · fresh test dataset Shubha</div><div class="value">${fmt(shubha.cmre)}</div><div class="delta">CMRE · 95% CI ${shubha.ci.replace(" sampai ", "–")} · ${shubha.n} foto</div>
       <svg viewBox="0 0 300 56" aria-hidden="true"><rect x="2" y="6" width="${296 * shubha.raw}" height="14" rx="3" fill="${CONTEXT}"/><rect x="2" y="30" width="${296 * shubha.cmre}" height="14" rx="3" fill="${FOCUS}"/></svg></div>
-    <div class="artifact stat"><div class="label">Purity pada BDC</div><div class="value">${fmt(bdc.purity, 2)}</div><div class="delta">Kecocokan dengan label mayoritas kelompok; label dipakai hanya untuk evaluasi.</div></div>`;
+    <div class="artifact stat"><div class="label">Purity · dataset BDC</div><div class="value">${fmt(bdc.purity)}</div><div class="delta">Kecocokan dengan class label mayoritas cluster; labels hanya untuk evaluasi.</div>
+      <svg viewBox="0 0 300 56" aria-hidden="true"><rect x="2" y="30" width="296" height="14" rx="3" fill="#ececec"/><rect x="2" y="30" width="${296 * bdc.purity}" height="14" rx="3" fill="${FOCUS}"/></svg></div>`;
 
   // ---- t-SNE small multiples: colour = class, shape = photo source
   const NAMES = { battery: "Baterai", keyboard: "Keyboard", mobile: "Ponsel", mouse: "Mouse", pcb: "PCB" };
@@ -659,9 +736,9 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
     });
     svg.setAttribute("aria-label", `t-SNE ${key === "raw" ? "fusi mentah" : "setelah CMRE"}: warna menunjukkan kelas dan bentuk menunjukkan sumber foto`);
   });
-  $("tsRawSub").innerHTML = `Fusi mentah · xsrc <b>${fmt(bdc.raw, 2)}</b>`;
+  $("tsRawSub").innerHTML = `Raw fusion · xsrc <b>${fmt(bdc.raw, 2)}</b>`;
   $("tsCmreSub").innerHTML = `CMRE · xsrc <b>${fmt(bdc.cmre, 2)}</b>`;
-  $("tsSub").textContent = `${E.tsne.length.toLocaleString("id-ID")} foto, satu titik = satu foto. Warna menunjukkan kelas evaluasi; bentuk menunjukkan sumber. Ini peta embedding t-SNE, bukan label 16 cluster; hasil cluster berwarna ada di bagian Kelompok. Pilih kelas untuk menyorotnya. Koordinat dan posisi antarpeta tidak dapat dibandingkan langsung.`;
+  $("tsSub").textContent = `${E.tsne.length.toLocaleString("id-ID")} foto, satu titik = satu foto. Warna menunjukkan class evaluasi; bentuk menunjukkan photo source. Ini peta embedding t-SNE, bukan label 16 clusters; hasil cluster berwarna ada di bagian Clusters. Pilih class untuk menyorotnya. Koordinat dan posisi antarpeta tidak dapat dibandingkan langsung.`;
   const tsClass = $("tsClass");
   const pickClass = c => {
     tsClass.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.c === c));
@@ -674,13 +751,13 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
   // ---- pipeline steps
   const STEPS = [
     ["Input", "3.792 foto e-waste", "3.604 foto data latih BDC setelah deduplikasi, ditambah 188 foto uji yang dipilah otomatis oleh model penyisihan tim. Label nama berkas hanya dipakai untuk evaluasi."],
-    ["Pra-pemrosesan", "dedup, resize, flip", "Foto kembar dibuang dengan perceptual hash (Hamming ≤ 6). Tiap foto diproses dua kali (asli dan dicerminkan), lalu embedding-nya dirata-rata."],
-    ["Ekstraksi fitur", "3 model fondasi", "SigLIP2-So400m dan PE-Core-G (visi-bahasa) kaya makna, DINOv3-H+ (self-supervised) paling tahan bias sumber. Hanya menara citra yang dipakai, tanpa teks."],
-    ["CMRE", "kurangi dominasi sumber relatif terhadap objek", "Embedding visi-bahasa diprediksi dari DINOv3 dengan regresi ridge. Lalu 64 arah utama residu dikurangi. Langkah ini meningkatkan kesepakatan lintas sumber pada kelas yang diuji, tetapi tidak menghapus seluruh informasi sumber. Tidak memakai label kelas atau proksi gaya.", true],
-    ["Fusi + PCA-32", "3 embedding jadi satu", "Embedding yang sudah dibersihkan digabung, diringkas menjadi 32 dimensi dengan PCA, lalu dinormalisasi."],
-    ["Pilih K", "SCMax, 9 seed", "SCMax (AAAI-26) memilih jumlah kelompok tanpa label: 13, 16, 13, 16, 19, 16, 15, 19, 19. Mediannya 16, dengan 13 sebagai tingkat kasar.", true],
+    ["Preprocessing", "dedup, resize, flip / TTA", "Near-duplicates dibuang dengan perceptual hash (Hamming distance ≤ 6). Tiap foto diproses dua kali (asli dan horizontal flip); image embeddings-nya lalu dirata-rata."],
+    ["Feature extraction", "3 vision models", "SigLIP2-So400m dan PE-Core-G adalah vision-language backbones; DINOv3-H+ adalah self-supervised backbone. Hanya image encoder yang dipakai, tanpa text input."],
+    ["CMRE", "kurangi photo-source dominance", "Ridge regression memprediksi vision-language embeddings dari DINOv3 reference. Lalu 64 residual directions utama ditekan. Langkah ini meningkatkan xsrc pada shared classes, tetapi tidak menghapus seluruh informasi photo source. Tidak memakai class labels atau source-style proxy.", true],
+    ["Feature fusion + PCA-32", "3 image embeddings jadi satu", "Embeddings yang sudah dikoreksi digabung, diringkas menjadi 32 dimensions dengan PCA, lalu dinormalisasi."],
+    ["Pilih K", "SCMax, 9 seeds", "SCMax (AAAI-26) memilih cluster count tanpa class labels: 13, 16, 13, 16, 19, 16, 15, 19, 19. Mediannya 16, dengan 13 sebagai ringkasan cluster yang lebih kasar.", true],
     ["Clustering", "Spectral-kNN", "Graf 15 tetangga terdekat dipartisi dengan Spectral clustering. K-Means, Ward, dan GMM diuji sebagai pembanding."],
-    ["Output", "16 kelompok + cek kategori baru", "Nama kelompok ditinjau lewat galeri. Foto yang berbeda dari data utama ditandai dengan jarak ke 10 tetangga di PCA-32; ambangnya persentil ke-95 data utama."]
+    ["Output", "16 clusters + OOD review", "Cluster names ditinjau lewat galeri. Foto yang berbeda dari dataset BDC ditandai sebagai kandidat review dengan jarak ke 10 nearest neighbors pada PCA-32; threshold-nya percentile ke-95 jarak foto dataset BDC."]
   ];
   const stepsBox = $("steps"), detail = $("stepDetail");
   STEPS.forEach(([t, s, d, key], i) => {
@@ -695,41 +772,42 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
   // ---- results: one restrained peach card carries the headline comparison
   $("headline").innerHTML = `
     <div class="headline-copy">
-      <p class="tag">BDC · data pengembangan · K = 16</p>
-      <h3>Lebih banyak foto sekelas masuk ke kelompok yang sama.</h3>
-      <p class="headline-intro"><b>xsrc</b> rata-rata lima kelas bersama; nilai lebih tinggi berarti kesepakatan lintas sumber lebih besar.</p>
+      <p class="tag">Dataset BDC · data pengembangan · K = 16</p>
+      <h3>Lebih banyak foto sekelas mendapat cluster assignment yang sama.</h3>
+      <p class="headline-intro"><b>xsrc</b> dirata-ratakan pada lima shared classes; nilai lebih tinggi berarti lebih banyak target-source photos mendapat cluster assignment yang sama dengan reference-source photos.</p>
     </div>
-    <div class="headline-values" role="img" aria-label="xsrc BDC naik dari ${fmt(bdc.raw, 2)} sebelum CMRE menjadi ${fmt(bdc.cmre, 2)} sesudah CMRE">
-      <div><span class="metric-label">Fusi mentah</span><strong class="metric-value">${fmt(bdc.raw, 2)}</strong></div>
+    <div class="headline-values" role="img" aria-label="xsrc dataset BDC naik dari ${fmt(bdc.raw, 2)} sebelum CMRE menjadi ${fmt(bdc.cmre, 2)} sesudah CMRE">
+      <div><span class="metric-label">Raw fusion</span><strong class="metric-value">${fmt(bdc.raw, 2)}</strong></div>
       <span class="metric-arrow" aria-hidden="true">→</span>
-      <div><span class="metric-label">CMRE usulan</span><strong class="metric-value">${fmt(bdc.cmre, 2)}</strong><small class="metric-ci">IK95% ${bdc.ci}</small></div>
+      <div><span class="metric-label">Proposed CMRE</span><strong class="metric-value">${fmt(bdc.cmre, 2)}</strong><small class="metric-ci">95% CI ${bdc.ci}</small></div>
     </div>
     <div class="headline-context">
-      <p><b>Pada BDC:</b> INLP ×3 juga mencapai ${fmt(bdc.inlp, 3)}.</p>
-      <p><b>Uji segar Shubha:</b> CMRE ${fmt(shubha.cmre, 3)} [${shubha.ci.replace(" sampai ", "–")}] vs INLP ×3 ${fmt(shubha.inlp, 3)}.</p>
-      <p><b>Office-Home:</b> fusi mentah ${fmt(oh.raw, 3)}; CMRE ${fmt(oh.cmre, 3)}.</p>
+      <p><b>Pada dataset BDC:</b> INLP ×3 juga mencapai ${fmt(bdc.inlp, 3)}.</p>
+      <p><b>Fresh test · dataset Shubha:</b> CMRE ${fmt(shubha.cmre, 3)} [${shubha.ci.replace(" sampai ", "–")}] vs INLP ×3 ${fmt(shubha.inlp, 3)}.</p>
+      <p><b>Dataset Office-Home:</b> raw fusion ${fmt(oh.raw, 3)}; CMRE ${fmt(oh.cmre, 3)}.</p>
     </div>`;
 
   // small multiples: 4 datasets x 5 methods on one shared 0-1 scale
-  const METHODS = [["raw", "Fusi mentah"], ["dino", "DINOv3"], ["inlp", "INLP ×3"], ["light", "CMRE ringan"], ["fast", "CMRE cepat"], ["cmre", "CMRE usulan"]];
+  const METHODS = [["raw", "Raw fusion"], ["dino", "DINOv3"], ["inlp", "INLP ×3"], ["light", "CMRE light"], ["fast", "CMRE fast"], ["cmre", "Proposed CMRE"]];
   const parseCI = s => s ? s.split(" sampai ").map(v => +v.replace(",", ".")) : null;
   E.datasets.forEach(d => {
     const box = document.createElement("div"); box.className = "dataset-card";
-    box.innerHTML = `<p class="ctitle">${d.name}</p><p class="csub" style="margin-bottom:8px">${d.role} · ${d.n.toLocaleString("id-ID")} foto</p>`;
+    box.innerHTML = `<p class="ctitle">Dataset ${d.name}</p><p class="csub" style="margin-bottom:8px">${d.role} · ${d.n.toLocaleString("id-ID")} foto</p>`;
     const chartWrap = document.createElement("div"); chartWrap.className = "chart-scroll dataset-chart";
-    const svg = el("svg", { class: "chart", role: "img", "aria-label": `xsrc per metode, ${d.name}` }, chartWrap);
+    const svg = el("svg", { class: "chart", role: "img", "aria-label": `xsrc per metode, dataset ${d.name}` }, chartWrap);
     box.appendChild(chartWrap);
     $("dsGrid").appendChild(box);
-    fit(svg, 300, hbars(svg, METHODS.map(([k, l]) => ({ label: l, value: d[k], focus: k === "cmre", ci: k === "cmre" ? parseCI(d.ci) : null,
-      tip: `<b>${l}</b> · ${d.name}<br>xsrc ${d[k] == null ? "tidak tersedia" : fmt(d[k])}${k === "inlp" ? "<br>memakai proksi label sumber" : ""}${k === "cmre" && d.ci ? `<br>IK95% ${d.ci}` : ""}` })),
-      { W: 420, left: 125, right: 56, rowH: 32, barH: 16, ticks: [0, .5, 1], tickFmt: v => fmt(v, 1), valueFmt: v => v == null ? "–" : fmt(v, 2) }));
-    box.insertAdjacentHTML("beforeend", `<p class="csub" style="margin-top:4px">${d.metric}.</p>`);
+    fit(svg, 420, dots(svg, METHODS.map(([k, l]) => ({ label: l, value: d[k], focus: k === "cmre", ci: k === "cmre" ? parseCI(d.ci) : null,
+      tip: `<b>${l}</b> · dataset ${d.name}<br>xsrc ${d[k] == null ? "tidak tersedia" : fmt(d[k])}${k === "inlp" ? "<br>memakai proksi gaya berbasis piksel" : ""}${k === "cmre" && d.ci ? `<br>95% CI ${d.ci}` : ""}` })),
+      { W: 420, left: 125, right: 60, rowH: 32, min: .3, max: 1, ticks: [.3, .4, .5, .6, .7, .8, .9, 1], valueFmt: v => v == null ? "–" : fmt(v, 3) }));
+    const metric = d.metric.replace("foto katalog Kaan", "foto katalog pada dataset Kaan").replace("foto HP Bangladesh", "foto HP dari dataset Custom Bangladeshi E-Waste").replace("5 kelas", "5 classes").replace("10 kelas", "10 classes").replace("20 kelas", "20 classes").replace("3 kelas sepadan yang tersedia", "3 shared classes yang tersedia");
+    box.insertAdjacentHTML("beforeend", `<p class="csub" style="margin-top:4px">${metric}.</p>`);
   });
-  table("dsTbl", ["Metode", ...E.datasets.map(d => d.name)], METHODS.map(([k, l]) => [l, ...E.datasets.map(d => d[k] ?? "–")]));
+  table("dsTbl", ["Metode", ...E.datasets.map(d => `Dataset ${d.name}`)], METHODS.map(([k, l]) => [l, ...E.datasets.map(d => d[k] ?? "–")]));
 
   // backbone audit: rank by xsrc; sequential color carries the same low-to-high ordering
   (() => {
-    const FAM = [["ssl", "Self-supervised"], ["sup", "Terawasi (ImageNet-22k)"], ["vlm", "Visi-bahasa"]];
+    const FAM = [["ssl", "Self-supervised"], ["sup", "Supervised (ImageNet-22k)"], ["vlm", "Vision-language"]];
     const USED = ["DINOv3-H+", "PE-Core-G", "SigLIP2-So400m"];
     const palette = ["#8b8f98", "#88776f", "#7c5d52", "#704536", "#5d2a1a"];
     const ranked = [...E.backbones].sort((a, b) => b.xsrc - a.xsrc), low = Math.min(...ranked.map(b => b.xsrc)), span = Math.max(...ranked.map(b => b.xsrc)) - low || 1;
@@ -740,13 +818,13 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
     });
     const svg = $("bbChart"), h = hbars(svg, rows, { W: 760, left: 190, right: 58, rowH: 28, barH: 14 });
     txt(svg, 190, h + 6, "* dipakai di pipeline usulan", {}); fit(svg, 760, h + 14);
-    table("bbTbl", ["Model", "Keluarga", "xsrc"], [...E.backbones].sort((a, b) => b.xsrc - a.xsrc).map(b => [b.name, FAM.find(f => f[0] === b.fam)[1], b.xsrc]));
+    table("bbTbl", ["Model", "Model family", "xsrc"], [...E.backbones].sort((a, b) => b.xsrc - a.xsrc).map(b => [b.name, FAM.find(f => f[0] === b.fam)[1], b.xsrc]));
   })();
 
   // ---- clusters: overview chart, filter, cards, dialog
-  const CATS = [["semua", "Semua"], ["baterai", "Baterai"], ["layar", "Layar"], ["besar", "Peralatan besar"], ["kecil", "Peralatan kecil"], ["ti", "TI kecil"], ["komponen", "Komponen"], ["b3", "Mengandung B3"]];
-  const CATNAME = { baterai: "Baterai", layar: "WEEE 2: layar", besar: "WEEE 4: peralatan besar", kecil: "WEEE 5: peralatan kecil", ti: "WEEE 6: TI kecil", komponen: "Komponen" };
-  const CATSHORT = { baterai: "Baterai", layar: "Layar", besar: "Peralatan besar", kecil: "Peralatan kecil", ti: "TI kecil", komponen: "Komponen" };
+  const CATS = [["semua", "Semua"], ["baterai", "Battery"], ["layar", "Screens & monitors"], ["besar", "Large equipment"], ["kecil", "Small equipment"], ["ti", "Small IT & Telecom"], ["komponen", "Components"], ["b3", "Contains B3"]];
+  const CATNAME = { baterai: "Battery", layar: "WEEE 2: Screens & monitors", besar: "WEEE 4: Large equipment", kecil: "WEEE 5: Small equipment", ti: "WEEE 6: Small IT & Telecom", komponen: "Components" };
+  const CATSHORT = { baterai: "Battery", layar: "Screens", besar: "Large equipment", kecil: "Small equipment", ti: "Small IT & Telecom", komponen: "Components" };
   const CATCOLORS = { baterai: "#5d2a1a", layar: "#009e73", besar: "#75658f", kecil: "#0072b2", ti: "#cc79a7", komponen: "#9a6500" };
   $("clusterKey").innerHTML = Object.entries(CATCOLORS).map(([k, color]) => `<span><i class="sw" style="background:${color}"></i>${CATSHORT[k]}</span>`).join("");
   const filters = $("filters"), cards = $("cards"), dlg = $("dlg");
@@ -754,10 +832,10 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
   function openCluster(c, opener) {
     dlg._opener = opener;
     $("dlgTitle").textContent = `C${c.id} · ${c.name}`;
-    $("dlgMeta").textContent = `${c.n} foto · kelompok induk (K = 13): ${c.parent} · kategori: ${CATNAME[c.cat]}`;
+    $("dlgMeta").textContent = `${c.n} foto · parent cluster (K = 13): ${c.parent} · kategori: ${CATNAME[c.cat]}`;
     const img = $("dlgImg"), load = $("dlgLoading");
     load.hidden = false; load.className = "muted"; load.textContent = "Memuat galeri..."; img.hidden = true;
-    img.alt = `24 foto representatif kelompok ${c.name}`;
+    img.alt = `24 foto representatif cluster ${c.name}`;
     img.onload = () => { load.hidden = true; img.hidden = false; };
     img.onerror = () => { load.className = "err"; load.textContent = `Galeri tidak ditemukan: ${gal(c)}`; };
     img.src = gal(c);
@@ -799,7 +877,7 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
     svg.addEventListener("click", e => { const c = e.target.dataset && e.target.dataset.c; if (c != null) openCluster(C[+c], svg); });
     svg.addEventListener("mouseleave", hideTip);
     const nTest = C.map(cl => P.filter(p => p[2] === cl.id && p[3]).length);
-    table("grpTbl", ["Kelompok", "Nama", "Kategori", "B3", "Foto", "Latih", "Uji", "Label BDC dominan", "Sepakat 3 algoritma", "Latar putih", "Jaccard", "Foto GIZ masuk"],
+    table("grpTbl", ["Cluster", "Nama", "Kategori", "B3", "Foto", "Latih", "Uji", "Label BDC dominan", "3-algorithm agreement", "White background", "Jaccard stability", "Foto dataset GIZ masuk"],
       C.map((cl, i) => [`C${cl.id}`, cl.name, CATSHORT[cl.cat], cl.b3 ? "ya" : "tidak", String(cl.n), String(cl.n - nTest[i]), String(nTest[i]),
                         cl.top_share == null ? "–" : `${cl.top_label} (${pct(cl.top_share)})`, pct(cl.agree3), pct(cl.white_bg), fmt(cl.jaccard, 2), String(cl.giz_n)]), true);
   })();
@@ -826,17 +904,17 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
       g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openCluster(c, g); } });
     });
     fit(svg, 940, bottom + 28);
-    table("clTbl", ["Kelompok", "Foto", "Jaccard", "B3"], list.map(c => [`C${c.id} · ${c.name}`, String(c.n), c.jaccard, c.b3 ? "ya" : "tidak"]));
+    table("clTbl", ["Cluster", "Foto", "Jaccard stability", "B3"], list.map(c => [`C${c.id} · ${c.name}`, String(c.n), c.jaccard, c.b3 ? "ya" : "tidak"]));
   })();
 
   function showCards(cat) {
     filters.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.cat === cat));
     cards.innerHTML = "";
     const list = E.clusters.filter(c => cat === "semua" || (cat === "b3" ? c.b3 : c.cat === cat));
-    if (!list.length) { cards.innerHTML = '<p class="empty">Tidak ada kelompok untuk filter ini.</p>'; return; }
+    if (!list.length) { cards.innerHTML = '<p class="empty">Tidak ada cluster untuk filter ini.</p>'; return; }
     list.forEach(c => {
       const b = document.createElement("button"); b.className = "ccard";
-      b.setAttribute("aria-label", `Buka galeri kelompok ${c.id}: ${c.name}, ${c.n} foto`);
+      b.setAttribute("aria-label", `Buka galeri cluster ${c.id}: ${c.name}, ${c.n} foto`);
       b.innerHTML = `<div class="strip"><img src="${gal(c)}" alt="" loading="lazy"></div>
         <span class="t">C${c.id} · ${c.name}</span>
         <span class="meta"><span class="num">${c.n} foto</span>${c.b3 ? '<span class="b3">B3</span>' : `<span>${CATNAME[c.cat].split(":").pop().trim()}</span>`}</span>`;
@@ -853,17 +931,17 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
   const pctTick = v => Math.round(v * 100) + "%";
   const od = E.oodSummary, oi = od.iliev, os = od.shubha;
   $("oodSummary").innerHTML = `
-    <div class="card"><p class="tag">Iliev · data pengembangan</p><p class="label">AUROC · kNN k = 10, PCA-32</p><div class="value">${fmt(oi.auc, 3)}</div><p class="detail">${oi.n.toLocaleString("id-ID")} foto. Pembanding jarak centroid: ${fmt(oi.centroid_auc, 3)}. Iliev dipakai memilih setelan deteksi kategori baru.</p></div>
-    <div class="card"><p class="tag">Shubha · uji segar</p><p class="label">AUROC · kNN k = 10, PCA-32</p><div class="value">${fmt(os.auc, 3)} <span class="muted" style="font-size:18px">[${fmt(os.ci[0], 3)}–${fmt(os.ci[1], 3)}]</span></div><p class="detail">${os.n} foto · ${os.known_classes} kelas sepadan · ${os.ood_classes} kelas di luar cakupan. Ditandai: ${pct(os.in_flag)} foto sepadan dan ${pct(os.out_flag)} foto dari kelas di luar cakupan.</p></div>`;
-  [["oodKnown", true, "Kategori yang ada di BDC"], ["oodNew", false, "Kategori baru (di luar BDC)"]].forEach(([id, known, title]) => {
+    <div class="card"><p class="tag">Dataset Iliev · data pengembangan</p><p class="label">AUROC · kNN k = 10, PCA-32</p><div class="value">${fmt(oi.auc, 3)}</div><p class="detail">${oi.n.toLocaleString("id-ID")} foto. Pembanding jarak centroid: ${fmt(oi.centroid_auc, 3)}. Dataset Iliev dipakai memilih setelan OOD.</p></div>
+    <div class="card"><p class="tag">Dataset Shubha · fresh test</p><p class="label">AUROC · kNN k = 10, PCA-32</p><div class="value">${fmt(os.auc, 3)} <span class="muted" style="font-size:18px">[${fmt(os.ci[0], 3)}–${fmt(os.ci[1], 3)}]</span></div><p class="detail">${os.n} foto · ${os.known_classes} shared classes · ${os.ood_classes} OOD classes. Ditandai: ${pct(os.in_flag)} foto sepadan dan ${pct(os.out_flag)} foto dari class di luar cakupan.</p></div>`;
+  [["oodKnown", true, "Known classes · dataset BDC"], ["oodNew", false, "OOD candidates · di luar dataset BDC"]].forEach(([id, known, title]) => {
     const svg = $(id), rows = E.ood.filter(o => o.known === known).sort((a, b) => b.flag - a.flag);
     txt(svg, 0, 14, title, { class: "strong" });
-    fit(svg, 440, hbars(svg, rows.map(o => ({ label: o.label, value: o.flag, focus: !known, tip: `<b>${o.label}</b> · ${o.dataset}<br>${pct(o.flag)} ditandai dari ${o.n} foto` })),
+    fit(svg, 440, hbars(svg, rows.map(o => ({ label: o.label, value: o.flag, focus: !known, tip: `<b>${o.label}</b> · dataset ${o.dataset}<br>${pct(o.flag)} ditandai dari ${o.n} foto` })),
       { W: 440, left: 130, right: 52, rowH: 28, barH: 14, dy: 22, ticks: [0, .5, 1], tickFmt: pctTick, valueFmt: pct }));
     svg.setAttribute("aria-label", `${title}: proporsi foto di luar cakupan yang ditandai untuk ditinjau`);
   });
-  table("oodTbl", ["Kategori", "Set data", "Ada di BDC", "N foto", "Ditandai"], E.ood.map(o => [o.label, o.dataset, o.known ? "ya" : "tidak", String(o.n), pct(o.flag)]));
-  const S = E.oodSources, SRC = [["kaan", "Kaan"], ["bangla", "Bangladesh"], ["karan", "Karan"], ["giz", "GIZ"]].sort((a, b) => S[b[0]].flag - S[a[0]].flag);
+  table("oodTbl", ["Category", "Dataset", "Ada di dataset BDC", "N foto", "Ditandai"], E.ood.map(o => [o.label, o.dataset, o.known ? "ya" : "tidak", String(o.n), pct(o.flag)]));
+  const S = E.oodSources, SRC = [["kaan", "Dataset Kaan"], ["bangla", "Dataset Custom Bangladeshi E-Waste"], ["karan", "Dataset Karan"], ["giz", "Dataset GIZ"]].sort((a, b) => S[b[0]].flag - S[a[0]].flag);
   fit($("oodSrc"), 440, hbars($("oodSrc"), SRC.map(([k, l]) => ({ label: l, value: S[k].flag, focus: k === "giz", tip: `<b>${l}</b><br>${pct(S[k].flag)} ditandai dari ${S[k].n.toLocaleString("id-ID")} foto` })),
     { W: 440, left: 150, right: 52, rowH: 32, barH: 16, ticks: [0, .5, 1], tickFmt: pctTick, valueFmt: pct }));
   table("srcTbl", ["Sumber", "N foto", "Ditandai"], SRC.map(([k, l]) => [l, String(S[k].n), pct(S[k].flag)]));
@@ -914,20 +992,20 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
   // ---- checks after the final partition was frozen
   const X8 = E.extra, sgn = v => (v > 0 ? "+" : v < 0 ? "−" : "") + fmt(Math.abs(v));
   fit($("blChart"), 420, hbars($("blChart"), X8.baselines.map((b, i) => ({ label: b.name.replace(" (usulan)", ""), value: b.xsrc, focus: !i,
-    tip: `<b>${b.name}</b><br>xsrc BDC ${fmt(b.xsrc)} · Iliev ${fmt(b.iliev)} · Shubha ${fmt(b.shubha)}<br>stabilitas seed ${fmt(b.ari, 2)} · cakupan ${pct(b.coverage)}` })),
+    tip: `<b>${b.name}</b><br>xsrc dataset BDC ${fmt(b.xsrc)} · dataset Iliev ${fmt(b.iliev)} · dataset Shubha ${fmt(b.shubha)}<br>seed stability ${fmt(b.ari, 2)} · coverage ${pct(b.coverage)}` })),
     { W: 420, left: 90, right: 52, rowH: 40, barH: 16, ticks: [0, .5, 1], tickFmt: v => fmt(v, 1) }));
-  table("blTbl", ["Metode", "xsrc BDC", "Iliev", "Shubha", "Stabilitas", "Cakupan"], X8.baselines.map(b => [b.name, b.xsrc, b.iliev, b.shubha, b.ari, pct(b.coverage)]));
+  table("blTbl", ["Metode", "Dataset BDC · xsrc", "Dataset Iliev", "Dataset Shubha", "Seed stability", "Coverage"], X8.baselines.map(b => [b.name.replace(" (usulan)", " (proposed)"), b.xsrc, b.iliev, b.shubha, b.ari, pct(b.coverage)]));
   fit($("refChart"), 420, hbars($("refChart"), X8.refs.map(r => ({ label: r.name.replace(" (supervisi)", "").replace(" (v4)", " (usulan)"), value: r.xsrc, focus: r.name.includes("(v4)"),
     tip: `<b>${r.name}</b><br>R² ridge ${fmt(r.r2)} (tanpa label)<br>xsrc mentah ${fmt(r.raw)} → CMRE ${fmt(r.xsrc)}${r.ssl ? "" : "<br>acuan berlabel: dikecualikan"}` })),
     { W: 420, left: 150, right: 52, rowH: 28, barH: 14, ticks: [0, .5, 1], tickFmt: v => fmt(v, 1) }));
   table("refTbl", ["Model acuan", "R² ridge", "xsrc mentah", "xsrc CMRE"], X8.refs.map(r => [r.name, r.r2, r.raw, r.xsrc]));
-  table("prTbl", ["Pembanding", "BDC", "Iliev", "Shubha"], X8.paired.map(p => [p.vs, ...["BDC", "Iliev", "Shubha"].map(d => `${sgn(p[d][0])} [${sgn(p[d][1])}; ${sgn(p[d][2])}]`)]), true);
+  table("prTbl", ["Pembanding", "Dataset BDC", "Dataset Iliev", "Dataset Shubha"], X8.paired.map(p => [p.vs.replace("Fusi mentah", "Raw fusion"), ...["BDC", "Iliev", "Shubha"].map(d => `${sgn(p[d][0])} [${sgn(p[d][1])}; ${sgn(p[d][2])}]`)]), true);
   const nt = X8.notest, sp = X8.speed;
   $("ntCard").innerHTML = `<p class="tag" style="margin:0 0 8px">Tanpa 188 foto data uji</p><h3>xsrc tetap ${fmt(nt.bdc)}</h3>
-    <p>Pipeline dijalankan ulang hanya dengan 3.604 foto latih. Iliev ${fmt(nt.iliev)}, Shubha ${fmt(nt.shubha)}, purity ${fmt(nt.purity)}. Partisinya hampir sama: ARI ${fmt(nt.ari_train, 2)} pada foto latih dan ${fmt(nt.ari_test, 2)} pada 188 foto uji.</p>`;
+    <p>Pipeline dijalankan ulang hanya dengan 3.604 foto latih. Dataset Iliev ${fmt(nt.iliev)}, dataset Shubha ${fmt(nt.shubha)}, purity ${fmt(nt.purity)}. Cluster assignment hampir sama: ARI ${fmt(nt.ari_train, 2)} pada foto latih dan ${fmt(nt.ari_test, 2)} pada 188 foto uji.</p>`;
   const fast = E.datasets.map(d => d.fast).filter(v => v != null);
   $("fastCard").innerHTML = `<p class="tag" style="margin:0 0 8px">Versi cepat tanpa PE-Core-G</p><h3>${fmt(sp.fast / sp.full, 0)}× lebih cepat</h3>
-    <p>CMRE(SigLIP2) + DINOv3: sekitar ${fmt(sp.fast, 0)} foto/detik pada GPU L4 (pipeline penuh ${fmt(sp.full, 1)}). xsrc ${fast.map(v => fmt(v, 3)).join(" · ")} (BDC · Iliev · Shubha), turun 0,02–0,03 dari versi penuh.</p>`;
+    <p>CMRE(SigLIP2) + DINOv3: sekitar ${fmt(sp.fast, 0)} foto/detik pada GPU L4 (pipeline penuh ${fmt(sp.full, 1)}). xsrc ${fast.map(v => fmt(v, 3)).join(" · ")} (dataset BDC · dataset Iliev · dataset Shubha), turun 0,02–0,03 dari versi penuh.</p>`;
 
   // ---- responsive navigation menu
   const menuBtn = $("menuBtn"), links = $("navlinks");
