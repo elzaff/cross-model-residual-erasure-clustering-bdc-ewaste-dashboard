@@ -303,7 +303,7 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
     <details class="glossary">
       <summary>Buka arti xsrc, CMRE, OOD, dan istilah teknis lainnya</summary>
       <dl class="glossary-grid">
-        <div><dt>xsrc · cross-source consistency</dt><dd>xsrc menjawab: seberapa sering foto sekelas dari target source masuk ke cluster yang sama dengan foto reference source? Contoh untuk mouse: cari cluster yang paling banyak berisi foto katalog dari dataset Kaan, lalu hitung berapa proporsi foto mouse dari dataset Custom Bangladeshi E-Waste yang masuk ke cluster itu. Ulangi untuk tiap object class di kedua dataset dan ambil rata-ratanya. Ini bukan class accuracy.</dd></div>
+        <div><dt>xsrc · cross-source consistency</dt><dd>xsrc menjawab: seberapa sering foto sekelas dari target source masuk ke cluster yang sama dengan foto reference source? Contoh untuk mouse: cari cluster yang paling banyak berisi citra produk dari dataset Kaan, lalu hitung berapa proporsi foto mouse dari dataset Custom Bangladeshi E-Waste yang masuk ke cluster itu. Ulangi untuk tiap object class di kedua dataset dan ambil rata-ratanya. Ini bukan class accuracy.</dd></div>
         <div><dt>Purity</dt><dd>Proporsi foto di dalam cluster yang class label evaluasinya sama dengan label terbanyak di cluster itu. Purity dihitung setelah clustering; class labels tidak dipakai untuk membentuk cluster.</dd></div>
         <div><dt>Cluster, K, dan seed</dt><dd>Cluster adalah grup foto yang dianggap mirip oleh model. K adalah jumlah cluster. Seed mengatur unsur acak pada satu run supaya hasilnya bisa diulang.</dd></div>
         <div><dt>Image embedding, backbone, dan feature fusion</dt><dd>Image embedding adalah deretan angka yang merangkum ciri visual foto. Backbone adalah image encoder yang membuat embedding. Feature fusion menggabungkan embedding dari beberapa backbone; raw fusion adalah gabungan sebelum CMRE.</dd></div>
@@ -324,7 +324,7 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
         <div><dt>ARI dan silhouette score</dt><dd>Adjusted Rand Index (ARI) membandingkan dua cluster assignments; 1 berarti sama, sekitar 0 berarti kesepakatan setara tebakan acak. Silhouette score menilai apakah foto lebih dekat dengan cluster-nya sendiri daripada cluster lain; rentangnya −1 sampai 1.</dd></div>
         <div><dt>K-Means, Ward, dan GMM</dt><dd>Alternatif algoritma clustering yang dipakai sebagai pembanding. GMM adalah Gaussian Mixture Model, yang memperkirakan beberapa kelompok distribusi pada data.</dd></div>
         <div><dt>DECMCV</dt><dd>Dual-Encoder Contrastive Learning with Multi-Clustering Voting adalah metode pembanding untuk klasifikasi sampah. Protokolnya menjalankan K-Means, Ward, dan BIRCH, lalu hanya mempertahankan foto yang disepakati ketiganya. Di dashboard, xsrc DECMCV dihitung pada semua foto; coverage menunjukkan porsi foto yang disepakati ketiga algoritma (81%). Lihat <a href="https://arxiv.org/abs/2503.02241" target="_blank" rel="noopener">paper DECMCV</a>.</dd></div>
-        <div><dt>Crop dan domain</dt><dd>Crop adalah potongan gambar yang berfokus pada objek. Domain menunjukkan konteks foto; pada dataset Office-Home, Product berisi foto katalog dan Real World berisi foto dari kondisi nyata.</dd></div>
+        <div><dt>Crop dan domain</dt><dd>Crop adalah potongan gambar yang berfokus pada objek. Domain menunjukkan konteks foto; pada dataset Office-Home, Product berisi citra produk dan Real World berisi foto dalam konteks keseharian.</dd></div>
         <div><dt>WEEE, Small IT, dan B3</dt><dd>WEEE adalah singkatan dari Waste Electrical and Electronic Equipment, istilah untuk limbah perangkat listrik dan elektronik. WEEE 6 bernama Small IT and Telecom equipment. B3 berarti bahan berbahaya dan beracun.</dd></div>
       </dl>
     </details>
@@ -345,20 +345,20 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
 
     <div class="head" style="margin:80px 0 24px">
       <h3 style="font-size:26px">Mouse yang sama, empat wajah foto</h3>
-      <p class="lead" style="font-size:18px">Foto dari masyarakat tidak seragam: foto katalog berlatar putih, foto HP di lantai, foto lapangan. Model AI bisa terkecoh dan mengelompokkan <em>cara memotret</em>, bukan bendanya.</p>
+      <p class="lead" style="font-size:18px">Gambar e-waste tidak seragam: citra produk, foto objek dengan latar beragam, dan foto lapangan. Model AI bisa terkecoh dan mengelompokkan <em>tampilan foto</em>, bukan bendanya.</p>
     </div>
     <div class="faces">
       <figure><img src="assets/src_bdc.jpg" alt="Foto mouse dari data BDC" loading="lazy"><figcaption><b>BDC</b> <span class="muted">· thumbnail 150 px</span></figcaption></figure>
-      <figure><img src="assets/src_kaan.jpg" alt="Foto mouse dari dataset Kaan" loading="lazy"><figcaption><b>Katalog</b> <span class="muted">· dataset Kaan · latar putih</span></figcaption></figure>
-      <figure><img src="assets/src_bangla.jpg" alt="Foto mouse dari dataset Custom Bangladeshi E-Waste" loading="lazy"><figcaption><b>Foto HP</b> <span class="muted">· dataset Custom Bangladeshi E-Waste · 640 px</span></figcaption></figure>
-      <figure><img src="assets/src_oh_realworld.jpg" alt="Foto mouse dari domain Real World pada dataset Office-Home" loading="lazy"><figcaption><b>Foto nyata</b> <span class="muted">· dataset Office-Home · Real World</span></figcaption></figure>
+      <figure><img src="assets/src_kaan.jpg" alt="Foto mouse dari dataset Kaan" loading="lazy"><figcaption><b>Citra produk</b> <span class="muted">· dataset Kaan · 150 px</span></figcaption></figure>
+      <figure><img src="assets/src_bangla.jpg" alt="Foto mouse dari dataset Custom Bangladeshi E-Waste dengan latar hijau" loading="lazy"><figcaption><b>Foto objek berlatar hijau</b> <span class="muted">· contoh dataset Bangladesh · 640 px</span></figcaption></figure>
+      <figure><img src="assets/src_oh_realworld.jpg" alt="Foto mouse dari domain Real World pada dataset Office-Home" loading="lazy"><figcaption><b>Foto konteks keseharian</b> <span class="muted">· dataset Office-Home · Real World</span></figcaption></figure>
     </div>
 
     <div class="panel" style="margin-top:80px">
       <p class="ctitle">Image embedding t-SNE menurut class dan photo source</p>
       <p class="csub" id="tsSub"></p>
       <div style="display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div class="key" style="margin:0"><span><i class="sw dot source"></i>lingkaran = foto katalog (dataset Kaan)</span><span><i class="sw tri"></i>segitiga = foto HP (dataset Custom Bangladeshi E-Waste)</span></div>
+        <div class="key" style="margin:0"><span><i class="sw dot source"></i>lingkaran = citra produk (dataset Kaan)</span><span><i class="sw tri"></i>segitiga = foto objek berlatar beragam (dataset Bangladesh)</span></div>
         <div class="seg" id="tsClass" role="group" aria-label="Sorot satu kelas"></div>
       </div>
       <div class="two">
@@ -384,14 +384,14 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
           <p>3.604 foto latih setelah deduplikasi ditambah 188 foto e-waste dari data uji. Label nama berkas tersedia untuk 2.331 foto dalam <b>10 class</b> dan hanya dipakai untuk evaluasi. Lima di antaranya (baterai, keyboard, ponsel, mouse, PCB) juga ada di dataset Kaan dan dataset Custom Bangladeshi E-Waste, sehingga dipakai untuk xsrc.</p>
         </article>
         <article>
-          <p class="dataset-role">Acuan xsrc · 1.794 foto katalog</p>
+          <p class="dataset-role">Acuan xsrc · 1.794 citra produk</p>
           <h3>Dataset Kaan · Waste Classification</h3>
           <p>Menjadi <b>sumber acuan</b>: foto dari source lain dinilai berdasarkan cluster mayoritas pada dataset Kaan untuk class yang sama di lima kelas dataset BDC.</p>
         </article>
         <article>
-          <p class="dataset-role">Target xsrc · 480 foto HP</p>
+          <p class="dataset-role">Target xsrc · 480 foto objek berlatar beragam</p>
           <h3>Dataset Custom Bangladeshi E-Waste</h3>
-          <p>Foto kamera HP menjadi <b>sumber target</b>, untuk mengukur apakah object class yang sama tetap masuk cluster yang sama meski gaya fotonya berbeda.</p>
+          <p>Foto objek dengan latar dan pencahayaan beragam menjadi <b>sumber target</b>, untuk mengukur apakah object class yang sama tetap masuk cluster yang sama meski gaya fotonya berbeda.</p>
         </article>
         <article>
           <p class="dataset-role">Evaluasi eksternal · 499 foto baterai</p>
@@ -416,7 +416,7 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
         <article>
           <p class="dataset-role">Benchmark lintas domain · 2.917 foto</p>
           <h3>Dataset Office-Home</h3>
-          <p>Memakai 20 class terpilih dari domain Product dan Real World. Dataset ini menguji konsistensi saat tampilan bergeser dari foto produk ke objek dunia nyata.</p>
+          <p>Memakai 20 class terpilih dari domain Product dan Real World. Dataset ini menguji konsistensi saat tampilan bergeser dari citra produk ke foto dalam konteks keseharian.</p>
         </article>
       </div>
     </div>
@@ -800,7 +800,7 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
     fit(svg, 420, dots(svg, METHODS.map(([k, l]) => ({ label: l, value: d[k], focus: k === "cmre", ci: k === "cmre" ? parseCI(d.ci) : null,
       tip: `<b>${l}</b> · dataset ${d.name}<br>xsrc ${d[k] == null ? "tidak tersedia" : fmt(d[k])}${k === "inlp" ? "<br>memakai proksi gaya berbasis piksel" : ""}${k === "cmre" && d.ci ? `<br>95% CI ${d.ci}` : ""}` })),
       { W: 420, left: 125, right: 60, rowH: 32, min: .3, max: 1, ticks: [.3, .4, .5, .6, .7, .8, .9, 1], valueFmt: v => v == null ? "–" : fmt(v, 3) }));
-    const metric = d.metric.replace("foto katalog Kaan", "foto katalog pada dataset Kaan").replace("foto HP Bangladesh", "foto HP dari dataset Custom Bangladeshi E-Waste").replace("5 kelas", "5 classes").replace("10 kelas", "10 classes").replace("20 kelas", "20 classes").replace("3 kelas sepadan yang tersedia", "3 shared classes yang tersedia");
+    const metric = d.metric.replace("5 kelas", "5 classes").replace("10 kelas", "10 classes").replace("20 kelas", "20 classes").replace("3 kelas sepadan yang tersedia", "3 shared classes yang tersedia");
     box.insertAdjacentHTML("beforeend", `<p class="csub" style="margin-top:4px">${metric}.</p>`);
   });
   table("dsTbl", ["Metode", ...E.datasets.map(d => `Dataset ${d.name}`)], METHODS.map(([k, l]) => [l, ...E.datasets.map(d => d[k] ?? "–")]));
