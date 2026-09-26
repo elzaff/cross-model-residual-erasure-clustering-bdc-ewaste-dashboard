@@ -578,31 +578,6 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
       <div class="card" id="ntCard"></div>
       <div class="card" id="fastCard"></div>
     </div>
-    <div class="panel" style="margin-top:24px">
-      <p class="ctitle">Audit tambahan: fusi AIMv2</p>
-      <p class="csub">AIMv2-L diuji setelah partisi v4 dibekukan. Pada protokol Spectral K = 16 yang sama, fusi empat model naik pada BDC, tetapi selisih xsrc terhadap v4 di Iliev dan Shubha belum meyakinkan. Pipeline utama tetap v4.</p>
-      <details class="tbl">
-        <summary>Perbandingan representasi pada BDC</summary>
-        <div class="scroll"><table><thead><tr><th>Representasi</th><th class="r">xsrc</th><th class="r">NMI eksternal</th></tr></thead><tbody>
-          <tr><td>AIMv2-L</td><td class="r">0,842</td><td class="r">0,801</td></tr>
-          <tr><td>v4 dihitung ulang: CMRE(Sig) + CMRE(PE) + DINO</td><td class="r">0,970</td><td class="r">0,854</td></tr>
-          <tr><td>AIM + Sig mentah + DINO</td><td class="r">0,564</td><td class="r">0,790</td></tr>
-          <tr><td>AIM + PE mentah + DINO</td><td class="r">0,601</td><td class="r">0,797</td></tr>
-          <tr><td>AIM + Sig mentah + PE mentah + DINO</td><td class="r">0,539</td><td class="r">0,793</td></tr>
-          <tr><td>AIM + CMRE(Sig) + DINO</td><td class="r">0,940</td><td class="r">0,823</td></tr>
-          <tr><td>AIM + CMRE(PE) + DINO</td><td class="r">0,965</td><td class="r">0,856</td></tr>
-          <tr><td>AIM + CMRE(Sig) + CMRE(PE) + DINO</td><td class="r">0,987</td><td class="r">0,865</td></tr>
-        </tbody></table></div>
-      </details>
-      <details class="tbl">
-        <summary>Uji kandidat empat model pada data luar</summary>
-        <div class="scroll"><table><thead><tr><th>Set</th><th class="r">xsrc v4</th><th class="r">xsrc kandidat</th><th class="r">Selisih dan IK95%</th></tr></thead><tbody>
-          <tr><td>Iliev</td><td class="r">0,885</td><td class="r">0,887</td><td class="r">+0,002 [−0,012; 0,015]</td></tr>
-          <tr><td>Shubha</td><td class="r">0,956</td><td class="r">0,967</td><td class="r">+0,011 [0,000; 0,028]</td></tr>
-        </tbody></table></div>
-      </details>
-      <p class="muted" style="font-size:14px;margin-top:14px">Nilai v4 pada tabel BDC dihitung ulang untuk perbandingan setara; artefak final mencatat 0,975. Interval selisih berasal dari 2.000 bootstrap berpasangan. Pemilihan K dan audit 100 seed belum diulang untuk kandidat AIMv2.</p>
-    </div>
   </div>
 </section>
 
@@ -638,7 +613,6 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
       <li><a href="../README.md">README repositori: hasil, cara reproduksi, dan keterbatasan →</a></li>
       <li><a href="../code/pipeline/final_max.py">Kode pipeline final →</a> <span class="muted">tahap ekstraksi, fusi, dan clustering</span></li>
       <li><a href="../code/pipeline/rq_fix2.py">Kode evaluasi kategori baru dan stabilitas →</a></li>
-      <li><a href="https://openaccess.thecvf.com/content/CVPR2025/html/Fini_Multimodal_Autoregressive_Pre-training_of_Large_Vision_Encoders_CVPR_2025_paper.html">Fini et al. (2025), AIMv2 →</a></li>
     </ul>
   </div>
 </section>

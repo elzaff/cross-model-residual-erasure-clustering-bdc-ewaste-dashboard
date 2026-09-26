@@ -4,8 +4,6 @@ Dashboard presentasi hasil karya ilmiah **BDC Satria Data 2026** (tim SD20260400
 tanpa label dari 3.792 foto BDC, peta sebaran kelompok, galeri tiap kelompok, deteksi kategori di luar cakupan, dan uji
 ketahanan. Semua angka dibangun dari CSV hasil eksperimen (lihat repositori metodologi).
 
-Panel “Audit tambahan: fusi AIMv2” merangkum percobaan setelah pipeline v4 dibekukan. Nilai BDC meningkat pada satu kandidat empat model, tetapi uji Iliev dan Shubha belum mendukung penggantian pipeline utama. Tabel lengkap dan interval bootstrap ada di repositori metodologi.
-
 ## Membuka
 
 ```bash
