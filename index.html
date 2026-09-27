@@ -313,7 +313,7 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
     <div class="head">
       <p class="tag">Abstract</p>
       <h2>Clustering e-waste lintas sumber foto.</h2>
-      <p class="lead">Studi ini mengelompokkan 3.792 foto <i>e-waste</i> BDC Satria Data 2026 menjadi 16 <i>cluster</i> tanpa label kelas. <i>Embedding</i> SigLIP2-So400m, PE-Core-G, dan DINOv3-H+ digabung. CMRE membuang arah <i>embedding</i> visi-bahasa yang tidak dapat diprediksi DINOv3, lalu SCMax memilih jumlah <i>cluster</i>. Pada BDC, konsistensi lintas sumber (xsrc) naik dari 0,524 pada fusi mentah menjadi 0,975. Pada 710 foto dataset Bangladesh, Top-1 makro setelah pemetaan beku mencapai 99,0%, dan 1.443 foto nonelektronik terdeteksi dengan AUROC 0,952. Label kelas baru dipakai setelah <i>clustering</i> selesai, untuk evaluasi.</p>
+      <p class="lead">Studi ini mengelompokkan 3.792 foto <i>e-waste</i> BDC Satria Data 2026 menjadi 16 <i>cluster</i> tanpa label kelas. <i>Embedding</i> SigLIP2-So400m, PE-Core-G, dan DINOv3-H+ digabung. CMRE membuang arah <i>embedding</i> visi-bahasa yang tidak dapat diprediksi DINOv3, lalu SCMax memilih jumlah <i>cluster</i>. Pada BDC, konsistensi lintas sumber (xsrc) naik dari 0,524 pada fusi mentah menjadi 0,975. Pada 710 foto dataset Bangladesh, Top-1 makro setelah pemetaan beku mencapai 99,0%, dan skor OOD memisahkan 1.443 foto nonelektronik dengan AUROC 0,952. Label kelas baru dipakai setelah <i>clustering</i> selesai, untuk evaluasi.</p>
     </div>
     <details class="glossary">
       <summary>Buka arti xsrc, CMRE, OOD, dan istilah teknis lainnya</summary>
@@ -333,7 +333,7 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
         <div><dt>t-SNE</dt><dd>t-distributed Stochastic Neighbor Embedding memproyeksikan embedding ke bidang 2D agar pola tetangga lokal terlihat. Jarak dan posisi pada peta hanya perkiraan, tidak bisa dibandingkan antar-peta, dan bukan label cluster.</dd></div>
         <div><dt>AUROC</dt><dd>Area Under the Receiver Operating Characteristic curve. AUROC menilai seberapa baik OOD score menempatkan foto OOD di atas foto yang mirip dataset utama pada berbagai threshold. Nilai mendekati 1 berarti ranking lebih baik; ini bukan persentase prediksi yang benar.</dd></div>
         <div><dt>Bootstrap CI 95%</dt><dd>Confidence interval 95% adalah rentang ketidakpastian metrik dari banyak pengambilan ulang (resample) foto. Whisker pada grafik menunjukkan rentang ini bila tersedia.</dd></div>
-        <div><dt>Jaccard stability dan cluster membership</dt><dd>Jaccard mengukur seberapa banyak cluster membership yang sama pada beberapa bootstrap run, dari 0 sampai 1. Nilai lebih tinggi berarti foto lebih konsisten mendapat cluster assignment yang sama. Acuan 0,85 bukan uji signifikansi.</dd></div>
+        <div><dt>Jaccard stability dan cluster membership</dt><dd>Jaccard mengukur seberapa banyak cluster membership yang sama pada 20 subsampel berisi 80% data, dari 0 sampai 1. Nilai lebih tinggi berarti foto lebih konsisten mendapat cluster assignment yang sama. Acuan 0,85 bukan uji signifikansi.</dd></div>
         <div><dt>pHash dan Hamming distance</dt><dd>Perceptual hash (pHash) merangkum pola visual foto untuk mencari near-duplicates. Hamming distance menghitung perbedaan antar-hash; batas ≤ 6 dipakai untuk menandai foto duplikat.</dd></div>
         <div><dt>Ridge regression dan R²</dt><dd>Ridge regression memprediksi embedding vision-language dari DINOv3 reference. R² menunjukkan seberapa dekat prediksi dengan nilai aktual; ini bukan clustering score atau class accuracy.</dd></div>
         <div><dt>TTA · test-time augmentation</dt><dd>Foto diproses dalam bentuk asli dan horizontal flip. Kedua image embeddings dirata-ratakan agar representasi tidak bergantung pada arah foto.</dd></div>
@@ -514,7 +514,7 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
     </div>
     <div class="panel">
       <p class="ctitle">Ukuran cluster dan Jaccard stability</p>
-      <p class="csub">Panjang batang = jumlah foto; warna = kategori hasil peninjauan. Titik menunjukkan Jaccard bootstrap (0,6–1,0); hitam memenuhi acuan 0,85, cokelat di bawahnya. Ini bukan uji signifikansi.</p>
+      <p class="csub">Panjang batang = jumlah foto; warna = kategori hasil peninjauan. Titik menunjukkan Jaccard subsampling (0,6–1,0); hitam memenuhi acuan 0,85, cokelat di bawahnya. Ini bukan uji signifikansi.</p>
       <div class="key" id="clusterKey" role="group" aria-label="Warna kategori cluster"></div>
       <p class="chart-hint">Di layar sempit, geser grafik ke samping untuk membaca semua label dan sumbu.</p>
       <div class="chart-scroll cluster-chart" role="region" tabindex="0" aria-label="Grafik lebar; geser horizontal untuk melihat semua label dan sumbu">
@@ -524,16 +524,25 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
     </div>
     <div class="panel" style="margin-top:24px">
       <p class="ctitle">Peta t-SNE dari 3.792 foto pada dataset BDC</p>
-      <p class="csub">Satu titik = satu foto dataset BDC. Posisi = t-SNE dari final features (PCA-32 setelah CMRE); warna = kategori hasil review; label = cluster. Segitiga = 188 foto dari data uji. Arahkan ke label untuk menyorot cluster, klik untuk membuka galerinya. Jarak antarkelompok pada t-SNE hanya perkiraan.</p>
+      <p class="csub">Satu titik = satu foto dataset BDC. Posisi = t-SNE dari final features (PCA-32 setelah CMRE); warna = kategori hasil review; label = cluster. Segitiga = 188 foto dari data uji. Arahkan ke label untuk menyorot cluster, klik untuk membuka galerinya, dan pakai tombol kategori di bawah peta untuk menyaring. Jarak antarkelompok pada t-SNE hanya perkiraan.</p>
       <div class="key" id="mapKey"><span><i class="sw dot source"></i>foto latih</span><span><i class="sw tri"></i>foto dari data uji</span></div>
       <p class="chart-hint">Di layar sempit, geser peta ke samping.</p>
        <div class="chart-scroll cluster-chart" role="region" tabindex="0" aria-label="Peta lebar; geser horizontal untuk melihat semua cluster">
          <svg id="clMap" class="chart" viewBox="0 0 760 520" role="img" aria-label="Peta t-SNE 3.792 foto pada dataset BDC, warna menunjukkan kategori dan label menunjukkan 16 clusters"></svg>
       </div>
+      <p class="csub" style="margin-top:16px">Tampilkan atau sembunyikan kategori:</p>
+      <div class="seg filters" id="mapFilter" role="group" aria-label="Tampilkan atau sembunyikan kategori pada peta"></div>
+    </div>
+    <div class="panel" style="margin-top:24px">
+      <p class="ctitle">Ukuran 16 cluster per kategori</p>
+      <p class="csub">Lebar pita = jumlah foto dalam satu kategori; tinggi kotak = jumlah foto dalam cluster. Arahkan ke kotak untuk menyorot cluster itu di peta di atas, klik untuk membuka galerinya. Kategori WEEE/B3 ditetapkan setelah clustering dari pemeriksaan galeri.</p>
+      <div class="chart-scroll cluster-chart" role="region" tabindex="0" aria-label="Treemap lebar; geser horizontal bila perlu">
+        <svg id="clTree" class="chart" viewBox="0 0 760 320" role="img" aria-label="Treemap jumlah foto per cluster, dikelompokkan menurut kategori"></svg>
+      </div>
     </div>
     <div class="panel" style="margin-top:24px">
       <p class="ctitle">Data 16 clusters</p>
-      <p class="csub">Label BDC dominan, white background, dan foto dari dataset GIZ dihitung setelah clustering hanya untuk evaluasi. 3-algorithm agreement = porsi foto yang juga mendapat cluster assignment sama oleh K-Means dan Ward. Jaccard = bootstrap stability (acuan 0,85).</p>
+      <p class="csub">Label BDC dominan, white background, dan foto dari dataset GIZ dihitung setelah clustering hanya untuk evaluasi. 3-algorithm agreement = porsi foto yang juga mendapat cluster assignment sama oleh K-Means dan Ward. Jaccard = subsampling stability (acuan 0,85).</p>
       <div id="grpTbl"></div>
       <p style="margin-top:16px"><a class="pill" href="assets/kelompok_bdc.csv" download>Download cluster membership · 3.792 foto (CSV)</a></p>
     </div>
@@ -624,7 +633,7 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
         <div class="sc-note">
           <p>Ketiga baris memakai operator proyeksi yang sama dan membuang 64 arah dari SigLIP2 dan PE-Core. Yang berbeda hanya cara menaksir arah itu: tanpa koreksi, dari pasangan foto asli dan <i>flip</i> (EPO), atau dari residu terhadap DINOv3 (CMRE).</p>
           <p id="scS2ci"></p>
-          <p>INLP mencapai xsrc BDC 0,975, sama dengan CMRE, tetapi memerlukan proksi gaya buatan manusia.</p>
+          <p id="scS2inlp"></p>
           <p class="sc-decision">Keputusan: CMRE, karena tidak memerlukan label, proksi, atau pasangan foto.</p>
         </div>
       </div>
@@ -632,11 +641,13 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
 
     <div class="panel sc-panel" role="tabpanel" id="sc-p3" aria-labelledby="sc-t3" tabindex="0" hidden>
       <div class="sc-grid">
-        <div><p class="ctitle">xsrc per algoritma, fitur CMRE dan K = 16</p><p class="csub">Batang cokelat = Spectral. Batang mulai dari nol.</p>
+        <div><p class="ctitle" id="scS3title">xsrc per algoritma, fitur CMRE dan K = 16</p><p class="csub">Batang cokelat = Spectral. Batang mulai dari nol.</p>
+          <div class="sc-seg" role="group" aria-label="Metrik" id="scS3m"></div>
           <svg id="scS3" class="chart" role="img" aria-label="xsrc per algoritma clustering"></svg><div id="scS3t"></div></div>
         <div class="sc-note">
           <p>Semua algoritma memakai fitur dan K yang sama, jadi selisihnya berasal dari algoritma. K-Means punya <i>silhouette</i> lebih tinggi dari Spectral (0,398 berbanding 0,364), tetapi xsrc-nya lebih rendah.</p>
-          <p>DECMCV hanya memberi <i>cluster</i> untuk 81% foto. DIVIDE dan CTGL dijalankan dengan kode penulis; DIVIDE bervariasi 0,65–0,77 tergantung pasangan <i>view</i>. Kedua metode itu menyelaraskan antar-<i>view</i>, padahal ciri sumber foto muncul di semua <i>view</i>.</p>
+          <p>Pilih "NMI objek" untuk melihat sisi lainnya. GMM (0,948), K-Means (0,908), DECMCV (0,894), dan TURTLE (0,882) mencapai NMI objek eksternal lebih tinggi dari Spectral (0,859), tetapi xsrc mereka lebih rendah (0,79–0,95). Metode itu mengenali jenis objek, tetapi foto sejenis dari sumber berbeda lebih sering terpisah. Spectral dipilih karena xsrc tertinggi, yaitu tujuan utama penelitian ini.</p>
+          <p>DECMCV hanya memberi <i>cluster</i> untuk 81% foto. DIVIDE dan CTGL dijalankan dengan kode penulis; DIVIDE bervariasi 0,51–0,75 tergantung pasangan <i>view</i> (run ulang dengan tiga <i>seed</i>). Kedua metode itu menyelaraskan antar-<i>view</i>, padahal ciri sumber foto muncul di semua <i>view</i>.</p>
           <p class="sc-decision">Keputusan: Spectral <i>clustering</i> pada graf 15 tetangga.</p>
         </div>
       </div>
@@ -979,7 +990,7 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
     $("dlgFacts").innerHTML =
       `<div class="card"><div class="label">Penanganan</div><p>${c.handling}</p></div>
        <div class="card"><div class="label">B3</div><p>${c.b3 ? '<span class="b3">mengandung B3</span>' : "tidak termasuk kategori B3 utama"}</p></div>
-       <div class="card"><div class="label">Stabilitas (Jaccard bootstrap)</div><p><b>${fmt(c.jaccard, 2)}</b> · ${c.jaccard >= .85 ? "memenuhi acuan 0,85" : "di bawah acuan 0,85"}</p></div>`;
+       <div class="card"><div class="label">Stabilitas (Jaccard subsampling)</div><p><b>${fmt(c.jaccard, 2)}</b> · ${c.jaccard >= .85 ? "memenuhi acuan 0,85" : "di bawah acuan 0,85"}</p></div>`;
     hideTip(); dlg.showModal();
   }
   $("dlgClose").onclick = () => dlg.close();
@@ -998,11 +1009,13 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
       m.dataset.c = c; return m; });
     const focus = c => marks.forEach(m => m.style.opacity = c == null || +m.dataset.c === c ? 1 : .08);
     const tipFor = cl => `<b>C${cl.id} · ${cl.name}</b><br>${cl.n} foto · ${CATNAME[cl.cat]}<br>klik untuk membuka galeri`;
+    const labels = [];
     C.forEach(cl => {
       const pts = P.filter(p => p[2] === cl.id).map(p => [X(p[0]), Y(p[1])]);
       const mx = pts.reduce((s, p) => s + p[0], 0) / pts.length, my = pts.reduce((s, p) => s + p[1], 0) / pts.length;
       const [lx, ly] = pts.reduce((b, p) => Math.hypot(p[0] - mx, p[1] - my) < Math.hypot(b[0] - mx, b[1] - my) ? p : b);
       const g = el("g", { tabindex: 0, role: "button", "aria-label": `C${cl.id} ${cl.name}, ${cl.n} foto. Buka galeri`, style: "cursor:pointer" }, svg);
+      labels.push([g, cl]);
       txt(g, lx, ly + 4, `C${cl.id}`, { "text-anchor": "middle", class: "strong", "paint-order": "stroke", stroke: "#fff", "stroke-width": 5, "stroke-linejoin": "round" });
       g.onmouseenter = e => { focus(cl.id); showTip(tipFor(cl), e.clientX, e.clientY); };
       g.onmouseleave = () => { focus(null); hideTip(); };
@@ -1013,6 +1026,47 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
     svg.addEventListener("mousemove", e => { const c = e.target.dataset && e.target.dataset.c; if (c != null) showTip(tipFor(C[+c]), e.clientX, e.clientY); });
     svg.addEventListener("click", e => { const c = e.target.dataset && e.target.dataset.c; if (c != null) openCluster(C[+c], svg); });
     svg.addEventListener("mouseleave", hideTip);
+
+    // category filter: hide or show every photo and label of one category
+    const hiddenCat = new Set(), cats = [...new Set(C.map(c => c.cat))];
+    const applyFilter = () => {
+      marks.forEach(m => m.style.display = hiddenCat.has(C[+m.dataset.c].cat) ? "none" : "");
+      labels.forEach(([g, cl]) => g.style.display = hiddenCat.has(cl.cat) ? "none" : "");
+    };
+    cats.forEach(k => {
+      const b = document.createElement("button"), n = C.filter(c => c.cat === k).reduce((t, c) => t + c.n, 0);
+      b.type = "button"; b.className = "pill"; b.setAttribute("aria-pressed", "true");
+      b.innerHTML = `<i class="sw" style="background:${CATCOLORS[k]}"></i>${CATNAME[k]} (${n.toLocaleString("id-ID")})`;
+      b.onclick = () => { hiddenCat.has(k) ? hiddenCat.delete(k) : hiddenCat.add(k); b.setAttribute("aria-pressed", !hiddenCat.has(k)); applyFilter(); };
+      $("mapFilter").appendChild(b);
+    });
+
+    // treemap: category strips (width = photos in category) split into clusters (height = size); hover syncs with the map
+    // white labels; the dark halo keeps them readable on the light pink and green fills
+    const LBL = "fill:#fff;stroke:rgba(23,25,28,.7);stroke-width:3px;paint-order:stroke;stroke-linejoin:round";
+    const tree = $("clTree"), TW = 760, TH = 320, total = C.reduce((t, c) => t + c.n, 0);
+    let tx = 0;
+    cats.map(k => ({ k, n: C.filter(c => c.cat === k).reduce((t, c) => t + c.n, 0) })).sort((a, b) => b.n - a.n).forEach(({ k, n }) => {
+      const w = TW * n / total; let ty = 0;
+      C.filter(c => c.cat === k).sort((a, b) => b.n - a.n).forEach(cl => {
+        const h = TH * cl.n / n;
+        const g = el("g", { tabindex: 0, role: "button", "aria-label": `C${cl.id} ${cl.name}, ${cl.n} foto, ${CATNAME[k]}. Buka galeri`, style: "cursor:pointer" }, tree);
+        el("rect", { x: tx + 1, y: ty + 1, width: Math.max(0, w - 2), height: Math.max(0, h - 2), rx: 6, fill: CATCOLORS[k] }, g);
+        if (w > 40 && h > 34) {
+          // inline style: the chart text CSS rule would otherwise repaint these labels grey
+          txt(g, tx + w / 2, ty + h / 2 - 3, `C${cl.id}`, { "text-anchor": "middle", style: LBL, "font-size": 13, "font-weight": 600 });
+          txt(g, tx + w / 2, ty + h / 2 + 13, `${cl.n} foto`, { "text-anchor": "middle", style: LBL, "font-size": 11 });
+        }
+        g.onmouseenter = e => { focus(cl.id); showTip(tipFor(cl), e.clientX, e.clientY); };
+        g.onmousemove = e => showTip(tipFor(cl), e.clientX, e.clientY);
+        g.onmouseleave = () => { focus(null); hideTip(); };
+        g.onfocus = () => focus(cl.id); g.onblur = () => focus(null);
+        g.onclick = () => openCluster(cl, g);
+        g.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openCluster(cl, g); } };
+        ty += h;
+      });
+      tx += w;
+    });
     const nTest = C.map(cl => P.filter(p => p[2] === cl.id && p[3]).length);
     table("grpTbl", ["Cluster", "Nama", "Kategori", "B3", "Foto", "Latih", "Uji", "Label BDC dominan", "3-algorithm agreement", "White background", "Jaccard stability", "Foto dataset GIZ masuk"],
       C.map((cl, i) => [`C${cl.id}`, cl.name, CATSHORT[cl.cat], cl.b3 ? "ya" : "tidak", String(cl.n), String(cl.n - nTest[i]), String(nTest[i]),
@@ -1195,13 +1249,25 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
     segs("scS2ds", [["BDC", "BDC"], ["Iliev", "Iliev"], ["Shubha", "Shubha"]], ds, k => { ds = k; drawS2(); });
     segs("scS2m", [["xsrc", "xsrc"], ["leak", "Kebocoran sumber"]], met, k => { met = k; drawS2(); });
     drawS2();
+    const IN = S.s2.inlp;
+    $("scS2inlp").textContent = `INLP dengan style proxy rancangan peneliti mencapai xsrc BDC ${fmt(IN.researcher)}, sama dengan CMRE. ` +
+      `Tanpa pengetahuan tentang biasnya, INLP dengan automatic proxy dari statistik gaya AdaIN hanya mencapai ${fmt(IN.auto2)} ` +
+      `pada fusion SigLIP2 dan DINOv3, sedangkan CMRE mencapai ${fmt(IN.cmre2)} pada fusion yang sama tanpa proxy.`;
 
-    // S3: clustering algorithms on the same features
-    const al3 = [...S.s3].sort((a, b) => b.xsrc - a.xsrc);
-    scBars("scS3", al3.map(a => ({ name: a.name, value: a.xsrc, focus: a.name.startsWith("Spectral"),
-      tip: `xsrc ${fmt(a.xsrc)} · ${a.group === "klasik" ? "algoritma klasik" : "metode terbaru"}` +
-        (a.coverage && a.coverage < 1 ? ` · cakupan ${pct(a.coverage)}` : "") + (a.lo ? ` · rentang ${fmt(a.lo)}–${fmt(a.xsrc)}` : "") })));
-    table("scS3t", ["Algoritma", "Kelompok", "xsrc"], al3.map(a => [a.name, a.group, a.xsrc]));
+    // S3: clustering algorithms on the same features; switch between xsrc and external object NMI
+    let m3 = "xsrc";
+    const rng = (lo, v) => lo ? `${fmt(lo)}–${fmt(v)}` : fmt(v);
+    const drawS3 = () => {
+      const nm = m3 === "nmi", rows = [...S.s3].sort((a, b) => b[m3] - a[m3]);
+      $("scS3title").textContent = `${nm ? "NMI objek eksternal" : "xsrc"} per algoritma, fitur CMRE dan K = 16`;
+      scBars("scS3", rows.map(a => ({ name: a.name, value: a[m3], focus: a.name.startsWith("Spectral"),
+        tip: `xsrc ${rng(a.lo, a.xsrc)} · NMI objek ${rng(a.nmi_lo, a.nmi)}` +
+          (a.coverage && a.coverage < 1 ? ` · cakupan ${pct(a.coverage)}` : "") })));
+      table("scS3t", ["Algoritma", "Kelompok", "xsrc", "NMI objek ekst."],
+        rows.map(a => [a.name, a.group, rng(a.lo, a.xsrc), rng(a.nmi_lo, a.nmi)]));
+    };
+    segs("scS3m", [["xsrc", "xsrc"], ["nmi", "NMI objek"]], m3, k => { m3 = k; drawS3(); });
+    drawS3();
 
     // S4: parameter ranges (numbers from the r, alpha and neighbour sweeps)
     table("scS4t", ["Parameter", "Nilai", "xsrc BDC"], [["r (arah dibuang)", "16–64", "0,97–0,99"], ["r", "4", "0,449"], ["r", "128", "0,821"],

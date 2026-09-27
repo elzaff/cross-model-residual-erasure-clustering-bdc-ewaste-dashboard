@@ -1,5 +1,7 @@
 # Dashboard: Kategori Sampah Elektronik dari Citra Multi-Sumber
 
+**Buka dashboard:** [https://elzaff.github.io/cross-model-residual-erasure-clustering-bdc-ewaste-dashboard/](https://elzaff.github.io/cross-model-residual-erasure-clustering-bdc-ewaste-dashboard/) · repositori utama (kode, hasil, reproduksi): [https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste](https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste)
+
 Dashboard presentasi hasil karya ilmiah **BDC Satria Data 2026** (tim SD2026040000100): 16 kelompok e-waste yang ditemukan
 tanpa label dari 3.792 foto BDC, peta sebaran kelompok, galeri tiap kelompok, deteksi kategori di luar cakupan, dan uji
 ketahanan. Semua angka dibangun dari CSV hasil eksperimen (lihat repositori metodologi).
