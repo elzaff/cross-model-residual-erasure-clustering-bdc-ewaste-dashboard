@@ -303,7 +303,7 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
     <h1><span id="heroK">16</span> cluster e&#8209;waste, ditemukan dari foto <em>tanpa class labels</em>.</h1>
     <p class="lead">Dataset BDC berisi 3.792 foto yang dipetakan ke K = 16. SCMax memilih K dari sembilan run; class labels hanya dipakai untuk evaluasi, bukan untuk membentuk cluster.</p>
     <div class="cta"><a class="pill fill" href="#hasil">Lihat hasilnya</a><a class="pill" href="#masalah">Mulai dari masalahnya</a></div>
-    <p class="official">Unsupervised Discovery Kategori Sampah Elektronik dari Citra Multi-Sumber Menggunakan Cross-Model Residual Erasure dan Spectral Clustering Berbasis Consensus Maximization</p>
+    <p class="official">Cross-Model Residual Erasure untuk Pengelompokan Sampah Elektronik tanpa Label yang Tahan Bias Sumber Foto</p>
     <div class="floaters" id="floaters"></div>
   </div>
 </section>
@@ -1132,7 +1132,7 @@ footer { padding: 40px 0 64px; font-size: 14px; color: var(--slate); }
     svg.setAttribute("aria-label", `${title}: proporsi foto di luar cakupan yang ditandai untuk ditinjau`);
   });
   table("oodTbl", ["Category", "Dataset", "Ada di dataset BDC", "N foto", "Ditandai"], E.ood.map(o => [o.label, o.dataset, o.known ? "ya" : "tidak", String(o.n), pct(o.flag)]));
-  const S = E.oodSources, SRC = [["kaan", "Dataset Kaan"], ["bangla", "Dataset Custom Bangladeshi E-Waste"], ["karan", "Dataset Karan"], ["giz", "Dataset GIZ"]].sort((a, b) => S[b[0]].flag - S[a[0]].flag);
+  const S = E.oodSources, SRC = [["kaan", "Kaan"], ["bangla", "Bangladeshi E-Waste"], ["karan", "Karan"], ["giz", "GIZ"]].sort((a, b) => S[b[0]].flag - S[a[0]].flag);
   fit($("oodSrc"), 440, hbars($("oodSrc"), SRC.map(([k, l]) => ({ label: l, value: S[k].flag, focus: k === "giz", tip: `<b>${l}</b><br>${pct(S[k].flag)} ditandai dari ${S[k].n.toLocaleString("id-ID")} foto` })),
     { W: 440, left: 150, right: 52, rowH: 32, barH: 16, ticks: [0, .5, 1], tickFmt: pctTick, valueFmt: pct }));
   table("srcTbl", ["Sumber", "N foto", "Ditandai"], SRC.map(([k, l]) => [l, String(S[k].n), pct(S[k].flag)]));
