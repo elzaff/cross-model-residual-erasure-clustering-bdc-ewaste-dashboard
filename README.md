@@ -3,8 +3,16 @@
 **Buka dashboard:** [https://elzaff.github.io/cross-model-residual-erasure-clustering-bdc-ewaste-dashboard/](https://elzaff.github.io/cross-model-residual-erasure-clustering-bdc-ewaste-dashboard/) · repositori utama (kode, hasil, reproduksi): [https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste](https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste)
 
 Dashboard presentasi hasil karya ilmiah **BDC Satria Data 2026** (tim SD2026040000100): 16 kelompok e-waste yang ditemukan
-tanpa label dari 3.792 foto BDC, peta sebaran kelompok, galeri tiap kelompok, deteksi kategori di luar cakupan, dan uji
-ketahanan. Semua angka dibangun dari CSV hasil eksperimen (lihat repositori metodologi).
+tanpa label dari 3.792 foto BDC. Lima halaman:
+
+- **Peta**: kartu foto uji dari dataset lain masuk ke peta t-SNE. Slider sebelum/sesudah CMRE bisa diputar, dijeda, dan digeser. Panel hasil memberi tiga alasan: pusat kelompok terdekat, lima foto BDC termirip, dan cek barang asing.
+- **Coba sendiri**: 452 foto uji, termasuk yang ditandai sebagai barang asing.
+- **16 kelompok**: galeri, penanganan, dan kestabilan tiap kelompok, lalu alasan K = 16 dipertahankan dibanding K = 17.
+- **Cara kerja CMRE**: delapan langkah animasi yang mengikuti dua foto mouse, ditutup peta data asli.
+- **Analisis**: alur, data, bukti, sumber, dan istilah.
+
+`data.js` dibuat oleh `code/make_dashboard_data.py`, sedangkan `demo.js` serta folder `assets/t` dan `assets/c` dibuat oleh
+`code/make_dashboard_demo.py` (repositori utama). Foto yang terdeteksi memuat wajah tidak diberi thumbnail.
 
 ## Membuka
 
@@ -23,14 +31,12 @@ Kode, metodologi, dan cara reproduksi: https://github.com/elzaff/cross-model-res
 |---|---|
 | Kode kelompok / registrasi | SD2026040000100 |
 | Cabang lomba | Big Data Challenge (BDC), Satria Data 2026 |
-| Perguruan tinggi | Institut Teknologi Sepuluh Nopember (Program Studi Rekayasa Kecerdasan Artifisial) |
-| Pembimbing | Dini Adni Navastra, S.Kom., M.Sc. (0349763664230223) |
 
-| No | Nama | NRP | Peran |
-|---|---|---|---|
-| 1 | Berliana Sarlita Rahajeng | 5054241023 | Anggota |
-| 2 | Fazle Mawla Wahyuhanda | 5054241020 | Ketua |
-| 3 | Muhammad Fatih Al Fawwaz | 5054241007 | Anggota |
+| No | Nama | Peran |
+|---|---|---|
+| 1 | Berliana Sarlita Rahajeng | Anggota |
+| 2 | Fazle Mawla Wahyuhanda | Ketua |
+| 3 | Muhammad Fatih Al Fawwaz | Anggota |
 
 ## Lisensi
 
