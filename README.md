@@ -1,8 +1,18 @@
 # Dashboard: Cross-Model Residual Erasure untuk Pengelompokan Sampah Elektronik tanpa Label yang Tahan Bias Sumber Foto
 
-**Buka dashboard:** [https://elzaff.github.io/cross-model-residual-erasure-clustering-bdc-ewaste-dashboard/](https://elzaff.github.io/cross-model-residual-erasure-clustering-bdc-ewaste-dashboard/) · repositori utama (kode, hasil, reproduksi): [https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste](https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste)
+**Buka aplikasi:** [https://elzaff.github.io/cross-model-residual-erasure-clustering-bdc-ewaste-dashboard/](https://elzaff.github.io/cross-model-residual-erasure-clustering-bdc-ewaste-dashboard/) · dashboard riset: [`riset.html`](https://elzaff.github.io/cross-model-residual-erasure-clustering-bdc-ewaste-dashboard/riset.html) · repositori utama (kode, hasil, reproduksi): [https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste](https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste)
 
-Dashboard presentasi hasil karya ilmiah **BDC Satria Data 2026** (tim SD2026040000100): 16 kelompok e-waste yang ditemukan
+## Aplikasi E-Rase (`index.html`)
+
+Prototipe untuk petugas bank sampah, TPS3R, dan pengepul. **Setoran** (HP): foto barang satu per satu, langsung dapat
+wadah tujuan. **Batch** (laptop): unggah banyak foto, saring, konfirmasi massal. Tiap hasil bisa dikoreksi petugas dan
+dicetak sebagai tanda terima atau manifest (PDF/CSV). Foto diproses oleh backend Modal (`code/product/modal_pilah.py` di
+repositori utama) dengan pipeline CMRE yang sama dengan paper; sesi dan foto disimpan di perangkat (IndexedDB), koreksi
+petugas dikirim ke server untuk evaluasi. Bisa dipasang di HP sebagai PWA.
+
+## Dashboard riset (`riset.html`)
+
+Presentasi hasil karya ilmiah **BDC Satria Data 2026** (tim SD2026040000100): 16 kelompok e-waste yang ditemukan
 tanpa label dari 3.792 foto BDC. Lima halaman:
 
 - **Peta**: kartu foto uji dari dataset lain masuk ke peta t-SNE. Slider sebelum/sesudah CMRE bisa diputar, dijeda, dan digeser. Panel hasil memberi tiga alasan: pusat kelompok terdekat, lima foto BDC termirip, dan cek barang asing.
@@ -17,10 +27,10 @@ tanpa label dari 3.792 foto BDC. Lima halaman:
 ## Membuka
 
 ```bash
-python -m http.server 8765
+python -m http.server 8766
 ```
 
-Buka `http://localhost:8765`. Halaman harus dibuka lewat server (bukan langsung dari file) karena memuat `data.js`.
+Buka `http://localhost:8766` (port 8766: backend hanya menerima permintaan dari port ini dan dari GitHub Pages). Halaman harus dibuka lewat server (bukan langsung dari file) karena memuat `data.js`.
 Untuk GitHub Pages: Settings → Pages → Deploy from a branch → `main` / root.
 
 Kode, metodologi, dan cara reproduksi: https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste

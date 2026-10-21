@@ -1,0 +1,15 @@
+{
+  "name": "E-Rase",
+  "short_name": "E-Rase",
+  "description": "E-Rase: pemilahan e-waste dari foto, ditenagai CMRE untuk petugas bank sampah, TPS3R, dan pengepul.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f8ee",
+  "theme_color": "#143f61",
+  "lang": "id",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
