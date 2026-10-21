@@ -6,24 +6,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CMRE · Dashboard Riset</title>
 <meta name="description" content="Dashboard clustering foto sampah elektronik tanpa label dengan CMRE (BDC Satria Data 2026).">
-<link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg?v=8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <style>
-/* Direction (owner's request): the owner's coolors lime-to-navy palette, matching the CMRE logo (navy outline, lime fill).
-   Pale lime canvas, navy #184E77 for structure and headings, the palette's blues and greens for data, lime for soft fills.
+/* Direction (owner, Oct 2026): structure follows the E-Rase app (adora.ai-like): off-white canvas, white cards,
+   deep indigo #21164c for structure and headings, violet #592eff for links and primary actions. Variable names below
+   are historical (forest = ink, green = violet). Data series keep the palette's blues and greens; lime for soft fills.
    The palette has no warm hue, so one warm pair is added on purpose: terracotta for "needs attention" (alarm, the K = 17
    split, low stability) and mustard for one category, so warnings never blend into the cool data colours.
-   Lexend Deca: 400 body, 500 labels, 600 headings, 700 for the wordmark only.
+   Plus Jakarta Sans: 400 body, 500 labels, 600 headings, 700 for the wordmark only.
    Radius: 20px cards, 12px controls, full pills only for state chips. No shadows; separation by tone and hairlines.
    Light canvas only (projector use); the navy bands are part of the system, not a theme. */
 :root {
-  --cream: #f3f8ee; --cream-2: #e4efdc; --card: #fcfdfa; --line: #d3e2cb;
-  --forest: #184e77; --forest-d: #143f61; --forest-c: #1e6091; --green: #1a759f; --sage: #99d98c; --sage-l: #e3f2d3;
-  --ink: #13293d; --muted: #4b6170; --terra: #d0702a; --ochre: #e0b13a; --butter: #fbe6c4; --blush: #f8dccb;
-  --on-dark: #f3f8ee; --on-dark-2: #cfe3ee; --dark-line: rgba(243, 248, 238, .16);
-  --sans: "Lexend Deca", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --cream: #f9f9f7; --cream-2: #f2f3f5; --card: #fff; --line: #e6e6e1;
+  --forest: #21164c; --forest-d: #1a1140; --forest-c: #2d2160; --green: #592eff; --sage: #99d98c; --sage-l: #f1edff;
+  --ink: #353241; --muted: #5f5f69; --terra: #d0702a; --ochre: #e0b13a; --butter: #fbe6c4; --blush: #f8dccb;
+  --on-dark: #f9f9f7; --on-dark-2: #d9d4f2; --dark-line: rgba(255, 255, 255, .14);
+  --sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -53,15 +54,16 @@ code { font-size: .9em; background: var(--cream-2); padding: 1px 6px; border-rad
 .btn.primary:hover { background: var(--forest); border-color: var(--forest); }
 .btn[aria-pressed="true"], .btn[aria-selected="true"] { background: var(--forest); border-color: var(--forest); color: var(--on-dark); }
 .dark .btn { background: var(--forest-c); border-color: var(--dark-line); color: var(--on-dark); }
-.dark .btn:hover { background: #1a5a85; }
-.dark .btn.primary { background: var(--sage); border-color: var(--sage); color: var(--forest-d); }
+.dark .btn:hover { background: #3a2c78; }
+.dark .btn.primary { background: #fff; border-color: #fff; color: var(--forest); }
+.dark .btn.primary:hover { background: var(--cream-2); }
 .seg { display: inline-flex; flex-wrap: wrap; gap: 8px; }
 
 /* header */
-header.top { position: sticky; top: 0; z-index: 30; background: rgba(243, 248, 238, .96); border-bottom: 1px solid var(--line); }
+header.top { position: sticky; top: 0; z-index: 30; background: rgba(249, 249, 247, .9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
 .top .wrap { display: flex; align-items: center; gap: 20px; min-height: 66px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 21px; letter-spacing: -.01em; color: var(--forest); text-decoration: none; white-space: nowrap; }
-.brand img { width: 24px; height: 31px; display: block; }
+.brand img { width: 28px; height: 28px; display: block; }
 nav.views { display: flex; gap: 4px; margin-left: auto; }
 nav.views a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 12px; font-size: 15px; font-weight: 500; text-decoration: none; color: var(--muted); white-space: nowrap; }
 nav.views a:hover { color: var(--forest); background: var(--cream-2); }
@@ -200,9 +202,10 @@ svg.map .me { fill: var(--forest); stroke: var(--card); stroke-width: 2; }
 .gallery .pcard .s { font-size: 11px; }
 
 /* ---- Cara kerja CMRE */
-.cmre-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, .9fr); gap: 24px; align-items: stretch; }
-@media (max-width: 980px) { .cmre-grid { grid-template-columns: 1fr; } }
-.cmre-stage { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 14px; touch-action: pan-y; }
+/* one panel: animation and its step copy stay together, the whole panel swipes */
+.cmre-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, .9fr); align-items: stretch; background: var(--card); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; touch-action: pan-y; }
+.cmre-grid > .cmre-copy { border: 0; border-radius: 0; border-left: 1px solid var(--line); }
+.cmre-stage { padding: 14px; align-self: center; }
 .cmre-stage svg { display: block; width: 100%; height: auto; }
 .cmre-stage .morph { margin: 10px 4px 2px; }
 .cmre-stage .morph[hidden] { display: none; }
@@ -215,6 +218,19 @@ svg.map .me { fill: var(--forest); stroke: var(--card); stroke-width: 2; }
 .dots { display: flex; gap: 6px; flex-wrap: wrap; }
 .dots button { min-width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font: 500 14px var(--sans); color: var(--forest); }
 .dots button[aria-current="step"] { background: var(--forest); border-color: var(--forest); color: var(--on-dark); }
+@media (max-width: 980px) {
+  .cmre-grid { grid-template-columns: 1fr; }
+  .cmre-grid > .cmre-copy { border-left: 0; border-top: 1px solid var(--line); padding-top: 16px; }
+  .cmre-stage { padding: 10px 8px; }
+  .cmre-grid .cmre-stage .sm { font-size: 18px; }
+  .cmre-grid .cmre-stage .lbl { font-size: 20px; }
+  .cmre-copy h2 { font-size: 22px; }
+  .cmre-copy p { font-size: 15px; }
+  .cmre-copy .dots { order: -1; flex-wrap: nowrap; gap: 4px; }
+  .cmre-copy .dots button { flex: 1; min-width: 0; height: 36px; border-radius: 10px; font-size: 13px; }
+  .cmre-nav { display: grid; grid-template-columns: 1fr 1fr; padding-top: 4px; }
+  .cmre-nav #cmreReplay { grid-column: 1 / -1; min-height: 36px; border: 0; background: none; color: var(--green); }
+}
 .cmre-stage .lbl { font: 500 15px var(--sans); fill: var(--forest); }
 .cmre-stage .sm { font: 400 13px var(--sans); fill: var(--muted); }
 .cmre-stage .hd { font: 600 17px var(--sans); fill: var(--forest); }
@@ -243,7 +259,7 @@ svg.map .me { fill: var(--forest); stroke: var(--card); stroke-width: 2; }
 .sw.focus { background: var(--forest); border-radius: 3px; } .sw.context { background: #93a3ab; border-radius: 3px; }
 .sw.tri { width: 0; height: 0; border-radius: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 11px solid var(--ink); }
 .sw.dot.source { background: var(--ink); }
-.sw.ramp { width: 84px; height: 10px; border-radius: 999px; background: linear-gradient(90deg, #b5e48c, #34a0a4, #1a759f, #184e77); }
+.sw.ramp { width: 84px; height: 10px; border-radius: 999px; background: linear-gradient(90deg, #b5e48c, #34a0a4, #1a759f, #21164c); }
 .chart-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
 .dataset-chart > .chart { min-width: 420px; }
 .cluster-chart > .chart { min-width: 940px; }
@@ -371,7 +387,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
 <body>
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#beranda"><img src="assets/logo.svg" alt="" width="24" height="31">CMRE</a>
+    <a class="brand" href="#beranda"><img src="assets/logo.svg?v=8" alt="" width="28" height="28">CMRE</a>
     <nav class="views" aria-label="Halaman">
       <a href="#beranda" data-view="beranda">Peta</a>
       <a href="#coba" data-view="coba">Galeri uji</a>
@@ -480,7 +496,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
       <p class="lead" style="margin-top:14px">Dari 100 iterasi SCMax, K = 17 paling sering terpilih, tetapi kami memakai K = 16. Geser ke K = 17 untuk melihat foto apa yang terpisah.</p>
       <div class="k17grid">
         <div class="k17map">
-          <div class="legend" style="margin:0 0 8px"><span><i class="sw" style="background:#184e77"></i>C15</span><span><i class="sw" style="background:#d0702a"></i>cluster baru di K = 17</span></div>
+          <div class="legend" style="margin:0 0 8px"><span><i class="sw" style="background:#21164c"></i>C15</span><span><i class="sw" style="background:#d0702a"></i>cluster baru di K = 17</span></div>
           <div class="seg" role="group" aria-label="Jumlah cluster" style="margin-bottom:10px">
             <button class="btn" type="button" data-kval="16" aria-pressed="true">K = 16</button>
             <button class="btn" type="button" data-kval="17" aria-pressed="false">K = 17</button>
@@ -862,7 +878,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
   const E = window.EWASTE, D = window.DEMO;
   if (!E || !D) { document.getElementById("dataError").hidden = false; return; }
   const NS = "http://www.w3.org/2000/svg", $ = id => document.getElementById(id);
-  const FOCUS = "#184e77", CONTEXT = "#93a3ab", INK = "#13293d", TERRA = "#d0702a", LINE = "#d3e2cb";
+  const FOCUS = "#21164c", CONTEXT = "#93a3ab", INK = "#353241", TERRA = "#d0702a", LINE = "#d3e2cb";
   const fmt = (v, d = 3) => v == null ? "–" : v.toFixed(d).replace(".", ",");
   const pct = v => (Math.round(v * 1000) / 10).toString().replace(".", ",") + "%";
   const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
@@ -927,7 +943,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
   // six handling categories: four cool hues from the owner palette (navy, blue, teal, light green) plus mustard and terracotta.
   // Terracotta doubles as "needs attention" (components, the K = 17 split, low stability), which is why components carry it.
   const CATNAME = { baterai: "Baterai", layar: "Layar dan monitor", besar: "Peralatan besar", kecil: "Peralatan kecil", ti: "TI dan telekomunikasi kecil", komponen: "Komponen" };
-  const CATCOLORS = { baterai: "#184e77", layar: "#168aad", besar: "#e0b13a", kecil: "#99d98c", ti: "#52b69a", komponen: TERRA };
+  const CATCOLORS = { baterai: "#21164c", layar: "#168aad", besar: "#e0b13a", kecil: "#99d98c", ti: "#52b69a", komponen: TERRA };
   // one hue per photo source; Bangladesh carries the warm accent because it is the source CMRE has to pull back in
   const SRCCOL = { bdc: "#c4d3cc", kaan: "#1a759f", bangla: TERRA, karan: "#e0b13a", giz: "#52b69a" };
   const C = E.clusters;
@@ -1219,7 +1235,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
       const [lx, ly] = pts.reduce((b, p) => Math.hypot(p[0] - mx, p[1] - my) < Math.hypot(b[0] - mx, b[1] - my) ? p : b);
       const g = el("g", { tabindex: 0, role: "button", "aria-label": `C${cl.id} ${cl.name}, ${cl.n} foto. Buka galeri`, style: "cursor:pointer" }, svg);
       labels.push([g, cl]);
-      txt(g, lx, ly + 4, `C${cl.id}`, { "text-anchor": "middle", class: "strong", "paint-order": "stroke", stroke: "#fcfdfa", "stroke-width": 5, "stroke-linejoin": "round" });
+      txt(g, lx, ly + 4, `C${cl.id}`, { "text-anchor": "middle", class: "strong", "paint-order": "stroke", stroke: "#fff", "stroke-width": 5, "stroke-linejoin": "round" });
       g.onmouseenter = e => { focus(cl.id); showTip(tipFor(cl), e.clientX, e.clientY); };
       g.onmouseleave = () => { focus(null); hideTip(); };
       g.onfocus = () => focus(cl.id); g.onblur = () => focus(null);
@@ -1310,7 +1326,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
       return { g, t, set: (o, s) => bars.forEach((b, i) => b.style.transform = `scaleY(${i < 8 ? o : s})`) };
     }
     function photo(cardId, caption) {
-      const g = grp(); el("rect", { x: 0, y: 0, width: 140, height: 140, rx: 16, fill: "#e4efdc" }, g);
+      const g = grp(); el("rect", { x: 0, y: 0, width: 140, height: 140, rx: 16, fill: "#f2f3f5" }, g);
       el("image", { x: 6, y: 6, width: 128, height: 128, preserveAspectRatio: "xMidYMid slice", href: big(cardId) }, g);
       txt(g, 70, 162, caption, { class: "sm", "text-anchor": "middle" });
       return g;
@@ -1323,7 +1339,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
     const legend = grp(); [[OBJ, "fitur barang"], [SRC, "jejak latar dan cara memotret"]].forEach(([c, l], i) => { el("rect", { x: i * 150, y: 0, width: 14, height: 14, rx: 3, fill: c }, legend); txt(legend, i * 150 + 22, 12, l, { class: "sm" }); });
     // difference meter between A and B, computed from the illustrated bars (object part + whatever source part remains)
     const meter = grp(); txt(meter, 0, -10, "jarak embedding foto A dan B", { class: "lbl" });
-    el("rect", { x: 0, y: 0, width: 520, height: 16, rx: 8, fill: "#e4efdc" }, meter);
+    el("rect", { x: 0, y: 0, width: 520, height: 16, rx: 8, fill: "#f2f3f5" }, meter);
     const mFill = el("rect", { x: 0, y: 0, width: 520, height: 16, rx: 8, fill: SRC, class: "grow" }, meter); mFill.style.transform = "scaleX(0)";
     const mLbl = txt(meter, 530, 13, "", { class: "lbl" });
     const diff = s => Math.sqrt(A_OBJ.reduce((t, a, i) => t + (a - B_OBJ[i]) ** 2, 0) + A_SRC.reduce((t, a, i) => t + (s * (a - B_SRC[i])) ** 2, 0));
@@ -1331,9 +1347,9 @@ footer { padding: 32px 0 48px; font-size: 14px; }
     const setMeter = s => { mFill.style.transform = `scaleX(${diff(s) / dMax})`; mFill.setAttribute("fill", s > .5 ? SRC : OBJ); mLbl.textContent = s > .5 ? "jauh" : "dekat"; };
     // single-photo pipeline for B: actual, DINOv3 guess, residual
     const vB2 = vec("embedding asli foto B (vision-language)", B_OBJ, B_SRC), vG = vec("tebakan DINOv3 untuk foto B", B_OBJ, [.06, .05, .07, .05]), vR = vec("residual = asli − tebakan", B_OBJ.map(() => .05), B_SRC.map(v => v - .05));
-    const dino = grp(); el("rect", { x: 0, y: 0, width: 150, height: 70, rx: 14, fill: "#184e77" }, dino);
+    const dino = grp(); el("rect", { x: 0, y: 0, width: 150, height: 70, rx: 14, fill: "#21164c" }, dino);
     txt(dino, 75, 32, "DINOv3", { class: "lbl", "text-anchor": "middle", style: "fill:#f3f8ee" }); txt(dino, 75, 52, "belajar dari foto saja", { class: "sm", "text-anchor": "middle", style: "fill:#cfe3ee" });
-    const arrow = grp(); el("path", { d: "M0 0H70", stroke: "#184e77", "stroke-width": 2, fill: "none" }, arrow); el("path", { d: "M70 -6L82 0L70 6Z", fill: "#184e77" }, arrow);
+    const arrow = grp(); el("path", { d: "M0 0H70", stroke: "#21164c", "stroke-width": 2, fill: "none" }, arrow); el("path", { d: "M70 -6L82 0L70 6Z", fill: "#21164c" }, arrow);
     // step 5 is a column subtraction: actual − guess = residual; each operator carries a word so it reads as arithmetic
     const op = (sign, word) => { const g = grp(); txt(g, 0, 0, sign, { class: "big", "text-anchor": "middle" }); txt(g, 0, 22, word, { class: "sm", "text-anchor": "middle" }); return g; };
     const minus = op("−", "dikurangi"), equals = op("=", "hasilnya");
@@ -1344,7 +1360,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
       const v = vec(r ? "" : "residual dari banyak foto", Array(8).fill(0).map(() => .04 + rnd() * .1), Array(4).fill(0).map(() => .45 + rnd() * .5), 44);
       many.appendChild(v.g); v.g.style.opacity = 1; v.g.style.transform = `translate(0px,${r * 58}px)`; manyRows.push(v);
     }
-    const band = el("rect", { x: 8 * 22 - 6, y: -30, width: 4 * 22 + 8, height: 6 * 58 + 10, rx: 10, fill: "none", stroke: "#184e77", "stroke-width": 2.5, "stroke-dasharray": "6 5", class: "fade" }, many); band.style.opacity = 0;
+    const band = el("rect", { x: 8 * 22 - 6, y: -30, width: 4 * 22 + 8, height: 6 * 58 + 10, rx: 10, fill: "none", stroke: "#21164c", "stroke-width": 2.5, "stroke-dasharray": "6 5", class: "fade" }, many); band.style.opacity = 0;
     const bandLbl = txt(many, 8 * 22 + 4 * 11, 6 * 58 + 6, "pola yang sama di banyak foto", { class: "lbl fade", "text-anchor": "middle" }); bandLbl.style.opacity = 0;
     // step 8: real data
     const real = grp(), RX = v => 30 + v * .74, RY = v => 20 + v * .41;
@@ -1374,7 +1390,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
         move(pA, 105, 20); move(pB, 505, 20); move(vA.g, 40, 230); move(vB.g, 440, 230); vA.set(1, 1); vB.set(1, 1); move(meter, 120, 400);
         later(500, () => setMeter(1)); }],
       ["Inti CMRE 1 · DINOv3 menebak", "Kita ambil foto B saja. DINOv3 belajar dari foto tanpa teks, jadi ia hanya melihat fitur barang. CMRE memintanya menebak angka vision-language model (ridge regression). Tebakannya hanya memuat bagian hijau.", "ilustrasi", () => {
-        move(pB, 30, 40); move(vB2.g, 330, 50); vB2.set(1, 1); move(dino, 30, 260); move(arrow, 200, 300); move(vG.g, 330, 260);
+        move(pB, 66, 40); move(vB2.g, 330, 50); vB2.set(1, 1); move(dino, 30, 260); move(arrow, 200, 300); move(vG.g, 330, 260);
         later(700, () => vG.set(1, 1)); }],
       ["Inti CMRE 2 · Hitung residual", "Angka asli dikurangi tebakan. Ciri barang saling menghapus, jadi yang tersisa hampir seluruhnya jejak latar. Mirip headphone peredam bising: suara sekitar ditangkap dulu, baru dihapus.", "ilustrasi", () => {
         move(vB2.g, 270, 30); vB2.set(1, 1); move(vG.g, 270, 175); vG.set(1, 1); move(minus, 225, 226); move(vR.g, 270, 330); move(equals, 225, 381);
@@ -1402,8 +1418,9 @@ footer { padding: 32px 0 48px; font-size: 14px; }
     $("cmreNext").onclick = () => go(step + 1);
     $("cmreReplay").onclick = () => go(step);
     let x0 = null;
-    S.addEventListener("pointerdown", e => x0 = e.clientX);
-    S.addEventListener("pointerup", e => { if (x0 == null) return; const d = e.clientX - x0; x0 = null; if (Math.abs(d) > 50) go(step + (d < 0 ? 1 : -1)); });
+    const panel = S.closest(".cmre-grid");  // swipe anywhere on the panel, except while dragging the step-8 slider
+    panel.addEventListener("pointerdown", e => x0 = e.target.closest("input") ? null : e.clientX);
+    panel.addEventListener("pointerup", e => { if (x0 == null) return; const d = e.clientX - x0; x0 = null; if (Math.abs(d) > 50) go(step + (d < 0 ? 1 : -1)); });
     addEventListener("keydown", e => { if (S.closest(".view").hidden || e.defaultPrevented || e.target.matches("input")) return;
       if (e.key === "ArrowRight") { e.preventDefault(); go(step + 1); } if (e.key === "ArrowLeft") { e.preventDefault(); go(step - 1); } });
     return { start: () => go(step) };
@@ -1455,7 +1472,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
   })();
   (() => {
     const NAMES = { battery: "Baterai", keyboard: "Keyboard", mobile: "Ponsel", mouse: "Mouse", pcb: "PCB" };
-    const COLS = { battery: "#184e77", keyboard: "#52b69a", mobile: "#99d98c", mouse: "#e0b13a", pcb: TERRA };
+    const COLS = { battery: "#21164c", keyboard: "#52b69a", mobile: "#99d98c", mouse: "#e0b13a", pcb: TERRA };
     const range = i => { const v = E.tsne.map(p => p[i]); return [Math.min(...v), Math.max(...v)]; };
     const R = [0, 1, 2, 3].map(range);
     const sx = (v, r) => 20 + 440 * (v - r[0]) / (r[1] - r[0]), sy = (v, r) => 380 - 356 * (v - r[0]) / (r[1] - r[0]);
@@ -1474,7 +1491,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
         const pts = E.tsne.filter(p => p[4] === c).map(p => [sx(p[o], R[o]), sy(p[o + 1], R[o + 1])]);
         const mx = pts.reduce((s, p) => s + p[0], 0) / pts.length, my = pts.reduce((s, p) => s + p[1], 0) / pts.length;
         const [lx, ly] = pts.reduce((b, p) => Math.hypot(p[0] - mx, p[1] - my) < Math.hypot(b[0] - mx, b[1] - my) ? p : b);
-        const t = txt(svg, Math.max(30, Math.min(450, lx)), Math.max(16, ly - 10), NAMES[c], { "text-anchor": "middle", class: "strong", "paint-order": "stroke", stroke: "#fcfdfa", "stroke-width": 4, "stroke-linejoin": "round" });
+        const t = txt(svg, Math.max(30, Math.min(450, lx)), Math.max(16, ly - 10), NAMES[c], { "text-anchor": "middle", class: "strong", "paint-order": "stroke", stroke: "#fff", "stroke-width": 4, "stroke-linejoin": "round" });
         t.dataset.cls = c; ls[key].push(t);
       });
       Object.keys(NAMES).forEach(c => { const [ax, ay] = cen(c, "kaan", o), [bx, by] = cen(c, "bangla", o);
@@ -1526,7 +1543,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
   });
   table("dsTbl", ["Metode", ...E.datasets.map(d => d.name)], METHODS.map(([k, l]) => [l, ...E.datasets.map(d => d[k] ?? "–")]));
   (() => {
-    const USED = ["DINOv3-H+", "PE-Core-G", "SigLIP2-So400m"], palette = ["#b5e48c", "#76c893", "#34a0a4", "#1a759f", "#184e77"];
+    const USED = ["DINOv3-H+", "PE-Core-G", "SigLIP2-So400m"], palette = ["#b5e48c", "#76c893", "#34a0a4", "#1a759f", "#21164c"];
     const FAM = { ssl: "Tanpa teks", sup: "Berlabel (ImageNet-22k)", vlm: "Vision-language" };
     const ranked = [...E.backbones].sort((a, b) => b.xsrc - a.xsrc), low = Math.min(...ranked.map(b => b.xsrc)), span = Math.max(...ranked.map(b => b.xsrc)) - low || 1;
     const svg = $("bbChart"), h = hbars(svg, ranked.map(b => ({ label: b.name.replace(" (IN-22k)", "") + (USED.includes(b.name) ? " *" : ""), value: b.xsrc,
@@ -1554,7 +1571,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
     const L = 40, Rt = 324, Tp = 14, Bm = 200, ymin = .4;
     const X = v => L + (Rt - L) * (xlog ? (Math.log2(v) - Math.log2(xmin)) / (Math.log2(xmax) - Math.log2(xmin)) : (v - xmin) / (xmax - xmin));
     const Y = v => Bm - (Bm - Tp) * (v - ymin) / (1 - ymin);
-    if (band) el("rect", { x: X(band[0]), y: Tp, width: X(band[1]) - X(band[0]), height: Bm - Tp, fill: "#e4efdc" }, svg);
+    if (band) el("rect", { x: X(band[0]), y: Tp, width: X(band[1]) - X(band[0]), height: Bm - Tp, fill: "#f2f3f5" }, svg);
     [.4, .6, .8, 1].forEach(v => { el("line", { x1: L, x2: Rt, y1: Y(v), y2: Y(v), class: v === ymin ? "base" : "grid" }, svg); txt(svg, L - 8, Y(v) + 4, fmt(v, 1), { "text-anchor": "end", class: "num" }); });
     xs.forEach(v => txt(svg, X(v), Bm + 18, v, { "text-anchor": "middle", class: "num" }));
     if (mk) { el("line", { x1: X(mk[0]), x2: X(mk[0]), y1: Tp, y2: Bm, stroke: INK, "stroke-width": 1 }, svg); txt(svg, X(mk[0]) + 5, Tp + 10, mk[1], { class: "ink" }); }

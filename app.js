@@ -211,6 +211,7 @@
     main.innerHTML = `<div class="page">
       <section class="scan">
         <div class="capture" data-drop="home">
+          <span class="eyebrow"><i></i>Ditenagai CMRE · 16 jenis e-waste</span>
           <h1>Foto barangnya.<br><span>E-Rase menunjukkan wadahnya.</span></h1>
           <p>Satu barang per foto. Pilih banyak foto sekaligus kalau barangnya banyak.</p>
           <div class="row"><button class="btn pri big" type="button" data-act="quick-cam">${ico("cam")}Ambil foto</button><button class="btn big" type="button" data-act="quick-files">${ico("img")}Pilih dari galeri</button></div>
@@ -304,7 +305,7 @@
           <select data-dcorr aria-label="Koreksi jenis barang">${corrOptions(it.conf === "koreksi" ? it.corr : null)}</select></div>
         <div class="fields"><label class="f">Jumlah<input type="number" min="1" step="1" value="${qty(it)}" data-dqty></label><label class="f">Berat (kg)<input type="number" min="0" step="0.1" value="${it.kg ?? ""}" data-dkg placeholder="opsional"></label></div>`}
         <details class="why"><summary>Kenapa? ${same} dari 5 foto termirip berjenis sama</summary>
-          <div class="ev"><h3>Foto BDC yang paling mirip</h3><p class="h">Angka di bawah foto: cosine similarity, 1 berarti identik. Bingkai navy: jenis yang sama.</p>
+          <div class="ev"><h3>Foto BDC yang paling mirip</h3><p class="h">Angka di bawah foto: cosine similarity, 1 berarti identik. Bingkai ungu: jenis yang sama.</p>
             <div class="nbg">${R.nb.map((id, k) => `<figure><img src="assets/t/${id}.webp" alt="" loading="lazy" class="${R.nbCluster[k] === R.cluster ? "same" : ""}" onerror="this.style.visibility='hidden'"><figcaption>${fmt(R.nbSim[k])}</figcaption></figure>`).join("")}</div></div>
           <div class="ev"><h3>Centroid terdekat</h3><p class="h">Sistem memilih jenis dengan jarak terpendek.</p>
             ${R.centres.map(([k, d], j) => `<div class="cb${j ? "" : " win"}"><span class="t">${esc(C[k].name.replace(/ \(.*\)/, ""))}</span><span class="tr"><i style="width:${Math.max(6, 100 * d / maxD)}%"></i></span><span class="n">${fmt(d)}</span></div>`).join("")}</div>
@@ -384,7 +385,7 @@
       <div class="head"><div class="t"><h1>Cara kerja</h1></div></div>
       <p class="lead">Model AI umum ikut membaca latar foto. Mouse di katalog berlatar putih dan mouse yang difoto di lapangan bisa ia anggap dua barang berbeda, lalu keduanya masuk wadah berbeda. CMRE (<i>Cross-Model Residual Erasure</i>) membuang jejak latar itu sebelum E-Rase memilah.</p>
       <section class="section"><div class="sechead"><h2>CMRE dalam 8 langkah</h2></div>
-        <iframe class="cmref" src="riset.html?embed&v=6#cara-kerja" title="Animasi cara kerja CMRE"></iframe></section>
+        <iframe class="cmref" src="riset.html?embed&v=11#cara-kerja" title="Animasi cara kerja CMRE"></iframe></section>
       <section class="section"><div class="sechead"><h2>Empat tahap untuk tiap foto</h2></div><ol class="pipe">
         <li><i>1</i><b>Lihat</b><span>SigLIP2, PE-Core, dan DINOv3 membaca foto tanpa dilatih ulang.</span></li>
         <li><i>2</i><b>Bersihkan</b><span>DINOv3 menebak; sisa yang tak tertebak berisi jejak latar, dan CMRE menghapusnya.</span></li>
@@ -543,7 +544,7 @@
       location.hash = "#/s/" + s.id;
     };
     if (window.DEMO) return go();
-    const sc = Object.assign(document.createElement("script"), { src: "demo.js?v=6" });
+    const sc = Object.assign(document.createElement("script"), { src: "demo.js?v=8" });
     sc.onload = go; sc.onerror = () => toast("Data contoh tidak termuat."); document.body.appendChild(sc);
   }
 
