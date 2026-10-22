@@ -1,6 +1,6 @@
 # Dashboard: Cross-Model Residual Erasure untuk Pengelompokan Sampah Elektronik tanpa Label yang Tahan Bias Sumber Foto
 
-**Buka aplikasi:** [https://sentra-ewaste.vercel.app](https://sentra-ewaste.vercel.app) · dashboard riset: [`#/riset`](https://sentra-ewaste.vercel.app/#/riset) · repositori utama (kode, hasil, reproduksi): [https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste](https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste)
+**Buka aplikasi:** [https://sentrahub.tech](https://sentrahub.tech) · dashboard riset: [`#/riset`](https://sentrahub.tech/#/riset) · repositori utama (kode, hasil, reproduksi): [https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste](https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste)
 
 ## Aplikasi SENTRA (`index.html`)
 
@@ -43,12 +43,6 @@ Kode, metodologi, dan cara reproduksi: https://github.com/elzaff/cross-model-res
 |---|---|
 | Kode kelompok / registrasi | SD2026040000100 |
 | Cabang lomba | Big Data Challenge (BDC), Satria Data 2026 |
-
-| No | Nama | Peran |
-|---|---|---|
-| 1 | Berliana Sarlita Rahajeng | Anggota |
-| 2 | Fazle Mawla Wahyuhanda | Ketua |
-| 3 | Muhammad Fatih Al Fawwaz | Anggota |
 
 ## Lisensi
 
