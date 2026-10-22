@@ -173,7 +173,7 @@
   const picked = new Set();
   function render() {
     const h = location.hash.replace(/^#\/?/, "").split("/");
-    const nav = { riwayat: "riwayat", jenis: "jenis", baru: "baru", "cara-kerja": "cara", uji: "cara", "": "home" }[h[0]] || "";
+    const nav = { riwayat: "riwayat", jenis: "jenis", baru: "baru", uji: "home", riset: "riset", "": "home" }[h[0]] || "";
     document.querySelectorAll("[data-nav]").forEach(a => a.dataset.nav === nav ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
     if (h[0] === "s" && S.has(h[1])) {
       const s = S.get(h[1]);
@@ -182,7 +182,9 @@
       return s.type === "uji" ? ujiView(s) : h[2] === "dokumen" ? docView(s) : workspace(s);
     }
     view = {};
-    return ({ riwayat: history, jenis: jenis, baru: jenisBaru, uji: ujiSetup, "cara-kerja": caraKerja }[h[0]] || home)();
+    if (h[0] === "cara-kerja") return location.replace("#/riset/cara-kerja");  // old links: the walkthrough moved into the dashboard
+    if (h[0] === "riset") return dashboard(h[1] || "beranda");
+    return ({ riwayat: history, jenis: jenis, baru: jenisBaru, uji: ujiSetup }[h[0]] || home)();
   }
 
   // ================= views =================
@@ -211,7 +213,7 @@
     main.innerHTML = `<div class="page">
       <section class="scan">
         <div class="capture" data-drop="home">
-          <h1>Foto barangnya.<br><span>SENTRA menunjukkan wadahnya.</span></h1>
+          <h1>Foto barangnya,<br><span>langsung tahu kategori dan jalurnya.</span></h1>
           <p>Satu barang per foto. Pilih banyak foto sekaligus kalau barangnya banyak.</p>
           <div class="row"><button class="btn pri big" type="button" data-act="quick-cam">${ico("cam")}Ambil foto</button><button class="btn big" type="button" data-act="quick-files">${ico("img")}Pilih dari galeri</button></div>
           ${coarse ? "" : `<p class="small">Atau drag foto ke kotak ini.</p>`}
@@ -353,7 +355,7 @@
       <span class="jn">${tag(clusterRoute(c))}<br><span>${c.n} foto</span></span></button>`;
     const group = (title, list) => `<section class="jgroup"><div class="sechead"><h2>${title}</h2><span class="muted small">${list.length} kategori</span></div>${list.map(jrow).join("")}</section>`;
     main.innerHTML = `<div class="page">
-      <div class="head"><div class="t"><h1>Kategori</h1><p class="meta">SENTRA mengenali 16 kategori. Kategori ini hasil clustering 3.792 foto BDC tanpa label; tim memberi nama sesudahnya. <a href="riset.html#kelompok">Peta 16 cluster dan alasan memilih K = 16 ada di dashboard riset.</a></p></div></div>
+      <div class="head"><div class="t"><h1>Kategori</h1><p class="meta">SENTRA mengenali 16 kategori. Kategori ini hasil clustering 3.792 foto BDC tanpa label; tim memberi nama sesudahnya. <a href="#/riset/k17">Peta 16 cluster dan alasan memilih K = 16 ada di dashboard riset.</a></p></div></div>
       ${group("Jalur B3", C.filter(c => c.b3))}${group("Jalur non-B3", C.filter(c => !c.b3))}
       <section class="jgroup"><div class="sechead"><h2>Kategori baru di perangkat ini</h2><a href="#/baru">Cluster barang yang perlu dicek</a></div>
         ${types().length ? `<div class="rows">${types().map(t => `<div class="srow"><span>${tag({ label: (t.b3 ? "B3 · " : "Non-B3 · ") + t.name, cls: t.b3 ? "b3" : "" })}</span>
@@ -370,38 +372,17 @@
     dlg.showModal();
   }
 
-  // ================= Cara kerja: problem, the CMRE animation (from riset.html), evidence =================
-  function caraKerja() {
-    const ds = E.datasets;
-    main.innerHTML = `<div class="page article">
-      <div class="head"><div class="t"><h1>Cara kerja</h1><p class="meta">SENTRA: Sistem Pengelompokan Terpadu Rongsok Alat-elektronik.</p></div></div>
-      <p class="lead">Model AI ikut membaca background foto. Mouse di katalog berlatar putih dan mouse yang difoto dengan background hijau bisa masuk dua cluster berbeda, padahal barangnya sama. CMRE (<i>Cross-Model Residual Erasure</i>) membuang background bias itu sebelum clustering.</p>
-      <section class="section"><div class="sechead"><h2>CMRE dalam 8 langkah</h2></div>
-        <iframe class="cmref" src="riset.html?embed&v=14#cara-kerja" title="Animasi cara kerja CMRE"></iframe></section>
-      <section class="section"><div class="sechead"><h2>Pipeline untuk tiap foto</h2></div><ol class="pipe">
-        <li><i>1</i><b>Embed</b><span>SigLIP2, PE-Core, dan DINOv3 mengubah foto jadi embedding, tanpa fine-tuning.</span></li>
-        <li><i>2</i><b>Erase</b><span>DINOv3 menebak embedding dua model lain. Residual-nya berisi background bias, dan CMRE membuangnya.</span></li>
-        <li><i>3</i><b>Cluster</b><span>SCMax memilih K = 16 tanpa label. Foto baru masuk ke centroid terdekat.</span></li>
-        <li><i>4</i><b>OOD check</b><span>Foto yang jauh dari semua foto BDC ditandai perlu dicek oleh petugas.</span></li></ol></section>
-      <section class="section"><div class="sechead"><h2>Hasil pengujian</h2></div><div class="tw"><table class="mini">
-        <thead><tr><th>Metrik</th><th class="n">Tanpa CMRE</th><th class="n">Dengan CMRE</th></tr></thead><tbody>
-        <tr><td>Cross-source consistency (BDC)</td><td class="n">0,524</td><td class="n big">0,975</td></tr>
-        <tr><td>Cross-source consistency, data baru (Shubha)</td><td class="n">0,356</td><td class="n big">0,956</td></tr>
-        <tr><td>Source bias tersisa (makin kecil makin baik)</td><td class="n">0,103</td><td class="n big">0,016</td></tr>
-        <tr><td>Run dengan hasil cluster identik</td><td class="n">-</td><td class="n big">100 / 100</td></tr>
-        <tr><td>AUROC deteksi OOD</td><td class="n">-</td><td class="n big">0,952</td></tr></tbody></table></div>
-        <p class="small muted">Sumber: karya ilmiah tim untuk BDC Satria Data 2026.</p></section>
-      <section class="section"><div class="sechead"><h2>Uji dengan dataset sendiri</h2></div>
-        <p>Siapkan folder foto berlabel dari dua sumber. SENTRA menghitung cross-source consistency dengan dan tanpa CMRE.</p>
-        <a class="btn pri" href="#/uji">Uji dengan dataset sendiri</a></section>
-      <section class="section"><div class="sechead"><h2>Data</h2></div><div class="tw"><table class="mini"><thead><tr><th>Dataset</th><th>Peran</th><th class="n">Foto</th></tr></thead><tbody>
-        ${ds.map(d => `<tr><td>${esc(d.name)}</td><td>${esc(d.role)}</td><td class="n">${d.n.toLocaleString("id-ID")}</td></tr>`).join("")}</tbody></table></div>
-        <p class="small muted">Label hanya dipakai untuk evaluasi, tidak untuk membentuk cluster.</p></section>
-      <p class="section small"><a href="riset.html">Detail teknis: dataset, baseline, robustness test, dan lisensi</a></p></div>`;
+  // ================= Dashboard riset: riset.html inside the app shell (embed=dash keeps its own tabs) =================
+  function dashboard(sub) {
+    if (main.querySelector("iframe.dash")?.dataset.sub === sub) return;  // re-renders must not reload the dashboard
+    main.innerHTML = `<div class="page">
+      <div class="head"><div class="t"><h1>Dashboard riset</h1><p class="meta">Peta 3.792 foto BDC, 16 cluster, cara kerja CMRE, dan hasil pengujian dari paper tim untuk BDC Satria Data 2026.</p></div>
+        <div class="acts"><a class="btn" href="#/">Kembali ke Pilah</a></div></div>
+      <iframe class="dash" data-sub="${esc(sub)}" src="riset.html?embed=dash&v=18#${encodeURIComponent(sub)}" title="Dashboard riset CMRE"></iframe></div>`;
   }
   addEventListener("message", e => {
     if (e.origin !== location.origin || !e.data || !e.data.eraseH) return;
-    const f = main.querySelector(".cmref"); if (f) f.style.height = Math.ceil(e.data.eraseH) + "px";
+    const f = main.querySelector("iframe"); if (f) f.style.height = Math.ceil(e.data.eraseH) + "px";
   });
 
   // ================= Kategori baru: regroup held items into candidate new kinds (clustering, no labels) =================
@@ -449,7 +430,7 @@
   // ================= Uji metode: the officer's (or jury's) own labelled folder, with vs without CMRE =================
   function ujiSetup() {
     main.innerHTML = `<div class="page article">
-      <div class="head"><a class="iconbtn" href="#/cara-kerja" aria-label="Kembali">${ico("back")}</a><div class="t"><h1>Uji dengan dataset sendiri</h1>
+      <div class="head"><a class="iconbtn" href="#/" aria-label="Kembali">${ico("back")}</a><div class="t"><h1>Uji dengan dataset sendiri</h1>
         <p class="meta">Cek apakah foto barang sejenis dari dua sumber masuk cluster yang sama, dengan dan tanpa CMRE.</p></div></div>
       <ol class="pipe three">
         <li><i>1</i><b>Satu subfolder per label</b><span>Nama subfolder jadi label, mis. mouse, keyboard, baterai.</span></li>

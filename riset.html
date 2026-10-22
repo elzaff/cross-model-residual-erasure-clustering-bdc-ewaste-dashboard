@@ -2,39 +2,39 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<script>if (new URLSearchParams(location.search).has("embed")) document.documentElement.classList.add("embed");  // shown inside the SENTRA app</script>
+<script>{ const e = new URLSearchParams(location.search).get("embed"); if (e !== null) document.documentElement.classList.add("embed", ...(e === "dash" ? ["dash"] : [])); }  // shown inside the SENTRA app</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CMRE · Dashboard Riset</title>
 <meta name="description" content="Dashboard clustering foto sampah elektronik tanpa label dengan CMRE (BDC Satria Data 2026).">
-<link rel="icon" type="image/svg+xml" href="assets/logo.svg?v=11">
+<link rel="icon" type="image/svg+xml" href="assets/mark.svg?v=12">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <style>
 /* Direction (owner, Oct 2026): structure follows the SENTRA app (adora.ai-like): off-white canvas, white cards,
-   deep indigo #21164c for structure and headings, violet #592eff for links and primary actions. Variable names below
-   are historical (forest = ink, green = violet). Data series keep the palette's blues and greens; lime for soft fills.
+   navy #184e77 for structure and headings, blue #1a759f for links and primary actions. Variable names below
+   are historical (forest = navy, green = blue). Data series keep the palette's blues and greens; lime for soft fills.
    The palette has no warm hue, so one warm pair is added on purpose: terracotta for "needs attention" (alarm, the K = 17
    split, low stability) and mustard for one category, so warnings never blend into the cool data colours.
    Plus Jakarta Sans: 400 body, 500 labels, 600 headings, 700 for the wordmark only.
    Radius: 20px cards, 12px controls, full pills only for state chips. No shadows; separation by tone and hairlines.
    Light canvas only (projector use); the navy bands are part of the system, not a theme. */
 :root {
-  --cream: #f9f9f7; --cream-2: #f2f3f5; --card: #fff; --line: #e6e6e1;
-  --forest: #21164c; --forest-d: #1a1140; --forest-c: #2d2160; --green: #592eff; --sage: #99d98c; --sage-l: #f1edff;
-  --ink: #353241; --muted: #5f5f69; --terra: #d0702a; --ochre: #e0b13a; --butter: #fbe6c4; --blush: #f8dccb;
-  --on-dark: #f9f9f7; --on-dark-2: #d9d4f2; --dark-line: rgba(255, 255, 255, .14);
+  --cream: #f6f8f7; --cream-2: #edf1f2; --card: #fff; --line: #e1e7ea;
+  --forest: #184e77; --forest-d: #0f2e47; --forest-c: #1b4566; --green: #1a759f; --sage: #99d98c; --sage-l: #e5f1f6;
+  --ink: #2a3a46; --muted: #566773; --terra: #d0702a; --ochre: #e0b13a; --butter: #fbe6c4; --blush: #f8dccb;
+  --on-dark: #f6f8f7; --on-dark-2: #cfe3ee; --dark-line: rgba(255, 255, 255, .14);
   --sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--cream); color: var(--ink); font: 400 16px/1.55 var(--sans); -webkit-font-smoothing: antialiased; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }
-h1, h2, h3 { font-weight: 600; margin: 0; color: var(--forest); letter-spacing: -.02em; }
-.display { font-size: clamp(36px, 5.4vw, 64px); line-height: 1.06; }
-.heading-lg { font-size: clamp(30px, 4.2vw, 48px); line-height: 1.1; }
-h2 { font-size: clamp(22px, 2.6vw, 28px); line-height: 1.25; }
-h3 { font-size: 19px; line-height: 1.3; }
+h1, h2, h3 { font-weight: 700; margin: 0; color: #10293d; letter-spacing: -.02em; }
+.display { font-size: clamp(30px, 4vw, 44px); line-height: 1.1; letter-spacing: -.03em; }
+.heading-lg { font-size: clamp(26px, 3vw, 34px); line-height: 1.15; letter-spacing: -.025em; }
+h2 { font-size: clamp(19px, 2vw, 22px); line-height: 1.3; }
+h3 { font-size: 16px; line-height: 1.35; }
 p { margin: 8px 0; }
 b, strong { font-weight: 600; }
 a { color: var(--green); text-underline-offset: 3px; }
@@ -43,50 +43,50 @@ a { color: var(--green); text-underline-offset: 3px; }
 code { font-size: .9em; background: var(--cream-2); padding: 1px 6px; border-radius: 6px; }
 .wrap { width: min(1200px, 100% - 32px); margin: 0 auto; }
 .muted { color: var(--muted); }
-.kicker { font-size: 14px; font-weight: 500; color: var(--green); margin: 0 0 12px; }
-.lead { font-size: 18px; line-height: 1.5; color: var(--muted); max-width: 62ch; }
+.kicker { font-size: 13px; font-weight: 600; color: var(--green); margin: 0 0 10px; }
+.lead { font-size: 16px; line-height: 1.6; color: var(--muted); max-width: 66ch; }
 .num { font-variant-numeric: tabular-nums; }
 
 /* controls: 12px radius; filled green = primary, card = quiet, forest = selected */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 12px; font: 500 15px var(--sans); cursor: pointer; border: 1px solid var(--line); background: var(--card); color: var(--forest); text-decoration: none; white-space: nowrap; transition: background .15s, border-color .15s; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 12px; font: 600 14px var(--sans); cursor: pointer; border: 1px solid #cfd8dd; background: var(--card); color: #10293d; text-decoration: none; white-space: nowrap; transition: background .15s, border-color .15s; }
 .btn:hover { background: var(--cream-2); }
 .btn.primary { background: var(--green); border-color: var(--green); color: #fff; }
-.btn.primary:hover { background: var(--forest); border-color: var(--forest); }
+.btn.primary:hover { background: #1e6091; border-color: #1e6091; }
 .btn[aria-pressed="true"], .btn[aria-selected="true"] { background: var(--forest); border-color: var(--forest); color: var(--on-dark); }
 .dark .btn { background: var(--forest-c); border-color: var(--dark-line); color: var(--on-dark); }
-.dark .btn:hover { background: #3a2c78; }
+.dark .btn:hover { background: #1a5a85; }
 .dark .btn.primary { background: #fff; border-color: #fff; color: var(--forest); }
 .dark .btn.primary:hover { background: var(--cream-2); }
 .seg { display: inline-flex; flex-wrap: wrap; gap: 8px; }
 
 /* header */
-header.top { position: sticky; top: 0; z-index: 30; background: rgba(249, 249, 247, .9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+header.top { position: sticky; top: 0; z-index: 30; background: rgba(246, 248, 247, .9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
 .top .wrap { display: flex; align-items: center; gap: 20px; min-height: 66px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 21px; letter-spacing: -.01em; color: var(--forest); text-decoration: none; white-space: nowrap; }
 .brand img { width: 28px; height: 28px; display: block; }
 nav.views { display: flex; gap: 4px; margin-left: auto; }
-nav.views a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 12px; font-size: 15px; font-weight: 500; text-decoration: none; color: var(--muted); white-space: nowrap; }
+nav.views a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 12px; font-size: 14px; font-weight: 600; text-decoration: none; color: var(--muted); white-space: nowrap; }
 nav.views a:hover { color: var(--forest); background: var(--cream-2); }
-nav.views a[aria-current="page"] { color: var(--forest); background: var(--sage-l); }
+nav.views a[aria-current="page"] { color: #10293d; background: var(--cream-2); }
 @media (max-width: 900px) {
   .top .wrap { flex-wrap: wrap; gap: 6px; padding: 8px 0; }
   nav.views { width: 100%; margin: 0; flex-wrap: wrap; }
   nav.views a { flex: 1 0 auto; justify-content: center; padding: 0 8px; font-size: 14px; }
 }
 .view[hidden], .sub[hidden] { display: none; }
-section { padding: 64px 0; scroll-margin-top: 80px; }
+section { padding: 40px 0; scroll-margin-top: 80px; }
 section.band { background: var(--cream-2); }
 .dark { background: var(--forest-d); color: var(--on-dark); }
 .dark h1, .dark h2, .dark h3 { color: var(--on-dark); }
 .dark .muted, .dark .lead { color: var(--on-dark-2); }
 .dark .kicker { color: var(--sage); }
 .dark a { color: var(--on-dark); }
-.pagehead { padding: 48px 0 32px; }
+.pagehead { padding: 32px 0 8px; }
 .pagehead .lead { margin-top: 14px; }
 @media (max-width: 720px) { section { padding: 40px 0; } .pagehead { padding: 28px 0 20px; } .lead { font-size: 16px; } }
 
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 28px; }
-.panel { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 28px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 24px; }
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 24px; }
 .dark .card, .card.dark { background: var(--forest-c); border-color: var(--dark-line); }
 @media (max-width: 720px) { .card, .panel { padding: 18px; } }
 .two { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
@@ -108,14 +108,14 @@ section.band { background: var(--cream-2); }
 .chip.b3 { background: var(--forest); color: var(--on-dark); }
 
 /* ---- Peta: hero band, then the demo stage */
-.hero { padding: 64px 0; }
+.hero { padding: 40px 0 8px; }
 .hero-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 40px; align-items: end; }
 .hero .lead { margin-top: 18px; }
 .hero .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
 .why { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
-.why li { padding: 18px 0; border-top: 1px solid var(--dark-line); font-size: 15px; color: var(--on-dark-2); }
+.why li { padding: 16px 0; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
 .why li:first-child { border-top: 0; padding-top: 0; }
-.why .n { display: block; font-size: 24px; font-weight: 600; color: var(--on-dark); margin-bottom: 2px; }
+.why .n { display: block; font-size: 20px; font-weight: 700; color: #10293d; margin-bottom: 2px; }
 @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; } .hero { padding: 40px 0; } }
 .stage { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; align-items: start; }
 @media (max-width: 1050px) { .stage { grid-template-columns: 1fr; } }
@@ -261,7 +261,7 @@ svg.map .me { fill: var(--forest); stroke: var(--card); stroke-width: 2; }
 .sw.focus { background: var(--forest); border-radius: 3px; } .sw.context { background: #93a3ab; border-radius: 3px; }
 .sw.tri { width: 0; height: 0; border-radius: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 11px solid var(--ink); }
 .sw.dot.source { background: var(--ink); }
-.sw.ramp { width: 84px; height: 10px; border-radius: 999px; background: linear-gradient(90deg, #b5e48c, #34a0a4, #1a759f, #21164c); }
+.sw.ramp { width: 84px; height: 10px; border-radius: 999px; background: linear-gradient(90deg, #b5e48c, #34a0a4, #1a759f, #184e77); }
 .chart-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
 .dataset-chart > .chart { min-width: 420px; }
 .cluster-chart > .chart { min-width: 940px; }
@@ -340,12 +340,12 @@ details.tbl td.r, details.tbl th.r { text-align: right; font-variant-numeric: ta
 .k17grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 32px; align-items: start; margin-top: 28px; }
 @media (max-width: 900px) { .k17grid { grid-template-columns: 1fr; } }
 .k17list { margin: 0; padding: 0; list-style: none; }
-.k17list li { padding: 14px 0; border-top: 1px solid var(--dark-line); font-size: 15px; color: var(--on-dark-2); }
+.k17list li { padding: 14px 0; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
 .k17list li:first-child { border-top: 0; padding-top: 0; }
-.k17list li b { display: block; font-size: 18px; color: var(--on-dark); margin-bottom: 2px; }
+.k17list li b { display: block; font-size: 16px; color: #10293d; margin-bottom: 2px; }
 .k17thumbs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 14px; }
 .k17thumbs img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; display: block; background: var(--forest-c); }
-.k17map { background: var(--card); border-radius: 20px; padding: 16px; color: var(--ink); }
+.k17map { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 16px; color: var(--ink); }
 .k17map .legend, .k17map .csub { color: var(--muted); }
 .k17map .btn { background: var(--card); border-color: var(--line); color: var(--forest); }
 .k17map .btn[aria-pressed="true"] { background: var(--forest); border-color: var(--forest); color: var(--on-dark); }
@@ -376,12 +376,21 @@ dialog .panel img { width: 100%; display: block; border-radius: 12px; background
 .sources { padding: 0; margin: 0; list-style: none; columns: 2; column-gap: 40px; }
 .sources li { padding: 12px 0; border-bottom: 1px solid var(--line); break-inside: avoid; font-size: 15px; }
 @media (max-width: 720px) { .sources { columns: 1; } }
-footer { padding: 32px 0 48px; font-size: 14px; }
+footer { padding: 24px 0 32px; font-size: 13px; color: var(--muted); text-align: center; border-top: 1px solid var(--line); }
 /* embed mode (riset.html?embed#cara-kerja inside the app): only the CMRE animation, no chrome */
 .embed header.top, .embed footer, .embed .pagehead, .embed #dataError { display: none !important; }
 .embed body { background: transparent; }
 .embed .wrap { width: 100%; }
 .embed [data-view="cara-kerja"] > .wrap { padding-bottom: 2px !important; }
+/* embed=dash: the whole dashboard inside the SENTRA app. The app supplies brand and navigation, so keep only the tabs,
+   as a plain tab bar above the content; links back to the app are hidden (the app shell is already there) */
+.embed a[href="./"] { display: none !important; }
+.embed.dash header.top { display: block !important; position: static; background: transparent; border: 0; backdrop-filter: none; margin-bottom: 8px; }
+.embed.dash .brand { display: none; }
+.embed.dash nav.views { margin-left: 0; }
+.embed.dash .pagehead { display: block !important; }
+.embed.dash .wrap { width: calc(100% - 48px); }
+@media (max-width: 720px) { .embed.dash .wrap { width: calc(100% - 28px); } }
 .navapp { margin-left: 6px; color: #fff !important; background: var(--green); }
 .navapp:hover { background: var(--forest) !important; }
 </style>
@@ -389,7 +398,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
 <body>
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#beranda"><img src="assets/logo.svg?v=11" alt="" width="28" height="28">CMRE</a>
+    <a class="brand" href="#beranda"><img src="assets/mark.svg?v=12" alt="" width="28" height="28">CMRE</a>
     <nav class="views" aria-label="Halaman">
       <a href="#beranda" data-view="beranda">Peta</a>
       <a href="#coba" data-view="coba">Galeri uji</a>
@@ -406,7 +415,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
 <main>
 <!-- ================= PETA ================= -->
 <div class="view" data-view="beranda">
-  <section class="dark hero">
+  <section class="hero">
     <div class="wrap hero-grid">
       <div>
         <p class="kicker">BDC Satria Data 2026 · tim SD2026040000100</p>
@@ -491,14 +500,14 @@ footer { padding: 32px 0 48px; font-size: 14px; }
     </div>
   </section>
 
-  <section class="dark" id="k17">
+  <section id="k17">
     <div class="wrap">
       <p class="kicker">Kenapa bukan 17 cluster</p>
       <h2 class="heading-lg">Cluster ke-17 memisahkan foto tumpukan menurut background-nya.</h2>
       <p class="lead" style="margin-top:14px">Dari 100 iterasi SCMax, K = 17 paling sering terpilih, tetapi kami memakai K = 16. Pilih K = 17 untuk melihat foto yang terpisah.</p>
       <div class="k17grid">
         <div class="k17map">
-          <div class="legend" style="margin:0 0 8px"><span><i class="sw" style="background:#21164c"></i>C15</span><span><i class="sw" style="background:#d0702a"></i>cluster baru di K = 17</span></div>
+          <div class="legend" style="margin:0 0 8px"><span><i class="sw" style="background:#184e77"></i>C15</span><span><i class="sw" style="background:#d0702a"></i>cluster baru di K = 17</span></div>
           <div class="seg" role="group" aria-label="Jumlah cluster" style="margin-bottom:10px">
             <button class="btn" type="button" data-kval="16" aria-pressed="true">K = 16</button>
             <button class="btn" type="button" data-kval="17" aria-pressed="false">K = 17</button>
@@ -689,7 +698,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
         <div class="card dark" id="headline"></div>
         <div class="panel" style="margin-top:20px">
           <p class="ctitle">Cross-source consistency per metode dan dataset</p>
-          <p class="csub">Titik ungu tua = CMRE, titik abu-abu = baseline. Sumbu mulai dari 0,3 supaya selisih terbaca. Garis pada CMRE = confidence interval 95%.</p>
+          <p class="csub">Titik biru tua = CMRE, titik abu-abu = baseline. Sumbu mulai dari 0,3 supaya selisih terbaca. Garis pada CMRE = confidence interval 95%.</p>
           <div class="key"><span><i class="sw focus"></i>CMRE</span><span><i class="sw context"></i>Baseline</span></div>
           <p class="chart-hint">Di layar sempit, geser grafik ke samping.</p>
           <div class="four" id="dsGrid"></div>
@@ -718,7 +727,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
         </div>
         <div class="panel sc-panel" role="tabpanel" id="sc-p1" aria-labelledby="sc-t1" tabindex="0">
           <div class="sc-grid">
-            <div><p class="ctitle">Cross-source consistency per model tunggal, BDC</p><p class="csub">Batang ungu tua = DINOv3-H+, reference model CMRE.</p><svg id="scS1" class="chart" role="img" aria-label="Consistency per model tunggal"></svg><div id="scS1t"></div></div>
+            <div><p class="ctitle">Cross-source consistency per model tunggal, BDC</p><p class="csub">Batang biru tua = DINOv3-H+, reference model CMRE.</p><svg id="scS1" class="chart" role="img" aria-label="Consistency per model tunggal"></svg><div id="scS1t"></div></div>
             <div class="sc-note">
               <p>Vision-language model hanya menempatkan 37 sampai 57 dari 100 foto Bangladesh bersama foto katalog Kaan yang sejenis. DINOv3-H+, yang belajar tanpa teks, mencapai 86.</p>
               <p>DINOv3 sendirian belum cukup: di pipeline akhir nilainya 0,758, sedangkan fusion tiga model setelah CMRE mencapai 0,975.</p>
@@ -741,7 +750,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
         </div>
         <div class="panel sc-panel" role="tabpanel" id="sc-p3" aria-labelledby="sc-t3" tabindex="0" hidden>
           <div class="sc-grid">
-            <div><p class="ctitle" id="scS3title"></p><p class="csub">Batang ungu tua = Spectral.</p><div class="sc-seg" role="group" aria-label="Ukuran" id="scS3m"></div><svg id="scS3" class="chart" role="img" aria-label="Consistency per algoritma"></svg><div id="scS3t"></div></div>
+            <div><p class="ctitle" id="scS3title"></p><p class="csub">Batang biru tua = Spectral.</p><div class="sc-seg" role="group" aria-label="Ukuran" id="scS3m"></div><svg id="scS3" class="chart" role="img" aria-label="Consistency per algoritma"></svg><div id="scS3t"></div></div>
             <div class="sc-note">
               <p>Semua algoritma memakai fitur dan jumlah cluster yang sama, jadi selisihnya murni dari algoritma.</p>
               <p>Pada NMI (kecocokan dengan label kelas), beberapa algoritma lain sedikit di atas Spectral, tetapi cross-source consistency-nya lebih rendah. Semua algoritma memakai fitur CMRE; tanpa CMRE nilainya 0,789.</p>
@@ -762,7 +771,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
         </div>
         <div class="panel sc-panel" role="tabpanel" id="sc-p5" aria-labelledby="sc-t5" tabindex="0" hidden>
           <div class="sc-grid">
-            <div><p class="ctitle">K pilihan SCMax pada 100 percobaan</p><p class="csub">Batang ungu tua = K final, oranye = K = 17.</p><svg id="kDist" class="chart" role="img" aria-label="Sebaran K pilihan SCMax"></svg><div id="kDistT"></div></div>
+            <div><p class="ctitle">K pilihan SCMax pada 100 percobaan</p><p class="csub">Batang biru tua = K final, oranye = K = 17.</p><svg id="kDist" class="chart" role="img" aria-label="Sebaran K pilihan SCMax"></svg><div id="kDistT"></div></div>
             <div class="sc-note">
               <p>Kriteria klasik tanpa label baru memilih K yang berdekatan setelah CMRE:</p>
               <div id="scS5picks"></div>
@@ -871,7 +880,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
   </div>
 </div>
 </main>
-<footer class="dark"><div class="wrap">BDC Satria Data 2026 · tim SD2026040000100 · foto dari dataset lain berasal dari dataset publik; lisensinya ada di Analisis, bagian Sumber.</div></footer>
+<footer><div class="wrap">Tim SD2026040000100 · BDC Satria Data 2026</div></footer>
 
 <script src="data.js?v=5"></script>
 <script src="demo.js?v=5"></script>
@@ -880,7 +889,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
   const E = window.EWASTE, D = window.DEMO;
   if (!E || !D) { document.getElementById("dataError").hidden = false; return; }
   const NS = "http://www.w3.org/2000/svg", $ = id => document.getElementById(id);
-  const FOCUS = "#21164c", CONTEXT = "#93a3ab", INK = "#353241", TERRA = "#d0702a", LINE = "#d3e2cb";
+  const FOCUS = "#184e77", CONTEXT = "#93a3ab", INK = "#353241", TERRA = "#d0702a", LINE = "#d3e2cb";
   const fmt = (v, d = 3) => v == null ? "–" : v.toFixed(d).replace(".", ",");
   const pct = v => (Math.round(v * 1000) / 10).toString().replace(".", ",") + "%";
   const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
@@ -945,7 +954,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
   // six handling categories: four cool hues from the owner palette (navy, blue, teal, light green) plus mustard and terracotta.
   // Terracotta doubles as "needs attention" (components, the K = 17 split, low stability), which is why components carry it.
   const CATNAME = { baterai: "Baterai", layar: "Layar dan monitor", besar: "Peralatan besar", kecil: "Peralatan kecil", ti: "TI dan telekomunikasi kecil", komponen: "Komponen" };
-  const CATCOLORS = { baterai: "#21164c", layar: "#168aad", besar: "#e0b13a", kecil: "#99d98c", ti: "#52b69a", komponen: TERRA };
+  const CATCOLORS = { baterai: "#184e77", layar: "#168aad", besar: "#e0b13a", kecil: "#99d98c", ti: "#52b69a", komponen: TERRA };
   // one hue per photo source; Bangladesh carries the warm accent because it is the source CMRE has to pull back in
   const SRCCOL = { bdc: "#c4d3cc", kaan: "#1a759f", bangla: TERRA, karan: "#e0b13a", giz: "#52b69a" };
   const C = E.clusters;
@@ -1067,7 +1076,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
           <p class="evs">Sistem membandingkan foto ini dengan centroid 16 cluster. Centroid dengan jarak terpendek menentukan cluster-nya.</p>
           <div class="body">${centresHtml}</div></div>
         <div class="ev"><div class="evh"><span class="k">2</span>Foto BDC yang paling mirip</div>
-          <p class="evs">${same} dari 5 foto termirip juga ada di C${cl.id} (berbingkai ungu tua). Angka di bawah foto = cosine similarity; 1 berarti sama persis.</p>
+          <p class="evs">${same} dari 5 foto termirip juga ada di C${cl.id} (berbingkai biru tua). Angka di bawah foto = cosine similarity; 1 berarti sama persis.</p>
           <div class="body nbgrid">${nbHtml}</div></div>
         <div class="ev"><div class="evh"><span class="k">3</span>Cek OOD: apakah barang ini dikenal?</div>
           <p class="evs">${alarm ? "Jarak ke nearest neighbor BDC ke-10 melewati threshold, jadi sistem meminta petugas memeriksa." : "Jarak ke nearest neighbor BDC ke-10 masih di bawah threshold, jadi barang ini mirip barang yang sudah dikenal."}${unknown ? ` ${cardLabel(card)} memang tidak ada di data BDC.` : ""}</p>
@@ -1349,9 +1358,9 @@ footer { padding: 32px 0 48px; font-size: 14px; }
     const setMeter = s => { mFill.style.transform = `scaleX(${diff(s) / dMax})`; mFill.setAttribute("fill", s > .5 ? SRC : OBJ); mLbl.textContent = s > .5 ? "jauh" : "dekat"; };
     // single-photo pipeline for B: actual, DINOv3 guess, residual
     const vB2 = vec("embedding asli foto B (vision-language)", B_OBJ, B_SRC), vG = vec("tebakan DINOv3 untuk foto B", B_OBJ, [.06, .05, .07, .05]), vR = vec("residual = asli − tebakan", B_OBJ.map(() => .05), B_SRC.map(v => v - .05));
-    const dino = grp(); el("rect", { x: 0, y: 0, width: 150, height: 70, rx: 14, fill: "#21164c" }, dino);
+    const dino = grp(); el("rect", { x: 0, y: 0, width: 150, height: 70, rx: 14, fill: "#184e77" }, dino);
     txt(dino, 75, 32, "DINOv3", { class: "lbl", "text-anchor": "middle", style: "fill:#f3f8ee" }); txt(dino, 75, 52, "belajar dari foto saja", { class: "sm", "text-anchor": "middle", style: "fill:#cfe3ee" });
-    const arrow = grp(); el("path", { d: "M0 0H70", stroke: "#21164c", "stroke-width": 2, fill: "none" }, arrow); el("path", { d: "M70 -6L82 0L70 6Z", fill: "#21164c" }, arrow);
+    const arrow = grp(); el("path", { d: "M0 0H70", stroke: "#184e77", "stroke-width": 2, fill: "none" }, arrow); el("path", { d: "M70 -6L82 0L70 6Z", fill: "#184e77" }, arrow);
     // step 5 is a column subtraction: actual − guess = residual; each operator carries a word so it reads as arithmetic
     const op = (sign, word) => { const g = grp(); txt(g, 0, 0, sign, { class: "big", "text-anchor": "middle" }); txt(g, 0, 22, word, { class: "sm", "text-anchor": "middle" }); return g; };
     const minus = op("−", "dikurangi"), equals = op("=", "hasilnya");
@@ -1362,7 +1371,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
       const v = vec(r ? "" : "residual dari banyak foto", Array(8).fill(0).map(() => .04 + rnd() * .1), Array(4).fill(0).map(() => .45 + rnd() * .5), 44);
       many.appendChild(v.g); v.g.style.opacity = 1; v.g.style.transform = `translate(0px,${r * 58}px)`; manyRows.push(v);
     }
-    const band = el("rect", { x: 8 * 22 - 6, y: -30, width: 4 * 22 + 8, height: 6 * 58 + 10, rx: 10, fill: "none", stroke: "#21164c", "stroke-width": 2.5, "stroke-dasharray": "6 5", class: "fade" }, many); band.style.opacity = 0;
+    const band = el("rect", { x: 8 * 22 - 6, y: -30, width: 4 * 22 + 8, height: 6 * 58 + 10, rx: 10, fill: "none", stroke: "#184e77", "stroke-width": 2.5, "stroke-dasharray": "6 5", class: "fade" }, many); band.style.opacity = 0;
     const bandLbl = txt(many, 8 * 22 + 4 * 11, 6 * 58 + 6, "pola yang sama di banyak foto", { class: "lbl fade", "text-anchor": "middle" }); bandLbl.style.opacity = 0;
     // step 8: real data
     const real = grp(), RX = v => 30 + v * .74, RY = v => 20 + v * .41;
@@ -1474,7 +1483,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
   })();
   (() => {
     const NAMES = { battery: "Baterai", keyboard: "Keyboard", mobile: "Ponsel", mouse: "Mouse", pcb: "PCB" };
-    const COLS = { battery: "#21164c", keyboard: "#52b69a", mobile: "#99d98c", mouse: "#e0b13a", pcb: TERRA };
+    const COLS = { battery: "#184e77", keyboard: "#52b69a", mobile: "#99d98c", mouse: "#e0b13a", pcb: TERRA };
     const range = i => { const v = E.tsne.map(p => p[i]); return [Math.min(...v), Math.max(...v)]; };
     const R = [0, 1, 2, 3].map(range);
     const sx = (v, r) => 20 + 440 * (v - r[0]) / (r[1] - r[0]), sy = (v, r) => 380 - 356 * (v - r[0]) / (r[1] - r[0]);
@@ -1545,7 +1554,7 @@ footer { padding: 32px 0 48px; font-size: 14px; }
   });
   table("dsTbl", ["Metode", ...E.datasets.map(d => d.name)], METHODS.map(([k, l]) => [l, ...E.datasets.map(d => d[k] ?? "–")]));
   (() => {
-    const USED = ["DINOv3-H+", "PE-Core-G", "SigLIP2-So400m"], palette = ["#b5e48c", "#76c893", "#34a0a4", "#1a759f", "#21164c"];
+    const USED = ["DINOv3-H+", "PE-Core-G", "SigLIP2-So400m"], palette = ["#b5e48c", "#76c893", "#34a0a4", "#1a759f", "#184e77"];
     const FAM = { ssl: "Tanpa teks", sup: "Berlabel (ImageNet-22k)", vlm: "Vision-language" };
     const ranked = [...E.backbones].sort((a, b) => b.xsrc - a.xsrc), low = Math.min(...ranked.map(b => b.xsrc)), span = Math.max(...ranked.map(b => b.xsrc)) - low || 1;
     const svg = $("bbChart"), h = hbars(svg, ranked.map(b => ({ label: b.name.replace(" (IN-22k)", "") + (USED.includes(b.name) ? " *" : ""), value: b.xsrc,
