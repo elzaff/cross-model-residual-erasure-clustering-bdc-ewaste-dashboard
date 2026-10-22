@@ -70,8 +70,10 @@ nav.views a:hover { color: var(--forest); background: var(--cream-2); }
 nav.views a[aria-current="page"] { color: #10293d; background: var(--cream-2); }
 @media (max-width: 900px) {
   .top .wrap { flex-wrap: wrap; gap: 6px; padding: 8px 0; }
-  nav.views { width: 100%; margin: 0; flex-wrap: wrap; }
-  nav.views a { flex: 1 0 auto; justify-content: center; padding: 0 8px; font-size: 14px; }
+  nav.views { width: 100%; margin: 0; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+  nav.views::-webkit-scrollbar { height: 3px; }
+  nav.views::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+  nav.views a { flex: 0 0 auto; justify-content: center; min-height: 44px; padding: 0 12px; font-size: 14px; scroll-snap-align: start; }
 }
 .view[hidden], .sub[hidden] { display: none; }
 section { padding: 40px 0; scroll-margin-top: 80px; }
@@ -382,12 +384,8 @@ footer { padding: 24px 0 32px; font-size: 13px; color: var(--muted); text-align:
 .embed body { background: transparent; }
 .embed .wrap { width: 100%; }
 .embed [data-view="cara-kerja"] > .wrap { padding-bottom: 2px !important; }
-/* embed=dash: the whole dashboard inside the SENTRA app. The app supplies brand and navigation, so keep only the tabs,
-   as a plain tab bar above the content; links back to the app are hidden (the app shell is already there) */
+/* embed=dash: the app shell supplies navigation, so hide the dashboard's standalone chrome. */
 .embed a[href="./"] { display: none !important; }
-.embed.dash header.top { display: block !important; position: static; background: transparent; border: 0; backdrop-filter: none; margin-bottom: 8px; }
-.embed.dash .brand { display: none; }
-.embed.dash nav.views { margin-left: 0; }
 .embed.dash .pagehead { display: block !important; }
 .embed.dash .wrap { width: calc(100% - 48px); }
 @media (max-width: 720px) { .embed.dash .wrap { width: calc(100% - 28px); } }

@@ -90,12 +90,12 @@
 
   // ================= backend =================
   let online = false, pinging = null;
-  function srv(cls, text) { document.querySelectorAll("[data-srv]").forEach(e => { e.className = "srv " + cls; e.lastElementChild.textContent = text; }); }
+  function srv(cls, text) { document.querySelectorAll("[data-srv]").forEach(e => { e.className = "srv " + cls; e.setAttribute("aria-label", text); e.title = text; e.lastElementChild.textContent = text; }); }
   function ping() {
     if (pinging) return pinging;
-    srv("wait", "Menyalakan server AI…");
+    srv("wait", "Mengecek…");
     pinging = fetch(API + "/health", { signal: AbortSignal.timeout(150000) }).then(r => r.ok).catch(() => false)
-      .then(ok => { online = ok; pinging = null; srv(ok ? "on" : "off", ok ? "Server AI siap" : "Server AI offline"); return ok; });
+      .then(ok => { online = ok; pinging = null; srv(ok ? "on" : "off", ok ? "AI siap" : "AI offline"); return ok; });
     return pinging;
   }
   function feedback(it) {
@@ -171,10 +171,15 @@
   // ================= router =================
   let view = {}, filter = "semua";
   const picked = new Set();
+  const researchMenu = document.querySelector("[data-nav-group]");
+  researchMenu?.addEventListener("mouseenter", () => { researchMenu.open = true; });
+  researchMenu?.addEventListener("mouseleave", () => { if (!researchMenu.contains(document.activeElement)) researchMenu.open = false; });
+  researchMenu?.addEventListener("focusout", () => { if (!researchMenu.matches(":hover") && !researchMenu.contains(document.activeElement)) researchMenu.open = false; });
   function render() {
     const h = location.hash.replace(/^#\/?/, "").split("/");
     const nav = { riwayat: "riwayat", jenis: "jenis", baru: "baru", uji: "home", riset: "riset", "": "home" }[h[0]] || "";
     document.querySelectorAll("[data-nav]").forEach(a => a.dataset.nav === nav ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+    document.querySelectorAll("[data-riset-sub]").forEach(a => a.dataset.risetSub === (h[1] || "beranda") && h[0] === "riset" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
     if (h[0] === "s" && S.has(h[1])) {
       const s = S.get(h[1]);
       if (view.sid !== h[1]) { filter = "semua"; picked.clear(); }
@@ -219,7 +224,6 @@
           ${coarse ? "" : `<p class="small">Atau drag foto ke kotak ini.</p>`}
         </div>
         <div class="links">
-          <span class="srv wait" data-srv><i></i><span>Menyalakan server AI…</span></span>
           <button type="button" data-new="setoran">Catat setoran warga<span>Isi nama penyetor, lalu cetak tanda terima.</span></button>
           <a href="#/baru">Kategori baru${pool().length ? ` · ${pool().length} perlu dicek` : ""}<span>Cluster ulang barang yang belum dikenali, lalu beri nama.</span></a>
           <a href="#/uji">Uji dengan dataset sendiri<span>Bandingkan hasil clustering dengan dan tanpa CMRE.</span></a>
@@ -232,7 +236,7 @@
           : `<p class="empty">Belum ada barang hari ini. Foto barang pertama untuk mulai.</p>`}</section>
       ${ss.length ? `<section class="section"><div class="sechead"><h2>Sesi terakhir</h2></div><div class="rows">${ss.slice(0, 5).map(srow).join("")}</div></section>` : ""}
     </div>`;
-    if (!online && !pinging) srv("off", "Server AI offline"); else if (online) srv("on", "Server AI siap");
+    if (!online && !pinging) srv("off", "AI offline"); else if (online) srv("on", "AI siap");
   }
 
   function history() {
@@ -376,9 +380,14 @@
   function dashboard(sub) {
     if (main.querySelector("iframe.dash")?.dataset.sub === sub) return;  // re-renders must not reload the dashboard
     main.innerHTML = `<div class="page">
-      <div class="head"><div class="t"><h1>Dashboard riset</h1><p class="meta">Peta 3.792 foto BDC, 16 cluster, cara kerja CMRE, dan hasil pengujian dari paper tim untuk BDC Satria Data 2026.</p></div>
-        <div class="acts"><a class="btn" href="#/">Kembali ke Pilah</a></div></div>
-      <iframe class="dash" data-sub="${esc(sub)}" src="riset.html?embed=dash&v=18#${encodeURIComponent(sub)}" title="Dashboard riset CMRE"></iframe></div>`;
+      <nav class="research-subnav" aria-label="Navigasi dashboard riset">
+        <a href="#/riset/beranda" data-riset-sub="beranda">Peta</a>
+        <a href="#/riset/coba" data-riset-sub="coba">Galeri uji</a>
+        <a href="#/riset/kelompok" data-riset-sub="kelompok">16 cluster</a>
+        <a href="#/riset/cara-kerja" data-riset-sub="cara-kerja">Cara kerja CMRE</a>
+        <a href="#/riset/analisis" data-riset-sub="analisis">Analisis</a>
+      </nav>
+      <iframe class="dash" data-sub="${esc(sub)}" src="riset.html?embed=dash&v=20#${encodeURIComponent(sub)}" title="Dashboard riset CMRE"></iframe></div>`;
   }
   addEventListener("message", e => {
     if (e.origin !== location.origin || !e.data || !e.data.eraseH) return;
