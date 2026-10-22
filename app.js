@@ -8,7 +8,7 @@
   const E = window.EWASTE, C = E.clusters;
   const CAT = { baterai: "Baterai", layar: "Layar dan monitor", besar: "Peralatan besar", kecil: "Peralatan kecil", ti: "TI dan telekomunikasi", komponen: "Komponen dan PCB" };
   const CHUNK = 8, SIDE = 768;
-  const $ = s => document.querySelector(s), main = $("#main"), dlg = $("#dlg");
+  const $ = s => document.querySelector(s), main = $("#appView"), researchPage = $("#researchPage"), researchContent = $("#researchContent"), dlg = $("#dlg");
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const fmt = (v, d = 2) => Number(v).toFixed(d).replace(".", ",");
   const ico = n => `<svg class="ico" aria-hidden="true"><use href="#i-${n}"/></svg>`;
@@ -90,13 +90,13 @@
 
   // ================= backend =================
   let online = false, pinging = null, tried = false;
-  function srv(cls, text) { document.querySelectorAll("[data-srv]").forEach(e => { e.className = "srv " + cls; e.lastElementChild.textContent = text; }); }
+  function srv(cls, text) { document.querySelectorAll("[data-srv]").forEach(e => { e.className = "srv " + cls; e.setAttribute("aria-label", text); e.title = text; e.lastElementChild.textContent = text; }); }
   function ping() {
     if (pinging) return pinging;
     tried = true;
-    srv("wait", "Menyalakan server AI…");
+    srv("wait", "Menyalakan AI…");
     pinging = fetch(API + "/health", { signal: AbortSignal.timeout(150000) }).then(r => r.ok).catch(() => false)
-      .then(ok => { online = ok; pinging = null; srv(ok ? "on" : "off", ok ? "Server AI siap" : "Server AI offline"); return ok; });
+      .then(ok => { online = ok; pinging = null; srv(ok ? "on" : "off", ok ? "AI siap" : "AI offline"); return ok; });
     return pinging;
   }
   function feedback(it) {
@@ -172,10 +172,19 @@
   // ================= router =================
   let view = {}, filter = "semua";
   const picked = new Set();
+  const researchMenu = document.querySelector("[data-nav-group]");
+  researchMenu?.addEventListener("mouseenter", () => { researchMenu.open = true; });
+  researchMenu?.addEventListener("mouseleave", () => { if (!researchMenu.contains(document.activeElement)) researchMenu.open = false; });
+  researchMenu?.addEventListener("focusout", () => { if (!researchMenu.matches(":hover") && !researchMenu.contains(document.activeElement)) researchMenu.open = false; });
   function render() {
     const h = location.hash.replace(/^#\/?/, "").split("/");
+    // in-dashboard anchors (#k17) stay inside the dashboard; app routes always start with "#/" (riset also has an id "uji")
+    if (!location.hash.startsWith("#/") && h[0] && !researchPage.hidden && researchContent.shadowRoot?.getElementById(h[0])) return;
+    const inResearch = h[0] === "riset";
+    main.hidden = inResearch; researchPage.hidden = !inResearch;
     const nav = { riwayat: "riwayat", jenis: "jenis", baru: "baru", uji: "riset", riset: "riset", "": "home" }[h[0]] || "";
     document.querySelectorAll("[data-nav]").forEach(a => a.dataset.nav === nav ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+    document.querySelectorAll("[data-riset-sub]").forEach(a => a.dataset.risetSub === (h[1] || "beranda") && h[0] === "riset" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
     if (h[0] === "s" && S.has(h[1])) {
       const s = S.get(h[1]);
       if (view.sid !== h[1]) { filter = "semua"; picked.clear(); }
@@ -184,7 +193,7 @@
     }
     view = {};
     if (h[0] === "cara-kerja") return location.replace("#/riset/cara-kerja");  // old links: the walkthrough moved into the dashboard
-    if (h[0] === "riset") return dashboard(h[1] || "beranda");
+    if (h[0] === "riset") return dashboard();
     return ({ riwayat: history, jenis: jenis, baru: jenisBaru, uji: ujiSetup }[h[0]] || home)();
   }
 
@@ -229,7 +238,7 @@
           : `<p class="empty">Belum ada barang hari ini.</p>`}</section>
       ${ss.length ? `<section class="section"><div class="sechead"><h2>Sesi terakhir</h2></div><div class="rows">${ss.slice(0, 5).map(srow).join("")}</div></section>` : ""}
     </div>`;
-    if (online) srv("on", "Server AI siap"); else if (!pinging) srv(tried ? "off" : "idle", tried ? "Server AI offline" : "Server AI siaga");
+    if (online) srv("on", "AI siap"); else if (!pinging) srv(tried ? "off" : "idle", tried ? "AI offline" : "AI siaga");
   }
 
   function history() {
@@ -369,18 +378,32 @@
     dlg.showModal();
   }
 
-  // ================= Dashboard riset: riset.html inside the app shell (embed=dash keeps its own tabs) =================
-  function dashboard(sub) {
-    if (main.querySelector("iframe.dash")?.dataset.sub === sub) return;  // re-renders must not reload the dashboard
-    main.innerHTML = `<div class="page">
-      <div class="head"><div class="t"><h1>Dashboard riset</h1><p class="meta">Peta 3.792 foto BDC, 16 cluster, cara kerja CMRE, dan hasil pengujian dari paper tim untuk BDC Satria Data 2026.</p></div>
-        <div class="acts"><a class="btn" href="#/uji">Uji dengan dataset sendiri</a></div></div>
-      <iframe class="dash" data-sub="${esc(sub)}" src="riset.html?embed=dash&v=18#${encodeURIComponent(sub)}" title="Dashboard riset CMRE"></iframe></div>`;
-  }
-  addEventListener("message", e => {
-    if (e.origin !== location.origin || !e.data || !e.data.eraseH) return;
-    const f = main.querySelector("iframe"); if (f) f.style.height = Math.ceil(e.data.eraseH) + "px";
+  // ================= Dashboard riset: mount its native view once =================
+  let researchLoad;
+  const loadScript = src => new Promise((resolve, reject) => {
+    const script = Object.assign(document.createElement("script"), { src });
+    script.onload = resolve; script.onerror = reject; document.head.appendChild(script);
   });
+  function dashboard() {
+    if (researchLoad || researchContent.shadowRoot) return researchLoad;
+    researchLoad = (async () => {
+      const doc = new DOMParser().parseFromString(await fetch("riset.html").then(r => r.text()), "text/html");
+      const root = researchContent.attachShadow({ mode: "open" });
+      const style = document.createElement("style"); style.textContent = `:host { display:block; }\n${doc.querySelector("style").textContent.replace(":root {", ":host {")}\n.research { font:400 16px/1.55 var(--sans); color:var(--ink); -webkit-font-smoothing:antialiased; }`;
+      const content = document.createElement("div"); content.className = "research";
+      content.innerHTML = doc.querySelector("#dataError").outerHTML + doc.querySelector(".tip").outerHTML + doc.querySelector("main").innerHTML;
+      root.append(style, content);
+      if (!window.DEMO) await loadScript("demo.js?v=5");
+      window.__researchRoot = root;
+      try { await loadScript("riset.js?v=3"); } finally { delete window.__researchRoot; }
+    })().catch(e => {
+      const root = researchContent.shadowRoot;
+      if (root) root.textContent = "Dashboard riset gagal dimuat: " + e.message;
+      else researchContent.textContent = "Dashboard riset gagal dimuat: " + e.message;
+      researchLoad = null;
+    });
+    return researchLoad;
+  }
 
   // ================= Kategori baru: regroup held items into candidate new kinds (clustering, no labels) =================
   let found = null;  // last /discover answer, kept in memory: { k, silhouette, groups, ids }
@@ -612,7 +635,7 @@
     if (z.dataset.drop === "home") { view = { sid }; location.hash = "#/s/" + sid; }
     addFiles(sid, e.dataTransfer.files);
   });
-  addEventListener("hashchange", () => { if (dlg.open) dlg.close(); render(); main.focus({ preventScroll: true }); scrollTo(0, 0); });
+  addEventListener("hashchange", () => { if (dlg.open) dlg.close(); render(); if (!main.hidden) main.focus({ preventScroll: true }); scrollTo(0, 0); });
 
   // ================= start =================
   Promise.all([tx("sessions", "readonly", s => s.getAll()), tx("items", "readonly", s => s.getAll())]).then(([ss, its]) => {
