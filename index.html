@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="app.css?v=21">
+<link rel="stylesheet" href="app.css?v=23">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -33,15 +33,23 @@
 
 <header class="top">
   <a class="brand" href="#/" title="Sistem Pengelompokan Terpadu Rongsok Alat-elektronik"><img src="assets/logo.svg?v=21" alt="SENTRA"></a>
-  <nav class="menu" aria-label="Navigasi">
+  <nav class="menu" aria-label="Navigasi utama">
     <a href="#/" data-nav="home">Pilah</a>
     <a href="#/jenis" data-nav="jenis">Kategori</a>
     <a href="#/baru" data-nav="baru">Kategori baru</a>
     <a href="#/riwayat" data-nav="riwayat">Riwayat</a>
+    <details class="nav-group" data-nav-group>
+      <summary data-nav="riset">Dashboard riset</summary>
+      <div class="nav-submenu" aria-label="Halaman dashboard riset">
+        <a href="#/riset/beranda" data-riset-sub="beranda">Peta</a>
+        <a href="#/riset/coba" data-riset-sub="coba">Galeri uji</a>
+        <a href="#/riset/kelompok" data-riset-sub="kelompok">16 cluster</a>
+        <a href="#/riset/cara-kerja" data-riset-sub="cara-kerja">Cara kerja CMRE</a>
+        <a href="#/riset/analisis" data-riset-sub="analisis">Analisis</a>
+      </div>
+    </details>
   </nav>
-  <span class="srv wait" data-srv><i></i><span>Menghubungkan…</span></span>
-  <a class="btn sm dashbtn" href="#/riset" data-nav="riset" aria-label="Dashboard riset"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span>Dashboard riset</span></a>
-  <button class="btn pri sm upload" type="button" data-act="quick-files"><svg class="ico"><use href="#i-img"/></svg>Upload foto</button>
+  <span class="srv wait" data-srv role="status" aria-live="polite" aria-label="Mengecek status AI" title="Mengecek status AI"><i aria-hidden="true"></i><span>Mengecek status AI</span></span>
 </header>
 
 <main id="main" tabindex="-1"></main>
@@ -62,6 +70,6 @@
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script src="data.js?v=21"></script>
-<script src="app.js?v=21"></script>
+<script src="app.js?v=23"></script>
 </body>
 </html>
