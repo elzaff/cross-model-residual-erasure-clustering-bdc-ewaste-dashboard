@@ -1,7 +1,7 @@
 {
-  "name": "E-Rase",
-  "short_name": "E-Rase",
-  "description": "E-Rase: pemilahan e-waste dari foto, ditenagai CMRE untuk petugas bank sampah, TPS3R, dan pengepul.",
+  "name": "SENTRA",
+  "short_name": "SENTRA",
+  "description": "SENTRA (Sistem Pengelompokan Terpadu Rongsok Alat-elektronik): pemilahan e-waste dari foto, ditenagai CMRE untuk petugas bank sampah, TPS3R, dan pengepul.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

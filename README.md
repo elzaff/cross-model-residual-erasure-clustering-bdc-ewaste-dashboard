@@ -2,7 +2,9 @@
 
 **Buka aplikasi:** [https://elzaff.github.io/cross-model-residual-erasure-clustering-bdc-ewaste-dashboard/](https://elzaff.github.io/cross-model-residual-erasure-clustering-bdc-ewaste-dashboard/) · dashboard riset: [`riset.html`](https://elzaff.github.io/cross-model-residual-erasure-clustering-bdc-ewaste-dashboard/riset.html) · repositori utama (kode, hasil, reproduksi): [https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste](https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste)
 
-## Aplikasi E-Rase (`index.html`)
+## Aplikasi SENTRA (`index.html`)
+
+SENTRA: Sistem Pengelompokan Terpadu Rongsok Alat-elektronik.
 
 Prototipe untuk petugas bank sampah, TPS3R, dan pengepul. **Setoran** (HP): foto barang satu per satu, langsung dapat
 wadah tujuan. **Batch** (laptop): unggah banyak foto, saring, konfirmasi massal. Tiap hasil bisa dikoreksi petugas dan

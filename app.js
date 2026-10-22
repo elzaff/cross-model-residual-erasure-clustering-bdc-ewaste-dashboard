@@ -1,4 +1,4 @@
-// E-Rase (powered by CMRE): the working app.
+// SENTRA (powered by CMRE): the working app.
 // Photos go to the Modal backend (code/product/modal_pilah.py) for placement; sessions, items and photos stay on this
 // device (IndexedDB). Officer confirmations and corrections are also sent to the backend for later evaluation.
 // Two kinds of session share one model: setoran (one depositor, phone, gets a receipt) and batch (many photos, manifest).
@@ -37,7 +37,7 @@
   const imgURL = it => it.src || urls.get(it.id) || (it.img ? urls.set(it.id, URL.createObjectURL(it.img)).get(it.id) : "");
   const itemsOf = sid => [...I.values()].filter(i => i.sid === sid).sort((a, b) => a.t - b.t);
   const unit = () => { try { return JSON.parse(localStorage.getItem("cmre-unit")) || {}; } catch { return {}; } };
-  // new kinds found by the officer through "Jenis baru" (stored on this device)
+  // new kinds found by the officer through "Kategori baru" (stored on this device)
   const types = () => { try { return JSON.parse(localStorage.getItem("erase-types")) || []; } catch { return []; } };
   const saveTypes = t => { try { localStorage.setItem("erase-types", JSON.stringify(t)); } catch {} };
   const typeOf = id => types().find(t => t.id === id);
@@ -50,9 +50,9 @@
     if (!isRes(it)) return null;
     if (it.corr === "bukan") return { key: "bukan", label: "Bukan e-waste", cls: "lain", b3: false };
     if (it.corr === "lain") return { key: "lain", label: "Cek manual", cls: "lain", b3: false };
-    if (it.corr === "baru") { const t = typeOf(it.newType) || { name: "Jenis baru", b3: false };
+    if (it.corr === "baru") { const t = typeOf(it.newType) || { name: "Kategori baru", b3: false };
       return { key: "baru-" + it.newType, label: (t.b3 ? "B3 · " : "Non-B3 · ") + t.name, cls: t.b3 ? "b3" : "", b3: t.b3 }; }
-    if (held(it)) return { key: "tahan", label: "Ditahan", cls: "tahan", b3: false };
+    if (held(it)) return { key: "tahan", label: "Perlu dicek", cls: "tahan", b3: false };
     const c = cl(it);
     return { key: c.cat + (c.b3 ? "-b3" : ""), label: (c.b3 ? "B3 · " : "Non-B3 · ") + CAT[c.cat], cls: c.b3 ? "b3" : "", b3: c.b3 };
   }
@@ -61,13 +61,13 @@
   function status(it) {
     if (it.state === "proses") return ["", "memproses"];
     if (it.state === "gagal") return ["err", "gagal diproses"];
-    if (it.conf === "benar") return ["ok", "dicek petugas"];
+    if (it.conf === "benar") return ["ok", "dikonfirmasi petugas"];
     if (it.conf === "koreksi") return ["ok", "dikoreksi petugas"];
     if (it.res.ood) return ["cek", "perlu dicek"];
-    return ["", "belum dicek"];
+    return ["", "belum dikonfirmasi"];
   }
-  const kindName = it => !isRes(it) ? "" : it.corr === "bukan" ? "Bukan e-waste" : it.corr === "lain" ? "Jenis lain"
-    : it.corr === "baru" ? (typeOf(it.newType) || { name: "Jenis baru" }).name : cl(it).name;
+  const kindName = it => !isRes(it) ? "" : it.corr === "bukan" ? "Bukan e-waste" : it.corr === "lain" ? "Kategori lain"
+    : it.corr === "baru" ? (typeOf(it.newType) || { name: "Kategori baru" }).name : cl(it).name;
   const qty = it => Math.max(1, it.qty || 1);
   const sName = s => s.label || `Pemilahan ${short(s.created)}`;
   const kindOfSession = s => s.type === "batch" ? "batch" : s.type === "uji" ? "uji metode" : "setoran";
@@ -86,16 +86,16 @@
       e.n += qty(i); e.kg += Number(i.kg) || 0; e.kinds.add(kindName(i)); g.set(r.key, e); });
     return [...g.values()].sort((a, b) => b.b3 - a.b3 || b.n - a.n);
   }
-  const sumLine = t => `<p class="sum"><span><b>${t.n}</b>barang</span><span><b>${t.b3}</b>jalur B3</span>${t.held ? `<span class="warn"><b>${t.held}</b>ditahan</span>` : ""}<span><b>${t.open}</b>belum dicek</span></p>`;
+  const sumLine = t => `<p class="sum"><span><b>${t.n}</b>barang</span><span><b>${t.b3}</b>B3</span>${t.held ? `<span class="warn"><b>${t.held}</b>perlu dicek</span>` : ""}<span><b>${t.open}</b>belum dikonfirmasi</span></p>`;
 
   // ================= backend =================
   let online = false, pinging = null;
   function srv(cls, text) { document.querySelectorAll("[data-srv]").forEach(e => { e.className = "srv " + cls; e.lastElementChild.textContent = text; }); }
   function ping() {
     if (pinging) return pinging;
-    srv("wait", "Server AI menyala…");
+    srv("wait", "Menyalakan server AI…");
     pinging = fetch(API + "/health", { signal: AbortSignal.timeout(150000) }).then(r => r.ok).catch(() => false)
-      .then(ok => { online = ok; pinging = null; srv(ok ? "on" : "off", ok ? "Server AI siap" : "Server AI tidak terhubung"); return ok; });
+      .then(ok => { online = ok; pinging = null; srv(ok ? "on" : "off", ok ? "Server AI siap" : "Server AI offline"); return ok; });
     return pinging;
   }
   function feedback(it) {
@@ -134,7 +134,7 @@
     while (queue.length) {
       if (!online && !(await ping())) {
         queue.splice(0).forEach(id => { const it = I.get(id); if (it) { it.state = "gagal"; putI(it); } });
-        toast("Server AI tidak terhubung. Foto tetap tersimpan; tekan Proses ulang nanti.");
+        toast("Server AI offline. Foto tetap tersimpan, tekan Proses ulang nanti.");
         break;
       }
       const part = queue.splice(0, CHUNK).map(id => I.get(id)).filter(Boolean);
@@ -164,8 +164,8 @@
     return s;
   }
   function setConf(it, conf, corr = null) { it.conf = conf; it.corr = conf === "koreksi" ? corr : null; putI(it); feedback(it); }
-  const corrOptions = sel => `<option value="">Koreksi jenis…</option>${C.map(c => `<option value="${c.id}" ${sel === c.id ? "selected" : ""}>${esc(c.name)}</option>`).join("")}
-    <option value="bukan" ${sel === "bukan" ? "selected" : ""}>Bukan e-waste</option><option value="lain" ${sel === "lain" ? "selected" : ""}>Jenis lain, tidak ada di daftar</option>`;
+  const corrOptions = sel => `<option value="">Koreksi kategori…</option>${C.map(c => `<option value="${c.id}" ${sel === c.id ? "selected" : ""}>${esc(c.name)}</option>`).join("")}
+    <option value="bukan" ${sel === "bukan" ? "selected" : ""}>Bukan e-waste</option><option value="lain" ${sel === "lain" ? "selected" : ""}>Kategori lain (tidak ada di daftar)</option>`;
   const parseCorr = v => v === "bukan" || v === "lain" ? v : Number(v);
 
   // ================= router =================
@@ -201,7 +201,7 @@
     const t = tally(itemsOf(s.id));
     return `<a class="srow" href="#/s/${s.id}"><span style="min-width:0"><span class="nm" style="display:block"><span class="dot${s.done ? " done" : ""}" aria-hidden="true"></span>${esc(sName(s))}</span>
       <span class="meta">${esc(s.no)} · ${kindOfSession(s)} · ${today(s.created) ? "hari ini " + clock(s.created) : short(s.created)}${s.done ? " · selesai" : ""}</span></span>
-      <span class="r"><span><b>${t.n}</b> barang</span>${t.b3 ? `<span><b>${t.b3}</b> B3</span>` : ""}${t.held ? `<span><b>${t.held}</b> ditahan</span>` : ""}</span></a>`;
+      <span class="r"><span><b>${t.n}</b> barang</span>${t.b3 ? `<span><b>${t.b3}</b> B3</span>` : ""}${t.held ? `<span><b>${t.held}</b> perlu dicek</span>` : ""}</span></a>`;
   }
 
   function home() {
@@ -211,18 +211,17 @@
     main.innerHTML = `<div class="page">
       <section class="scan">
         <div class="capture" data-drop="home">
-          <span class="eyebrow"><i></i>Ditenagai CMRE · 16 jenis e-waste</span>
-          <h1>Foto barangnya.<br><span>E-Rase menunjukkan wadahnya.</span></h1>
+          <h1>Foto barangnya.<br><span>SENTRA menunjukkan wadahnya.</span></h1>
           <p>Satu barang per foto. Pilih banyak foto sekaligus kalau barangnya banyak.</p>
           <div class="row"><button class="btn pri big" type="button" data-act="quick-cam">${ico("cam")}Ambil foto</button><button class="btn big" type="button" data-act="quick-files">${ico("img")}Pilih dari galeri</button></div>
-          ${coarse ? "" : `<p class="small">Atau tarik foto ke kotak ini.</p>`}
+          ${coarse ? "" : `<p class="small">Atau drag foto ke kotak ini.</p>`}
         </div>
         <div class="links">
-          <span class="srv wait" data-srv><i></i><span>Server AI menyala…</span></span>
+          <span class="srv wait" data-srv><i></i><span>Menyalakan server AI…</span></span>
           <button type="button" data-new="setoran">Catat setoran warga<span>Isi nama penyetor, lalu cetak tanda terima.</span></button>
-          <a href="#/baru">Jenis baru${pool().length ? ` · ${pool().length} barang ditahan` : ""}<span>Kelompokkan barang yang belum dikenal, lalu beri nama.</span></a>
-          <a href="#/uji">Uji metode dengan foldermu<span>Bandingkan hasil dengan dan tanpa CMRE pada fotomu sendiri.</span></a>
-          <button type="button" data-act="demo">${demo ? "Buka sesi contoh" : "Coba 12 foto contoh"}<span>Hasil pipeline yang sudah dihitung, tanpa server.</span></button>
+          <a href="#/baru">Kategori baru${pool().length ? ` · ${pool().length} perlu dicek` : ""}<span>Cluster ulang barang yang belum dikenali, lalu beri nama.</span></a>
+          <a href="#/uji">Uji dengan dataset sendiri<span>Bandingkan hasil clustering dengan dan tanpa CMRE.</span></a>
+          <button type="button" data-act="demo">${demo ? "Buka sesi demo" : "Coba demo 12 foto"}<span>Hasil pipeline yang sudah dihitung, jalan tanpa server.</span></button>
           <button type="button" data-act="unit">${esc(u.unit || "Atur nama unit")}<span>${u.officer ? "Petugas " + esc(u.officer) : "Nama unit dan petugas tercetak di tanda terima."}</span></button>
         </div>
       </section>
@@ -231,7 +230,7 @@
           : `<p class="empty">Belum ada barang hari ini. Foto barang pertama untuk mulai.</p>`}</section>
       ${ss.length ? `<section class="section"><div class="sechead"><h2>Sesi terakhir</h2></div><div class="rows">${ss.slice(0, 5).map(srow).join("")}</div></section>` : ""}
     </div>`;
-    if (!online && !pinging) srv("off", "Server AI tidak terhubung"); else if (online) srv("on", "Server AI siap");
+    if (!online && !pinging) srv("off", "Server AI offline"); else if (online) srv("on", "Server AI siap");
   }
 
   function history() {
@@ -240,7 +239,7 @@
       <div class="head"><div class="t"><h1>Riwayat</h1><p class="meta">${ss.length} sesi tersimpan di perangkat ini.</p></div>
         <div class="acts"><button class="btn" type="button" data-act="csv-all" ${all.length ? "" : "disabled"}>${ico("doc")}Unduh semua (CSV)</button></div></div>
       ${all.length ? sumLine(tally(all)) : ""}
-      ${g.length ? `<section><div class="sechead"><h2>Per wadah</h2></div><div class="bars">${g.map(r => `<div class="bar-r">${tag(r)}<span class="tr"><i class="${r.cls}" style="width:${100 * r.n / max}%"></i></span><span class="n">${r.n}</span></div>`).join("")}</div></section>` : ""}
+      ${g.length ? `<section><div class="sechead"><h2>Per jalur</h2></div><div class="bars">${g.map(r => `<div class="bar-r">${tag(r)}<span class="tr"><i class="${r.cls}" style="width:${100 * r.n / max}%"></i></span><span class="n">${r.n}</span></div>`).join("")}</div></section>` : ""}
       <section class="section"><div class="sechead"><h2>Semua sesi</h2></div>${ss.length ? `<div class="rows">${ss.map(srow).join("")}</div>` : '<p class="empty">Belum ada sesi.</p>'}</section></div>`;
   }
 
@@ -248,7 +247,7 @@
     const its = itemsOf(s.id), t = tally(its), g = byRoute(its), batch = s.type === "batch";
     const inF = (i, f) => f === "semua" || (f === "tahan" ? held(i) : f === "belum" ? isRes(i) && !i.conf : f === "b3" ? isRes(i) && route(i).b3
       : f === "gagal" ? i.state === "gagal" : isRes(i) && "r:" + route(i).key === f);
-    const F = [["semua", "Semua"], ["tahan", "Ditahan"], ["belum", "Belum dicek"], ["b3", "Jalur B3"]];
+    const F = [["semua", "Semua"], ["tahan", "Perlu dicek"], ["belum", "Belum dikonfirmasi"], ["b3", "B3"]];
     if (t.fail) F.push(["gagal", "Gagal diproses"]);
     const RF = g.filter(r => r.key !== "tahan").map(r => ["r:" + r.key, r.label]);
     if (![...F, ...RF].some(f => f[0] === filter)) filter = "semua";
@@ -257,25 +256,25 @@
     const fbtn = ([k, l]) => `<button type="button" data-filter="${esc(k)}" aria-pressed="${filter === k}"><span>${esc(l)}</span><span class="num">${its.filter(i => inF(i, k)).length}</span></button>`;
     const open = shown.filter(i => isRes(i) && !i.conf && !i.res.ood);
     const adding = s.done || s.demo ? "" : batch
-      ? `<div class="drop" data-drop="${s.id}">${ico("img")}<span>Tarik foto ke sini. Kami memproses ${CHUNK} foto sekali kirim.</span><span class="btns"><button class="btn pri sm" type="button" data-act="files">Tambah foto</button>${coarse ? `<button class="btn sm" type="button" data-act="cam">Kamera</button>` : ""}</span></div>`
+      ? `<div class="drop" data-drop="${s.id}">${ico("img")}<span>Drag foto ke sini. SENTRA mengirim ${CHUNK} foto per batch ke server.</span><span class="btns"><button class="btn pri sm" type="button" data-act="files">Tambah foto</button>${coarse ? `<button class="btn sm" type="button" data-act="cam">Kamera</button>` : ""}</span></div>`
       : `<div class="add"><button class="btn pri big" type="button" data-act="cam">${ico("cam")}Foto barang</button><button class="btn big" type="button" data-act="files">${ico("img")}Dari galeri</button></div>`;
     main.innerHTML = `<div class="page">
       <div class="head">
         <a class="iconbtn" href="#/" aria-label="Kembali">${ico("back")}</a>
         <div class="t"><h1>${esc(sName(s))}</h1>
-          <p class="meta">${esc(s.no)} · ${batch ? "batch" : "setoran"} · ${day(s.created)}, ${clock(s.created)}${s.place ? " · " + esc(s.place) : ""}${s.demo ? " · sesi contoh" : ""}</p></div>
+          <p class="meta">${esc(s.no)} · ${batch ? "batch" : "setoran"} · ${day(s.created)}, ${clock(s.created)}${s.place ? " · " + esc(s.place) : ""}${s.demo ? " · sesi demo" : ""}</p></div>
         <div class="acts"><a class="btn" href="#/s/${s.id}/dokumen">${ico("doc")}${batch ? "Manifest" : "Tanda terima"}</a>
           <button class="btn${s.done ? "" : " pri"}" type="button" data-act="${s.done ? "reopen" : "finish"}">${s.done ? "Buka lagi" : "Selesai"}</button></div>
       </div>
       ${its.length ? sumLine(t) : ""}
       <div class="ws">
-        <div class="filters" role="group" aria-label="Saring barang">${F.map(fbtn).join("")}${RF.length ? '<div class="cap">Per wadah</div>' + RF.map(fbtn).join("") : ""}</div>
+        <div class="filters" role="group" aria-label="Saring barang">${F.map(fbtn).join("")}${RF.length ? '<div class="cap">Per jalur</div>' + RF.map(fbtn).join("") : ""}</div>
         <div>
           ${adding}
           ${t.run ? `<p class="note"><span class="spin"></span>Memproses ${t.run} foto…</p>` : ""}
           ${t.fail ? `<p class="note">${t.fail} foto belum diproses. <button class="btn sm" type="button" data-act="retry">Proses ulang</button></p>` : ""}
           ${last ? latest(last) : ""}
-          ${batch && !s.done && open.length ? `<div class="bulk"><label><input type="checkbox" data-act="pickall" ${open.every(i => picked.has(i.id)) ? "checked" : ""}>Pilih ${open.length} hasil yang belum dicek</label>
+          ${batch && !s.done && open.length ? `<div class="bulk"><label><input type="checkbox" data-act="pickall" ${open.every(i => picked.has(i.id)) ? "checked" : ""}>Pilih ${open.length} hasil yang belum dikonfirmasi</label>
             <button class="btn sm" type="button" data-act="bulk" ${picked.size ? "" : "disabled"}>${ico("check")}Benarkan ${picked.size || ""}</button></div>` : ""}
           ${shown.length ? `<div class="list">${shown.map(i => row(i, true)).join("")}</div>`
             : `<p class="empty">${its.length ? "Tidak ada barang di saringan ini." : batch ? "Batch ini belum berisi foto." : "Foto barang pertama dari penyetor ini."}</p>`}
@@ -288,8 +287,8 @@
     return `<div class="latest" aria-live="polite"><img src="${imgURL(it)}" alt="">
       <div style="min-width:0"><div class="to">${h ? "Jangan masukkan dulu" : "Masukkan ke wadah"}</div>${tag(r, true)}
         <div class="kind">${esc(kindName(it))}${h ? " (paling mirip)" : ""}</div>
-        <p>${h ? "Barang ini jauh dari semua foto yang dikenal sistem. Periksa dulu." : esc(cl(it).handling)}</p>
-        <div class="acts"><button class="btn ok sm" type="button" data-conf="${it.id}">${ico("check")}${h ? "Ya, jenisnya ini" : "Benar"}</button><button class="btn sm" type="button" data-open="${it.id}">${h ? "Periksa" : "Ubah"}</button></div></div></div>`;
+        <p>${h ? "Foto ini out-of-distribution (jauh dari semua foto BDC). Cek dulu sebelum dimasukkan." : esc(cl(it).handling)}</p>
+        <div class="acts"><button class="btn ok sm" type="button" data-conf="${it.id}">${ico("check")}${h ? "Ya, kategorinya ini" : "Benar"}</button><button class="btn sm" type="button" data-open="${it.id}">${h ? "Periksa" : "Ubah"}</button></div></div></div>`;
   }
 
   function detail(it) {
@@ -299,19 +298,19 @@
       const R = it.res, top = Math.max(R.threshold * 1.5, R.score * 1.1), maxD = Math.max(...R.centres.map(x => x[1]));
       const same = R.nbCluster.filter(x => x === R.cluster).length;
       body = `<div><div class="k">${h ? "Jangan masukkan dulu" : "Masukkan ke wadah"}</div>${tag(r, true)}</div>
-        <div><div class="k">${h ? "Paling mirip" : it.conf === "koreksi" ? "Dikoreksi petugas" : "Jenis"}</div><div class="g">${esc(kindName(it))}</div>
-          <p class="hand">${h ? "Barang ini jauh dari semua foto yang dikenal sistem. Konfirmasi jenisnya atau koreksi." : typeof it.corr === "string" ? "Catat jenisnya secara manual." : esc(cl(it).handling)}</p></div>
-        ${s.done ? "" : `<div class="confirm"><button class="btn ok" type="button" data-dconf>${ico("check")}${h ? "Ya, jenisnya ini" : "Benar"}</button>
-          <select data-dcorr aria-label="Koreksi jenis barang">${corrOptions(it.conf === "koreksi" ? it.corr : null)}</select></div>
+        <div><div class="k">${h ? "Paling mirip" : it.conf === "koreksi" ? "Dikoreksi petugas" : "Kategori"}</div><div class="g">${esc(kindName(it))}</div>
+          <p class="hand">${h ? "Foto ini out-of-distribution (jauh dari semua foto BDC). Konfirmasi kategorinya atau koreksi." : typeof it.corr === "string" ? "Catat kategorinya secara manual." : esc(cl(it).handling)}</p></div>
+        ${s.done ? "" : `<div class="confirm"><button class="btn ok" type="button" data-dconf>${ico("check")}${h ? "Ya, kategorinya ini" : "Benar"}</button>
+          <select data-dcorr aria-label="Koreksi kategori barang">${corrOptions(it.conf === "koreksi" ? it.corr : null)}</select></div>
         <div class="fields"><label class="f">Jumlah<input type="number" min="1" step="1" value="${qty(it)}" data-dqty></label><label class="f">Berat (kg)<input type="number" min="0" step="0.1" value="${it.kg ?? ""}" data-dkg placeholder="opsional"></label></div>`}
-        <details class="why"><summary>Kenapa? ${same} dari 5 foto termirip berjenis sama</summary>
-          <div class="ev"><h3>Foto BDC yang paling mirip</h3><p class="h">Angka di bawah foto: cosine similarity, 1 berarti identik. Bingkai ungu: jenis yang sama.</p>
+        <details class="why"><summary>Kenapa kategori ini? ${same} dari 5 nearest neighbor ada di cluster yang sama</summary>
+          <div class="ev"><h3>5 nearest neighbor dari data BDC</h3><p class="h">Angka di bawah foto: cosine similarity (1 = identik). Bingkai ungu: cluster yang sama.</p>
             <div class="nbg">${R.nb.map((id, k) => `<figure><img src="assets/t/${id}.webp" alt="" loading="lazy" class="${R.nbCluster[k] === R.cluster ? "same" : ""}" onerror="this.style.visibility='hidden'"><figcaption>${fmt(R.nbSim[k])}</figcaption></figure>`).join("")}</div></div>
-          <div class="ev"><h3>Centroid terdekat</h3><p class="h">Sistem memilih jenis dengan jarak terpendek.</p>
+          <div class="ev"><h3>Centroid terdekat</h3><p class="h">SENTRA memilih cluster dengan centroid terdekat.</p>
             ${R.centres.map(([k, d], j) => `<div class="cb${j ? "" : " win"}"><span class="t">${esc(C[k].name.replace(/ \(.*\)/, ""))}</span><span class="tr"><i style="width:${Math.max(6, 100 * d / maxD)}%"></i></span><span class="n">${fmt(d)}</span></div>`).join("")}</div>
-          <div class="ev"><h3>Dikenal atau asing?</h3>
-            <div class="gauge" style="--thr:${100 * R.threshold / top}%"><span class="th" style="left:${100 * R.threshold / top}%">batas ${fmt(R.threshold)}</span><span class="mk" style="left:${Math.min(99, 100 * R.score / top)}%"></span></div>
-            <div class="gl"><span>dikenal</span><span>foto ini ${fmt(R.score)}</span><span>asing</span></div></div>
+          <div class="ev"><h3>OOD check</h3>
+            <div class="gauge" style="--thr:${100 * R.threshold / top}%"><span class="th" style="left:${100 * R.threshold / top}%">threshold ${fmt(R.threshold)}</span><span class="mk" style="left:${Math.min(99, 100 * R.score / top)}%"></span></div>
+            <div class="gl"><span>in-distribution</span><span>foto ini ${fmt(R.score)}</span><span>OOD</span></div></div>
         </details>`;
     }
     dlg.innerHTML = `<div class="dlg"><div class="top"><h2 id="dlgTitle">${esc(it.name)}</h2><button class="iconbtn" type="button" data-close aria-label="Tutup">${ico("x")}</button></div>
@@ -334,14 +333,14 @@
       <article class="doc">
         <div class="dh"><div><h1>${batch ? "Manifest Pemilahan E-Waste" : "Tanda Terima Setoran E-Waste"}</h1><p class="muted small" style="margin:4px 0 0">${esc(u.unit || "Nama unit belum diatur")}${u.officer ? " · petugas " + esc(u.officer) : ""}</p></div>
           <div class="small" style="text-align:right"><b>No. ${esc(s.no)}</b><br>${day(s.created)}, ${clock(s.created)}<br>${batch ? "Batch" : "Penyetor"}: ${esc(s.label || "-")}${s.place ? "<br>" + esc(s.place) : ""}</div></div>
-        <h2>Rekap per wadah</h2>
-        <div class="tw"><table><thead><tr><th>Wadah</th><th>Jenis</th><th class="n">Jumlah</th><th class="n">Berat (kg)</th></tr></thead><tbody>
+        <h2>Rekap per jalur</h2>
+        <div class="tw"><table><thead><tr><th>Jalur</th><th>Kategori</th><th class="n">Jumlah</th><th class="n">Berat (kg)</th></tr></thead><tbody>
           ${g.map(r => `<tr><td>${tag(r)}</td><td>${esc([...r.kinds].join(", "))}</td><td class="n">${r.n}</td><td class="n">${r.kg ? fmt(r.kg, 1) : "-"}</td></tr>`).join("") || '<tr><td colspan="4" class="muted">Belum ada barang.</td></tr>'}
           <tr class="tot"><td colspan="2">Total</td><td class="n">${t.n}</td><td class="n">${t.kg ? fmt(t.kg, 1) : "-"}</td></tr></tbody></table></div>
         <h2>Rincian barang</h2>
-        <div class="tw"><table><thead><tr><th class="n">#</th><th>Foto</th><th>Jenis</th><th>Wadah</th><th class="n">Jml</th><th>Status</th></tr></thead><tbody>
+        <div class="tw"><table><thead><tr><th class="n">#</th><th>Foto</th><th>Kategori</th><th>Jalur</th><th class="n">Jml</th><th>Status</th></tr></thead><tbody>
           ${its.map((i, k) => `<tr><td class="n">${k + 1}</td><td>${esc(i.name)}</td><td>${esc(kindName(i))}</td><td>${esc(route(i).label)}</td><td class="n">${qty(i)}</td><td>${status(i)[1]}</td></tr>`).join("")}</tbody></table></div>
-        <p class="small muted" style="margin-top:14px">${t.held ? `${t.held} barang ditahan karena sistem belum mengenalnya dan petugas belum memeriksanya. ` : ""}${t.open ? `${t.open} barang belum dicek petugas. ` : ""}Barang jalur B3 diserahkan ke pengelola limbah B3 berizin. Dibuat dengan E-Rase (prototipe, ditenagai CMRE); sistem menentukan jenis, petugas memastikannya.</p>
+        <p class="small muted" style="margin-top:14px">${t.held ? `${t.held} barang perlu dicek: sistem belum mengenalinya dan petugas belum memeriksanya. ` : ""}${t.open ? `${t.open} barang belum dikonfirmasi petugas. ` : ""}Barang jalur B3 diserahkan ke pengelola limbah B3 berizin. Dibuat dengan SENTRA (prototipe berbasis CMRE). Sistem menebak kategori, petugas mengonfirmasi.</p>
         ${batch ? "" : '<div class="sign"><div>Penyetor</div><div>Petugas</div></div>'}
       </article></div>`;
   }
@@ -349,31 +348,24 @@
   // ================= Panduan jenis: the 16 clusters grouped by bin =================
   const gallery = c => `assets/c${String(c.id).padStart(2, "0")}.jpg`;
   function jenis() {
-    const kd = E.scen.kdist, k16 = E.scen.k17.find(k => k.k === 16), k17 = E.scen.k17.find(k => k.k === 17);
-    const top = kd.reduce((a, b) => b.n > a.n ? b : a), n16 = (kd.find(d => d.k === 16) || { n: 0 }).n, total = kd.reduce((s, d) => s + d.n, 0);
     const jrow = c => `<button class="jrow" type="button" data-jenis="${c.id}"><img src="${gallery(c)}" alt="" loading="lazy">
-      <span style="min-width:0"><span class="jt">${esc(c.name)}${c.id === 15 ? " · masih campuran" : ""}</span><span class="jh" style="display:block">${esc(c.handling)}</span></span>
+      <span style="min-width:0"><span class="jt">${esc(c.name)}${c.id === 15 ? " · cluster campuran" : ""}</span><span class="jh" style="display:block">${esc(c.handling)}</span></span>
       <span class="jn">${tag(clusterRoute(c))}<br><span>${c.n} foto</span></span></button>`;
-    const group = (title, list) => `<section class="jgroup"><div class="sechead"><h2>${title}</h2><span class="muted small">${list.length} jenis</span></div>${list.map(jrow).join("")}</section>`;
+    const group = (title, list) => `<section class="jgroup"><div class="sechead"><h2>${title}</h2><span class="muted small">${list.length} kategori</span></div>${list.map(jrow).join("")}</section>`;
     main.innerHTML = `<div class="page">
-      <div class="head"><div class="t"><h1>Panduan jenis</h1><p class="meta">E-Rase mengenali 16 jenis. Sistem menemukan pengelompokan ini sendiri dari 3.792 foto tanpa label; kami memberi nama sesudahnya.</p></div></div>
-      ${group("Wadah B3", C.filter(c => c.b3))}${group("Wadah non-B3", C.filter(c => !c.b3))}
-      <section class="jgroup"><div class="sechead"><h2>Jenis baru di perangkat ini</h2><a href="#/baru">Kelompokkan barang ditahan</a></div>
+      <div class="head"><div class="t"><h1>Kategori</h1><p class="meta">SENTRA mengenali 16 kategori. Kategori ini hasil clustering 3.792 foto BDC tanpa label; tim memberi nama sesudahnya. <a href="riset.html#kelompok">Peta 16 cluster dan alasan memilih K = 16 ada di dashboard riset.</a></p></div></div>
+      ${group("Jalur B3", C.filter(c => c.b3))}${group("Jalur non-B3", C.filter(c => !c.b3))}
+      <section class="jgroup"><div class="sechead"><h2>Kategori baru di perangkat ini</h2><a href="#/baru">Cluster barang yang perlu dicek</a></div>
         ${types().length ? `<div class="rows">${types().map(t => `<div class="srow"><span>${tag({ label: (t.b3 ? "B3 · " : "Non-B3 · ") + t.name, cls: t.b3 ? "b3" : "" })}</span>
           <span class="r">${[...I.values()].filter(i => i.newType === t.id).length} barang · ditemukan ${short(t.created)}</span></div>`).join("")}</div>`
-          : `<p class="empty">Belum ada. Barang yang tidak cocok dengan 16 jenis ditahan, lalu bisa dikelompokkan menjadi jenis baru.</p>`}</section>
-      <details class="k17"><summary>Kenapa 16 jenis, bukan 17?</summary><ol>
-        <li>Dari ${total} iterasi SCMax, 17 paling sering terpilih (${top.n} kali) dan 16 kedua (${n16} kali).</li>
-        <li>Dengan 16, pembagian identik di 100 percobaan (ARI ${fmt(k16.ari)}). Dengan 17, ARI turun ke ${fmt(k17.ari)}.</li>
-        <li>Sembilan percobaan awal juga memberi median 16 (${E.robust.scmax.join(", ")}).</li>
-        <li>Jenis ke-17 memisahkan foto tumpukan menurut latarnya. Karena itu PCB dan tumpukan tetap satu jenis, dan petugas memilah tumpukan secara manual.</li></ol></details></div>`;
+          : `<p class="empty">Belum ada. Barang yang tidak cocok dengan 16 kategori masuk status perlu dicek, lalu bisa di-cluster jadi kategori baru.</p>`}</section></div>`;
   }
   function jenisDialog(c) {
     dlg.innerHTML = `<div class="dlg"><div class="top"><h2 id="dlgTitle">${esc(c.name)}</h2><button class="iconbtn" type="button" data-close aria-label="Tutup">${ico("x")}</button></div>
       <img class="jgal" src="${gallery(c)}" alt="Contoh foto ${esc(c.name)}">
       <div>${tag(clusterRoute(c), true)}<p style="margin-top:10px">${esc(c.handling)}</p></div>
-      ${c.id === 15 ? '<p class="small"><b>Masih campuran.</b> Jenis ini memuat PCB dan tumpukan e-waste. Petugas memilah foto tumpukan secara manual.</p>' : ""}
-      <p class="facts"><span><b>${c.n}</b> foto di data BDC</span><span>stabilitas <b>${fmt(c.jaccard)}</b> (Jaccard, stabil jika 0,85 ke atas)</span><span><b>${Math.round(100 * c.top_share)}%</b> foto berlabel berjenis sama</span></p>
+      ${c.id === 15 ? '<p class="small"><b>Cluster campuran.</b> Kategori ini memuat PCB dan foto tumpukan e-waste. Petugas memilah foto tumpukan secara manual.</p>' : ""}
+      <p class="facts"><span><b>${c.n}</b> foto di data BDC</span><span>Jaccard stability <b>${fmt(c.jaccard)}</b> (stabil jika ≥ 0,85)</span><span>label purity <b>${Math.round(100 * c.top_share)}%</b></span></p>
       <div class="acts"><button class="btn pri" type="button" data-close>Tutup</button></div></div>`;
     dlg.showModal();
   }
@@ -382,68 +374,68 @@
   function caraKerja() {
     const ds = E.datasets;
     main.innerHTML = `<div class="page article">
-      <div class="head"><div class="t"><h1>Cara kerja</h1></div></div>
-      <p class="lead">Model AI umum ikut membaca latar foto. Mouse di katalog berlatar putih dan mouse yang difoto di lapangan bisa ia anggap dua barang berbeda, lalu keduanya masuk wadah berbeda. CMRE (<i>Cross-Model Residual Erasure</i>) membuang jejak latar itu sebelum E-Rase memilah.</p>
+      <div class="head"><div class="t"><h1>Cara kerja</h1><p class="meta">SENTRA: Sistem Pengelompokan Terpadu Rongsok Alat-elektronik.</p></div></div>
+      <p class="lead">Model AI ikut membaca background foto. Mouse di katalog berlatar putih dan mouse yang difoto dengan background hijau bisa masuk dua cluster berbeda, padahal barangnya sama. CMRE (<i>Cross-Model Residual Erasure</i>) membuang background bias itu sebelum clustering.</p>
       <section class="section"><div class="sechead"><h2>CMRE dalam 8 langkah</h2></div>
-        <iframe class="cmref" src="riset.html?embed&v=11#cara-kerja" title="Animasi cara kerja CMRE"></iframe></section>
-      <section class="section"><div class="sechead"><h2>Empat tahap untuk tiap foto</h2></div><ol class="pipe">
-        <li><i>1</i><b>Lihat</b><span>SigLIP2, PE-Core, dan DINOv3 membaca foto tanpa dilatih ulang.</span></li>
-        <li><i>2</i><b>Bersihkan</b><span>DINOv3 menebak; sisa yang tak tertebak berisi jejak latar, dan CMRE menghapusnya.</span></li>
-        <li><i>3</i><b>Kelompokkan</b><span>SCMax memilih 16 jenis tanpa label; tiap foto masuk centroid terdekat.</span></li>
-        <li><i>4</i><b>Jaga</b><span>Foto yang jauh dari semua foto dikenal ditahan untuk petugas.</span></li></ol></section>
+        <iframe class="cmref" src="riset.html?embed&v=14#cara-kerja" title="Animasi cara kerja CMRE"></iframe></section>
+      <section class="section"><div class="sechead"><h2>Pipeline untuk tiap foto</h2></div><ol class="pipe">
+        <li><i>1</i><b>Embed</b><span>SigLIP2, PE-Core, dan DINOv3 mengubah foto jadi embedding, tanpa fine-tuning.</span></li>
+        <li><i>2</i><b>Erase</b><span>DINOv3 menebak embedding dua model lain. Residual-nya berisi background bias, dan CMRE membuangnya.</span></li>
+        <li><i>3</i><b>Cluster</b><span>SCMax memilih K = 16 tanpa label. Foto baru masuk ke centroid terdekat.</span></li>
+        <li><i>4</i><b>OOD check</b><span>Foto yang jauh dari semua foto BDC ditandai perlu dicek oleh petugas.</span></li></ol></section>
       <section class="section"><div class="sechead"><h2>Hasil pengujian</h2></div><div class="tw"><table class="mini">
-        <thead><tr><th>Yang diukur</th><th class="n">Tanpa CMRE</th><th class="n">Dengan CMRE</th></tr></thead><tbody>
-        <tr><td>Foto barang sejenis dari sumber berbeda yang masuk jenis sama (BDC)</td><td class="n">0,524</td><td class="n big">0,975</td></tr>
-        <tr><td>Sama, pada data yang belum pernah dilihat (Shubha)</td><td class="n">0,356</td><td class="n big">0,956</td></tr>
-        <tr><td>Jejak sumber foto yang tersisa (makin kecil makin baik)</td><td class="n">0,103</td><td class="n big">0,016</td></tr>
-        <tr><td>Percobaan yang memberi pembagian identik</td><td class="n">-</td><td class="n big">100 / 100</td></tr>
-        <tr><td>Ketepatan alarm barang asing (AUROC)</td><td class="n">-</td><td class="n big">0,952</td></tr></tbody></table></div>
+        <thead><tr><th>Metrik</th><th class="n">Tanpa CMRE</th><th class="n">Dengan CMRE</th></tr></thead><tbody>
+        <tr><td>Cross-source consistency (BDC)</td><td class="n">0,524</td><td class="n big">0,975</td></tr>
+        <tr><td>Cross-source consistency, data baru (Shubha)</td><td class="n">0,356</td><td class="n big">0,956</td></tr>
+        <tr><td>Source bias tersisa (makin kecil makin baik)</td><td class="n">0,103</td><td class="n big">0,016</td></tr>
+        <tr><td>Run dengan hasil cluster identik</td><td class="n">-</td><td class="n big">100 / 100</td></tr>
+        <tr><td>AUROC deteksi OOD</td><td class="n">-</td><td class="n big">0,952</td></tr></tbody></table></div>
         <p class="small muted">Sumber: karya ilmiah tim untuk BDC Satria Data 2026.</p></section>
-      <section class="section"><div class="sechead"><h2>Buktikan sendiri</h2></div>
-        <p>Siapkan folder foto berlabel dari dua sumber berbeda. E-Rase menghitung berapa foto sejenis yang masuk jenis yang sama, dengan dan tanpa CMRE.</p>
-        <a class="btn pri" href="#/uji">Uji metode dengan foldermu</a></section>
+      <section class="section"><div class="sechead"><h2>Uji dengan dataset sendiri</h2></div>
+        <p>Siapkan folder foto berlabel dari dua sumber. SENTRA menghitung cross-source consistency dengan dan tanpa CMRE.</p>
+        <a class="btn pri" href="#/uji">Uji dengan dataset sendiri</a></section>
       <section class="section"><div class="sechead"><h2>Data</h2></div><div class="tw"><table class="mini"><thead><tr><th>Dataset</th><th>Peran</th><th class="n">Foto</th></tr></thead><tbody>
         ${ds.map(d => `<tr><td>${esc(d.name)}</td><td>${esc(d.role)}</td><td class="n">${d.n.toLocaleString("id-ID")}</td></tr>`).join("")}</tbody></table></div>
-        <p class="small muted">Label hanya dipakai untuk menilai hasil, tidak untuk membentuk jenis.</p></section>
-      <p class="section small"><a href="riset.html">Lampiran teknis: data, pembanding, uji ketahanan, dan lisensi sumber</a></p></div>`;
+        <p class="small muted">Label hanya dipakai untuk evaluasi, tidak untuk membentuk cluster.</p></section>
+      <p class="section small"><a href="riset.html">Detail teknis: dataset, baseline, robustness test, dan lisensi</a></p></div>`;
   }
   addEventListener("message", e => {
     if (e.origin !== location.origin || !e.data || !e.data.eraseH) return;
     const f = main.querySelector(".cmref"); if (f) f.style.height = Math.ceil(e.data.eraseH) + "px";
   });
 
-  // ================= Jenis baru: regroup held items into candidate new kinds (clustering, no labels) =================
+  // ================= Kategori baru: regroup held items into candidate new kinds (clustering, no labels) =================
   let found = null;  // last /discover answer, kept in memory: { k, silhouette, groups, ids }
   const thumb = it => `<img src="${imgURL(it)}" alt="" loading="lazy" data-open="${it.id}">`;
   function jenisBaru() {
     const P = pool(), ts = types(), demoHeld = [...I.values()].filter(i => held(i) && S.get(i.sid)?.demo).length;
     const grp = (g, k) => {
       const its = g.members.map(m => I.get(found.ids[m])).filter(Boolean);
-      return `<section class="cand"><div class="sechead"><h2>Calon jenis ${String.fromCharCode(65 + k)} · ${its.length} barang</h2></div>
-        <p class="small muted">Kemiripan di dalam kelompok ${fmt(g.cohesion)} · paling dekat dengan ${esc(C[g.nearest].name)} (jarak ${fmt(g.nearestDist)})</p>
+      return `<section class="cand"><div class="sechead"><h2>Kandidat kategori ${String.fromCharCode(65 + k)} · ${its.length} barang</h2></div>
+        <p class="small muted">Cohesion ${fmt(g.cohesion)} · centroid terdekat: ${esc(C[g.nearest].name)} (jarak ${fmt(g.nearestDist)})</p>
         <div class="thumbs">${its.map(thumb).join("")}</div>
-        <form class="name" data-group="${k}"><input type="text" name="kind" maxlength="40" placeholder="Nama jenis, mis. Setrika" required aria-label="Nama jenis baru">
-          <select name="bin" aria-label="Wadah"><option value="0">Wadah non-B3</option><option value="1">Wadah B3</option></select>
-          <button class="btn pri" type="submit">Simpan jenis</button><button class="btn" type="button" data-act="not-ewaste" data-group="${k}">Bukan e-waste</button></form></section>`;
+        <form class="name" data-group="${k}"><input type="text" name="kind" maxlength="40" placeholder="Nama kategori, mis. Setrika" required aria-label="Nama kategori baru">
+          <select name="bin" aria-label="Jalur"><option value="0">Jalur non-B3</option><option value="1">Jalur B3</option></select>
+          <button class="btn pri" type="submit">Simpan kategori</button><button class="btn" type="button" data-act="not-ewaste" data-group="${k}">Bukan e-waste</button></form></section>`;
     };
     main.innerHTML = `<div class="page">
-      <div class="head"><div class="t"><h1>Jenis baru</h1><p class="meta">Barang yang ditahan dari semua sesi. E-Rase mengelompokkannya ulang tanpa label; kamu memberi nama dan memilih wadahnya.</p></div></div>
+      <div class="head"><div class="t"><h1>Kategori baru</h1><p class="meta">Barang berstatus perlu dicek dari semua sesi. SENTRA melakukan clustering ulang tanpa label; kamu memberi nama dan memilih jalurnya.</p></div></div>
       ${ts.length ? `<p class="sum">${ts.map(t => tag({ label: (t.b3 ? "B3 · " : "Non-B3 · ") + t.name, cls: t.b3 ? "b3" : "" })).join("")}</p>` : ""}
-      ${found ? found.groups.map(grp).join("") + `<p class="small muted section">${found.k > 1 ? `Agglomerative clustering (cosine) pada embedding CMRE; K = ${found.k} dipilih otomatis lewat silhouette ${fmt(found.silhouette)}.` : "Barang-barang ini belum membentuk kelompok yang jelas, jadi tampil sebagai satu kelompok."}</p>`
-        : P.length >= 4 ? `<div class="sechead"><h2>${P.length} barang ditahan</h2><button class="btn pri" type="button" data-act="discover">Kelompokkan ${P.length} barang</button></div><div class="thumbs">${P.map(thumb).join("")}</div>`
-        : `<p class="empty">Butuh minimal 4 barang ditahan; sekarang ada ${P.length}.${demoHeld ? " Barang ditahan dari sesi contoh tidak ikut karena embedding-nya tidak tersimpan." : ""} Unggah foto barang yang tidak ada di 16 jenis, misalnya setrika atau kipas angin.</p>`}
+      ${found ? found.groups.map(grp).join("") + `<p class="small muted section">${found.k > 1 ? `Agglomerative clustering (cosine) pada embedding CMRE; K = ${found.k} dipilih otomatis lewat silhouette ${fmt(found.silhouette)}.` : "Barang ini belum membentuk cluster yang jelas, jadi tampil sebagai satu grup."}</p>`
+        : P.length >= 4 ? `<div class="sechead"><h2>${P.length} barang perlu dicek</h2><button class="btn pri" type="button" data-act="discover">Cluster ${P.length} barang</button></div><div class="thumbs">${P.map(thumb).join("")}</div>`
+        : `<p class="empty">Butuh minimal 4 barang berstatus perlu dicek; sekarang ada ${P.length}.${demoHeld ? " Barang dari sesi demo tidak ikut karena embedding-nya tidak tersimpan." : ""} Upload foto barang di luar 16 kategori, misalnya setrika atau kipas angin.</p>`}
     </div>`;
   }
   async function discover() {
     const P = pool(), btn = main.querySelector("[data-act=discover]");
-    if (btn) { btn.disabled = true; btn.textContent = "Mengelompokkan…"; }
-    if (!online && !(await ping())) { toast("Server AI tidak terhubung."); return render(); }
+    if (btn) { btn.disabled = true; btn.textContent = "Clustering…"; }
+    if (!online && !(await ping())) { toast("Server AI offline."); return render(); }
     try {
       const r = await fetch(API + "/discover", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ z: P.map(i => i.res.z) }), signal: AbortSignal.timeout(120000) });
       const j = await r.json();
       if (!r.ok) throw new Error(j.detail || r.statusText);
       found = { ...j, ids: P.map(i => i.id) };
-    } catch (e) { toast("Gagal mengelompokkan: " + e.message); }
+    } catch (e) { toast("Clustering gagal: " + e.message); }
     render();
   }
   function applyGroup(k, corr, typeId) {
@@ -457,12 +449,12 @@
   // ================= Uji metode: the officer's (or jury's) own labelled folder, with vs without CMRE =================
   function ujiSetup() {
     main.innerHTML = `<div class="page article">
-      <div class="head"><a class="iconbtn" href="#/cara-kerja" aria-label="Kembali">${ico("back")}</a><div class="t"><h1>Uji metode dengan foldermu</h1>
-        <p class="meta">Buktikan sendiri: foto barang sejenis dari sumber berbeda masuk jenis yang sama, dengan dan tanpa CMRE.</p></div></div>
+      <div class="head"><a class="iconbtn" href="#/cara-kerja" aria-label="Kembali">${ico("back")}</a><div class="t"><h1>Uji dengan dataset sendiri</h1>
+        <p class="meta">Cek apakah foto barang sejenis dari dua sumber masuk cluster yang sama, dengan dan tanpa CMRE.</p></div></div>
       <ol class="pipe three">
-        <li><i>1</i><b>Satu subfolder per jenis</b><span>Nama subfolder menjadi label, mis. mouse, keyboard, baterai.</span></li>
-        <li><i>2</i><b>Dua sumber (opsional)</b><span>Dua folder sumber, mis. katalog dan lapangan, dengan subfolder jenis yang sama.</span></li>
-        <li><i>3</i><b>Pilih foldernya</b><span>E-Rase memproses semua foto. Label hanya dipakai untuk menilai hasil.</span></li></ol>
+        <li><i>1</i><b>Satu subfolder per label</b><span>Nama subfolder jadi label, mis. mouse, keyboard, baterai.</span></li>
+        <li><i>2</i><b>Dua sumber (opsional)</b><span>Dua folder sumber, mis. katalog dan lapangan, dengan subfolder label yang sama.</span></li>
+        <li><i>3</i><b>Pilih foldernya</b><span>SENTRA memproses semua foto. Label hanya dipakai untuk evaluasi.</span></li></ol>
       <pre class="tree">folder-uji/
   katalog/          sumber 1 (opsional)
     mouse/  keyboard/  baterai/
@@ -490,17 +482,17 @@
     const vs = (k, a, b) => `<div><p class="k">${k}</p><div class="vs"><span><b>${pct(a)}</b>tanpa CMRE</span><span class="win"><b>${pct(b)}</b>dengan CMRE</span></div></div>`;
     main.innerHTML = `<div class="page">
       <div class="head"><a class="iconbtn" href="#/uji" aria-label="Kembali">${ico("back")}</a><div class="t"><h1>Uji: ${esc(s.label)}</h1>
-        <p class="meta">${esc(s.no)} · ${its.length} foto · ${labs.length} jenis${srcs.length ? " · " + srcs.length + " sumber" : ""} · ${day(s.created)}</p></div>
+        <p class="meta">${esc(s.no)} · ${its.length} foto · ${labs.length} label${srcs.length ? " · " + srcs.length + " sumber" : ""} · ${day(s.created)}</p></div>
         <div class="acts"><button class="btn" type="button" data-act="csv">Unduh CSV</button></div></div>
       ${t.run ? `<p class="note"><span class="spin"></span>Memproses ${t.run} dari ${its.length} foto…</p>` : ""}
       ${t.fail ? `<p class="note">${t.fail} foto belum diproses. <button class="btn sm" type="button" data-act="retry">Proses ulang</button></p>` : ""}
-      ${!t.run && res.length && !labs.length ? `<p class="empty">Foto tidak berada di subfolder jenis, jadi tidak ada label untuk menilai. Susun ulang foldernya.</p>` : ""}
-      ${ready ? `<div class="verdictbox">${xc && xc.v != null ? vs(`Foto dari ${esc(srcs.slice(1).join(", "))} yang masuk jenis yang sama dengan foto ${esc(ref)} sejenisnya`, xr.v, xc.v) : ""}
-          ${vs("Foto berlabel sama yang berkumpul di satu jenis", pr.v, pc.v)}</div>
-        <section class="section"><div class="sechead"><h2>Per jenis</h2></div><div class="tw"><table class="mini"><thead><tr><th>Label foldermu</th><th class="n">Foto</th><th>Jenis terbanyak (CMRE)</th><th class="n">Satu jenis</th>${xc ? '<th class="n">Lintas sumber tanpa CMRE</th><th class="n">Lintas sumber dengan CMRE</th>' : ""}<th class="n">Ditahan</th></tr></thead><tbody>
+      ${!t.run && res.length && !labs.length ? `<p class="empty">Foto tidak berada di subfolder label, jadi tidak ada label untuk evaluasi. Susun ulang foldernya.</p>` : ""}
+      ${ready ? `<div class="verdictbox">${xc && xc.v != null ? vs(`Cross-source consistency: foto ${esc(srcs.slice(1).join(", "))} yang masuk cluster yang sama dengan foto ${esc(ref)} berlabel sama`, xr.v, xc.v) : ""}
+          ${vs("Label purity: foto berlabel sama yang berkumpul di satu cluster", pr.v, pc.v)}</div>
+        <section class="section"><div class="sechead"><h2>Per label</h2></div><div class="tw"><table class="mini"><thead><tr><th>Label</th><th class="n">Foto</th><th>Cluster terbanyak (CMRE)</th><th class="n">Purity</th>${xc ? '<th class="n">Cross-source tanpa CMRE</th><th class="n">Cross-source dengan CMRE</th>' : ""}<th class="n">Perlu dicek</th></tr></thead><tbody>
           ${labs.map(l => { const r = res.filter(i => i.lab === l), p = pc.per[l]; return `<tr><td>${esc(l)}</td><td class="n">${r.length}</td><td>${esc(C[p[2]].name)}</td><td class="n">${p[0]}/${p[1]}</td>
             ${xc ? `<td class="n">${xr.per[l] ? xr.per[l].join("/") : "-"}</td><td class="n">${xc.per[l] ? xc.per[l].join("/") : "-"}</td>` : ""}<td class="n">${r.filter(i => i.res.ood).length}</td></tr>`; }).join("")}</tbody></table></div>
-          <p class="small muted">Tanpa CMRE: pipeline yang sama tanpa langkah pembersihan, ditempatkan ke 16 jenis yang sama.${xc ? ` Sumber rujukan: ${esc(ref)}.` : ""} Satu label bisa sah terbagi ke beberapa jenis (mis. baterai: aki, baterai laptop, baterai ponsel).</p></section>` : ""}
+          <p class="small muted">Tanpa CMRE: pipeline yang sama tanpa langkah erasure, ditempatkan ke 16 cluster yang sama.${xc ? ` Sumber referensi: ${esc(ref)}.` : ""} Satu label boleh terbagi ke beberapa cluster (mis. baterai: aki, baterai laptop, baterai ponsel).</p></section>` : ""}
       <section class="section"><div class="sechead"><h2>Semua foto</h2></div><div class="list">${[...its].reverse().map(i => row(i)).join("")}</div></section></div>`;
   }
 
@@ -537,15 +529,15 @@
     const go = () => {
       const D = window.DEMO, pick = st => D.cards.filter(c => c.status === st), clusterOf = new Map(D.pts.map(p => [p[6], p[4]]));
       const cards = [...pick("cocok").slice(0, 7), ...pick("lapangan").slice(0, 3), ...pick("alarm").slice(0, 2)];
-      const s = { id: uid(), no: "B-000", type: "batch", label: "Sesi contoh: foto dataset lain", place: "", created: Date.now(), done: false, demo: true };
+      const s = { id: uid(), no: "B-000", type: "batch", label: "Sesi demo: foto dataset lain", place: "", created: Date.now(), done: false, demo: true };
       putS(s);
       cards.forEach((c, k) => putI({ id: uid(), sid: s.id, name: `${c.src}-${c.id}.webp`, t: Date.now() + k, src: `assets/c/${c.id}.webp`, state: "hasil", conf: "", corr: null, qty: 1, kg: null,
         res: { cluster: c.cluster, centres: c.centres, score: c.score, threshold: D.oodThreshold, ood: c.status === "alarm", nb: c.nb, nbSim: c.nbSim, nbCluster: c.nb.map(id => clusterOf.get(id)) } }));
       location.hash = "#/s/" + s.id;
     };
     if (window.DEMO) return go();
-    const sc = Object.assign(document.createElement("script"), { src: "demo.js?v=8" });
-    sc.onload = go; sc.onerror = () => toast("Data contoh tidak termuat."); document.body.appendChild(sc);
+    const sc = Object.assign(document.createElement("script"), { src: "demo.js?v=9" });
+    sc.onload = go; sc.onerror = () => toast("Data demo gagal dimuat."); document.body.appendChild(sc);
   }
 
   // ================= exports =================
@@ -588,14 +580,14 @@
     else if (a === "unit") unitDialog();
     else if (a === "demo") demo();
     else if (a === "print") print();
-    else if (a === "csv") csv(itemsOf(s.id), `e-rase-${s.no}.csv`);
-    else if (a === "csv-all") csv([...I.values()].sort((x, y) => x.t - y.t), `e-rase-riwayat-${new Date().toISOString().slice(0, 10)}.csv`);
+    else if (a === "csv") csv(itemsOf(s.id), `sentra-${s.no}.csv`);
+    else if (a === "csv-all") csv([...I.values()].sort((x, y) => x.t - y.t), `sentra-riwayat-${new Date().toISOString().slice(0, 10)}.csv`);
     else if (a === "pickall") { const open = itemsOf(s.id).filter(i => isRes(i) && !i.conf && !i.res.ood && main.querySelector(`[data-pick="${i.id}"]`)); el.checked ? open.forEach(i => picked.add(i.id)) : picked.clear(); render(); }
     else if (a === "bulk") { const n = picked.size; picked.forEach(id => { const it = I.get(id); if (it && isRes(it) && !it.conf) setConf(it, "benar"); }); picked.clear(); render(); toast(`${n} barang dibenarkan.`); }
     else if (a === "finish") {
       const t = tally(itemsOf(s.id));
       if (t.run) return toast("Tunggu sampai semua foto selesai diproses.");
-      if (t.held) { filter = "tahan"; render(); return toast(`${t.held} barang ditahan. Periksa dulu.`); }
+      if (t.held) { filter = "tahan"; render(); return toast(`${t.held} barang perlu dicek dulu.`); }
       s.done = true; s.closedAt = Date.now(); putS(s); location.hash = "#/s/" + s.id + "/dokumen";
     } else if (a === "reopen") { s.done = false; putS(s); render(); }
   });
@@ -631,7 +623,7 @@
     const t = { id: uid(), name, b3: f.elements.bin.value === "1", created: Date.now() };
     saveTypes([...types(), t]);
     applyGroup(+f.dataset.group, "baru", t.id);
-    toast(`Jenis "${name}" tersimpan.`);
+    toast(`Kategori "${name}" tersimpan.`);
   });
   // drag and drop: on the home capture surface it starts a session; inside a batch it adds to it
   ["dragenter", "dragover"].forEach(t => main.addEventListener(t, e => { const z = e.target.closest("[data-drop]"); if (z) { e.preventDefault(); z.classList.add("over"); } }));

@@ -1,4 +1,4 @@
-/* E-Rase. Direction (owner, Oct 2026): calm modern SaaS in the manner of adora.ai, not playful.
+/* SENTRA. Direction (owner, Oct 2026): calm modern SaaS in the manner of adora.ai, not playful.
    Off-white canvas, white surfaces with hairline borders, deep indigo ink, one violet accent for the primary action.
    Plus Jakarta Sans throughout; headings 700 with tight tracking. Radius: 20px panels, 12px controls, pills for state.
    Bin colours carry meaning and match everywhere (tag dot, bar fill): B3 = ink, non-B3 = lime, ditahan = amber.
@@ -12,7 +12,7 @@
   --ok: #15803d; --err: #b42318;
   --shadow: 0 1px 2px rgba(33, 22, 76, .04), 0 4px 16px -4px rgba(33, 22, 76, .08);
   --sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --side: 248px; --bar: 60px; --tabs: 64px;
+  --bar: 60px; --tabs: 64px;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); font: 500 15px/1.55 var(--sans); -webkit-font-smoothing: antialiased; }
@@ -31,33 +31,31 @@ b { font-weight: 700; }
 [hidden] { display: none !important; }
 button, a, input, select { transition: background-color .15s, border-color .15s, color .15s, box-shadow .15s; }
 
-/* ---- shell: light rail on desktop, bar + tabs on phones */
-.side { position: fixed; inset: 0 auto 0 0; width: var(--side); background: var(--card); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 20px 14px; gap: 2px; z-index: 20; }
-.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; padding: 2px 10px 20px; line-height: 1.1; }
+/* ---- shell: floating nav on desktop (shadow + blur because content scrolls under it), bar + tabs on phones */
+.top { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); width: min(1160px, 100% - 32px); height: 60px; display: flex; align-items: center; gap: 8px; padding: 0 10px 0 18px; background: rgba(255, 255, 255, .92); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); z-index: 20; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
 .brand img { width: 28px; height: 28px; }
-.brand b { font-size: 18px; font-weight: 800; letter-spacing: -.02em; }
-.brand small { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-top: 3px; }
-.side a.nav { display: flex; align-items: center; gap: 12px; min-height: 40px; padding: 0 12px; border-radius: 10px; color: var(--muted); text-decoration: none; font-weight: 600; font-size: 14px; }
-.side a.nav:hover { background: var(--bg-2); color: var(--ink); }
-.side a.nav[aria-current="page"] { background: var(--bg-2); color: var(--ink); }
-.side a.nav[aria-current="page"] .ico { color: var(--pri); }
-.side .act { display: grid; gap: 8px; margin: 18px 0 0; padding-top: 18px; border-top: 1px solid var(--line); }
-.side .foot { margin-top: auto; padding: 0 10px; font-size: 13px; }
-.bar, .tabs { display: none; }
-main { margin-left: var(--side); min-height: 100vh; padding: 36px 40px 64px; }
+.brand b { font-size: 18px; font-weight: 800; letter-spacing: .02em; }  /* all-caps wordmark needs open tracking */
+.menu { display: flex; gap: 2px; margin: 0 auto; }
+.menu a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 12px; color: var(--muted); text-decoration: none; font-weight: 600; font-size: 14px; white-space: nowrap; }
+.menu a:hover { background: var(--bg-2); color: var(--ink); }
+.menu a[aria-current="page"] { background: var(--bg-2); color: var(--ink); }
+.top .srv { margin-right: 6px; white-space: nowrap; }
+.tabs { display: none; }
+main { min-height: 100vh; padding: 108px 40px 64px; }
 .page { max-width: 1120px; margin: 0 auto; }
 .ico { width: 20px; height: 20px; flex: none; }
+@media (max-width: 1199px) { .top .srv { display: none; } .menu a { padding: 0 11px; } }
 @media (max-width: 1023px) {
-  .side { display: none; }
-  .bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 10px; height: var(--bar); padding: 0 16px; background: rgba(255, 255, 255, .88); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
-  .bar .brand { padding: 0; }
-  .bar .srv { margin-left: auto; }
+  .top { position: sticky; top: 0; left: auto; transform: none; width: auto; height: var(--bar); padding: 0 16px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; box-shadow: none; }
+  .menu, .top .upload { display: none; }
+  .top .srv { display: inline-flex; margin: 0 0 0 auto; }
   .tabs { position: fixed; inset: auto 0 0 0; z-index: 20; display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; height: calc(var(--tabs) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: rgba(255, 255, 255, .94); backdrop-filter: blur(12px); border-top: 1px solid var(--line); }
   .tabs a, .tabs button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; height: 100%; font: 600 11px var(--sans); color: var(--soft); text-decoration: none; background: none; border: 0; cursor: pointer; }
   .tabs [aria-current="page"] { color: var(--pri); }
   .tabs .shoot { width: 52px; height: 52px; margin-top: -16px; border-radius: 16px; background: var(--pri); color: #fff; display: grid; place-items: center; box-shadow: 0 6px 16px -4px rgba(89, 46, 255, .45); }
   .tabs .shoot .ico { width: 24px; height: 24px; }
-  main { margin-left: 0; padding: 20px 16px calc(var(--tabs) + 28px); }
+  main { padding: 20px 16px calc(var(--tabs) + 28px); }
   h1 { font-size: 26px; }
 }
 
@@ -72,14 +70,11 @@ main { margin-left: var(--side); min-height: 100vh; padding: 36px 40px 64px; }
 .btn.big { min-height: 50px; font-size: 15px; padding: 0 22px; }
 .btn.sm { min-height: 36px; padding: 0 12px; font-size: 13px; border-radius: 10px; }
 .btn.danger { color: var(--err); }
-.side .btn { justify-content: flex-start; }
 .iconbtn { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--card); color: var(--ink); display: inline-grid; place-items: center; cursor: pointer; flex: none; }
 .iconbtn:hover { background: var(--bg-2); }
 input[type=text], input[type=number], select { font: 500 15px var(--sans); color: var(--ink); background: var(--card); border: 1px solid var(--line-2); border-radius: 12px; min-height: 44px; padding: 0 12px; width: 100%; }
 input[type=text]:focus, input[type=number]:focus, select:focus { outline: none; border-color: var(--pri); box-shadow: 0 0 0 3px var(--pri-soft); }
 label.f { display: grid; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted); }
-.eyebrow { display: inline-flex; align-items: center; gap: 8px; justify-self: start; min-height: 28px; padding: 0 12px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); font-size: 12.5px; font-weight: 600; color: var(--muted); }
-.eyebrow i { width: 6px; height: 6px; border-radius: 50%; background: var(--pri); }
 
 /* ---- bin tag: a pill with a dot in the bin colour */
 .tag { display: inline-flex; align-items: center; gap: 7px; min-height: 24px; padding: 0 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; background: var(--lime); color: var(--lime-ink); }
@@ -126,7 +121,7 @@ label.f { display: grid; gap: 6px; font-size: 13px; font-weight: 600; color: var
 /* ---- home: the capture surface is the focal point */
 .scan { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: stretch; }
 @media (max-width: 900px) { .scan { grid-template-columns: 1fr; } }
-.capture { position: relative; background: var(--card) radial-gradient(#e4e4de 1px, transparent 1px) 0 0 / 18px 18px; color: var(--text); border-radius: 24px; padding: 44px; display: grid; gap: 16px; align-content: center; min-height: 340px; border: 1px solid var(--line); outline: 2px dashed transparent; outline-offset: -10px; transition: outline-color .15s, background-color .15s; }
+.capture { position: relative; background: var(--card); color: var(--text); border-radius: 24px; padding: 44px; display: grid; gap: 16px; align-content: center; min-height: 340px; border: 1px solid var(--line); outline: 2px dashed transparent; outline-offset: -10px; transition: outline-color .15s, background-color .15s; }
 .capture.over { outline-color: var(--pri); background-color: var(--pri-soft); }
 .capture h1 { font-size: clamp(30px, 3.6vw, 44px); line-height: 1.08; letter-spacing: -.035em; }
 .capture h1 span { color: var(--soft); }
@@ -172,7 +167,7 @@ a.srow:hover { background: var(--bg); }
 /* ---- workspace */
 .ws { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 28px; align-items: start; }
 @media (max-width: 1023px) { .ws { grid-template-columns: 1fr; gap: 14px; } }
-.filters { display: grid; gap: 2px; position: sticky; top: 20px; }
+.filters { display: grid; gap: 2px; position: sticky; top: 96px; }
 .filters button { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 38px; padding: 0 12px; border-radius: 10px; border: 0; background: none; font: 600 14px var(--sans); color: var(--muted); cursor: pointer; text-align: left; }
 .filters button .num { font-size: 12.5px; color: var(--soft); }
 .filters button:hover { background: var(--bg-2); color: var(--ink); }
@@ -261,9 +256,6 @@ details.why summary { cursor: pointer; min-height: 46px; display: flex; align-it
 .jgal { width: 100%; border-radius: 16px; display: block; background: var(--bg-2); }
 .facts { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 13px; color: var(--muted); }
 .facts b { color: var(--ink); }
-details.k17 { margin-top: 20px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 0 20px; }
-details.k17 summary { cursor: pointer; font-weight: 700; color: var(--ink); min-height: 52px; display: flex; align-items: center; }
-details.k17 ol { margin: 0 0 16px; padding-left: 20px; display: grid; gap: 6px; }
 
 /* ---- Cara kerja: an article */
 .article { max-width: 880px; }
@@ -310,7 +302,7 @@ table.mini td.big { font-size: 16px; font-weight: 700; color: var(--pri); }
 .doc .sign div { border-top: 1px solid var(--ink); padding-top: 6px; margin-top: 64px; }
 @media (max-width: 560px) { .doc { padding: 18px; } }
 @media print {
-  .side, .bar, .tabs, .noprint { display: none !important; }
+  .top, .tabs, .noprint { display: none !important; }
   main { margin: 0; padding: 0; }
   body { background: #fff; }
   .doc { border: 0; padding: 0; }

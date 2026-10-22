@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>E-Rase · Pilah e-waste dari foto</title>
-<meta name="description" content="E-Rase: aplikasi pemilahan e-waste dari foto untuk petugas bank sampah, TPS3R, dan pengepul, ditenagai metode CMRE. Prototipe BDC Satria Data 2026.">
+<title>SENTRA · Pilah e-waste dari foto</title>
+<meta name="description" content="SENTRA (Sistem Pengelompokan Terpadu Rongsok Alat-elektronik): aplikasi pemilahan e-waste dari foto untuk petugas bank sampah, TPS3R, dan pengepul, ditenagai metode CMRE. Prototipe BDC Satria Data 2026.">
 <meta name="theme-color" content="#f9f9f7">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/svg+xml" href="assets/logo.svg?v=8">
-<link rel="apple-touch-icon" href="assets/icon-192.png?v=8">
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg?v=11">
+<link rel="apple-touch-icon" href="assets/icon-192.png?v=11">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="app.css?v=8">
+<link rel="stylesheet" href="app.css?v=11">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -30,30 +30,25 @@
   <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
 </svg>
 
-<aside class="side" aria-label="Navigasi">
-  <a class="brand" href="#/"><img src="assets/logo.svg?v=8" alt=""><span><b>E-Rase</b><small>pilah e-waste, ditenagai CMRE</small></span></a>
-  <a class="nav" href="#/" data-nav="home"><svg class="ico"><use href="#i-cam"/></svg>Pilah</a>
-  <a class="nav" href="#/jenis" data-nav="jenis"><svg class="ico"><use href="#i-book"/></svg>Panduan jenis</a>
-  <a class="nav" href="#/baru" data-nav="baru"><svg class="ico"><use href="#i-layers"/></svg>Jenis baru</a>
-  <a class="nav" href="#/cara-kerja" data-nav="cara"><svg class="ico"><use href="#i-flow"/></svg>Cara kerja</a>
-  <a class="nav" href="#/riwayat" data-nav="riwayat"><svg class="ico"><use href="#i-hist"/></svg>Riwayat</a>
-  <div class="act">
-    <button class="btn pri" type="button" data-act="quick-files"><svg class="ico"><use href="#i-img"/></svg>Pilih foto</button>
-    <button class="btn" type="button" data-new="setoran"><svg class="ico"><use href="#i-doc"/></svg>Catat setoran warga</button>
-  </div>
-  <div class="foot"><span class="srv wait" data-srv><i></i><span>Menghubungkan…</span></span></div>
-</aside>
-
-<header class="bar">
-  <a class="brand" href="#/"><img src="assets/logo.svg?v=8" alt=""><span><b>E-Rase</b></span></a>
+<header class="top">
+  <a class="brand" href="#/" title="Sistem Pengelompokan Terpadu Rongsok Alat-elektronik"><img src="assets/logo.svg?v=11" alt=""><b>SENTRA</b></a>
+  <nav class="menu" aria-label="Navigasi">
+    <a href="#/" data-nav="home">Pilah</a>
+    <a href="#/jenis" data-nav="jenis">Kategori</a>
+    <a href="#/baru" data-nav="baru">Kategori baru</a>
+    <a href="#/cara-kerja" data-nav="cara">Cara kerja</a>
+    <a href="#/riwayat" data-nav="riwayat">Riwayat</a>
+    <a href="riset.html">Riset</a>
+  </nav>
   <span class="srv wait" data-srv><i></i><span>Menghubungkan…</span></span>
+  <button class="btn pri sm upload" type="button" data-act="quick-files"><svg class="ico"><use href="#i-img"/></svg>Upload foto</button>
 </header>
 
 <main id="main" tabindex="-1"></main>
 
 <nav class="tabs" aria-label="Navigasi bawah">
   <a href="#/" data-nav="home"><svg class="ico"><use href="#i-home"/></svg>Pilah</a>
-  <a href="#/jenis" data-nav="jenis"><svg class="ico"><use href="#i-book"/></svg>Jenis</a>
+  <a href="#/jenis" data-nav="jenis"><svg class="ico"><use href="#i-book"/></svg>Kategori</a>
   <button type="button" data-act="quick-cam" aria-label="Foto barang"><span class="shoot"><svg class="ico"><use href="#i-cam"/></svg></span></button>
   <a href="#/cara-kerja" data-nav="cara"><svg class="ico"><use href="#i-flow"/></svg>Cara kerja</a>
   <a href="#/riwayat" data-nav="riwayat"><svg class="ico"><use href="#i-hist"/></svg>Riwayat</a>
@@ -65,7 +60,7 @@
 <input type="file" id="pickDir" webkitdirectory multiple hidden>
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script src="data.js?v=8"></script>
-<script src="app.js?v=8"></script>
+<script src="data.js?v=11"></script>
+<script src="app.js?v=11"></script>
 </body>
 </html>
