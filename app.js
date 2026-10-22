@@ -74,6 +74,26 @@
   // held items from real work sessions that still carry their CMRE embedding can be regrouped into new kinds
   const pool = () => [...I.values()].filter(i => isRes(i) && i.res.z && !S.get(i.sid)?.demo && S.get(i.sid)?.type !== "uji"
     && (held(i) || i.corr === "lain")).sort((a, b) => a.t - b.t);
+  // Kinds the officer named under "Kategori baru" are learned on this device: centre and reach of their CMRE embeddings.
+  // A held photo close enough to one is offered as that kind. The 16 BDC clusters on the server never change.
+  let learnt = null;  // cached per render
+  const dist = (a, b) => Math.sqrt(a.reduce((s, v, j) => s + (v - b[j]) ** 2, 0));
+  function learned() {
+    return learnt ??= types().map(t => {
+      const zs = [...I.values()].filter(i => i.newType === t.id && i.res?.z).map(i => i.res.z);
+      if (zs.length < 3) return null;  // too few photos for a stable centre
+      const c = zs[0].map((_, j) => zs.reduce((s, z) => s + z[j], 0) / zs.length);
+      return { t, c, r: 1.1 * Math.max(...zs.map(z => dist(z, c))) };
+    }).filter(Boolean);
+  }
+  function suggest(it) {  // reach is at least the BDC OOD threshold, so a kind with tight members still catches new photos
+    if (!held(it) || !it.res.z) return null;
+    let best = null;
+    for (const k of learned()) { const d = dist(it.res.z, k.c); if (d <= Math.max(k.r, it.res.threshold) && (!best || d < best.d)) best = { t: k.t, d }; }
+    return best && best.t;
+  }
+  function toType(it, t) { it.newType = t.id; setConf(it, "koreksi", "baru"); learnt = null; }
+  const typeTag = (t, lg) => tag({ label: (t.b3 ? "B3 · " : "Non-B3 · ") + t.name, cls: t.b3 ? "b3" : "" }, lg);
   function tally(list) {
     const res = list.filter(isRes);
     return { n: res.reduce((s, i) => s + qty(i), 0), b3: res.filter(i => route(i).b3).reduce((s, i) => s + qty(i), 0),
@@ -177,6 +197,7 @@
   researchMenu?.addEventListener("mouseleave", () => { if (!researchMenu.contains(document.activeElement)) researchMenu.open = false; });
   researchMenu?.addEventListener("focusout", () => { if (!researchMenu.matches(":hover") && !researchMenu.contains(document.activeElement)) researchMenu.open = false; });
   function render() {
+    learnt = null;
     const h = location.hash.replace(/^#\/?/, "").split("/");
     // in-dashboard anchors (#k17) stay inside the dashboard; app routes always start with "#/" (riset also has an id "uji")
     if (!location.hash.startsWith("#/") && h[0] && !researchPage.hidden && researchContent.shadowRoot?.getElementById(h[0])) return;
@@ -291,7 +312,12 @@
   }
 
   function latest(it) {
-    const r = route(it), h = held(it);
+    const r = route(it), h = held(it), t = suggest(it);
+    if (t) return `<div class="latest" aria-live="polite"><img src="${imgURL(it)}" alt="">
+      <div style="min-width:0"><div class="to">Mirip kategori baru di perangkat ini</div>${typeTag(t, true)}
+        <div class="kind">${esc(t.name)}</div>
+        <p>Foto ini di luar 16 kategori BDC, tapi dekat dengan barang yang sudah kamu namai ${esc(t.name)}.</p>
+        <div class="acts"><button class="btn ok sm" type="button" data-learn="${it.id}">${ico("check")}Ya, ${esc(t.name)}</button><button class="btn sm" type="button" data-open="${it.id}">Periksa</button></div></div></div>`;
     return `<div class="latest" aria-live="polite"><img src="${imgURL(it)}" alt="">
       <div style="min-width:0"><div class="to">${h ? "Jangan masukkan dulu" : "Masukkan ke wadah"}</div>${tag(r, true)}
         <div class="kind">${esc(kindName(it))}${h ? " (paling mirip)" : ""}</div>
@@ -300,7 +326,7 @@
   }
 
   function detail(it) {
-    const s = S.get(it.sid), r = route(it), h = held(it);
+    const s = S.get(it.sid), r = route(it), h = held(it), t = suggest(it);
     let body = `<p class="muted">${it.state === "proses" ? "Server AI sedang memproses foto ini." : "Foto ini belum diproses. Tutup, lalu tekan Proses ulang."}</p>`;
     if (isRes(it)) {
       const R = it.res, top = Math.max(R.threshold * 1.5, R.score * 1.1), maxD = Math.max(...R.centres.map(x => x[1]));
@@ -308,7 +334,10 @@
       body = `<div><div class="k">${h ? "Jangan masukkan dulu" : "Masukkan ke wadah"}</div>${tag(r, true)}</div>
         <div><div class="k">${h ? "Paling mirip" : it.conf === "koreksi" ? "Dikoreksi petugas" : "Kategori"}</div><div class="g">${esc(kindName(it))}</div>
           <p class="hand">${h ? "Foto ini out-of-distribution (jauh dari semua foto BDC). Konfirmasi kategorinya atau koreksi." : typeof it.corr === "string" ? "Catat kategorinya secara manual." : esc(cl(it).handling)}</p></div>
-        ${s.done ? "" : `<div class="confirm"><button class="btn ok" type="button" data-dconf>${ico("check")}${h ? "Ya, kategorinya ini" : "Benar"}</button>
+        ${t && !s.done ? `<div><div class="k">Mirip kategori baru di perangkat ini</div>${typeTag(t, true)}
+          <p class="hand">Dekat dengan barang yang sudah kamu namai ${esc(t.name)}.</p>
+          <button class="btn ok" type="button" data-dlearn style="margin-top:10px">${ico("check")}Ya, ${esc(t.name)}</button></div>` : ""}
+        ${s.done ? "" : `<div class="confirm"><button class="btn${t ? "" : " ok"}" type="button" data-dconf>${ico("check")}${h ? "Ya, kategorinya ini" : "Benar"}</button>
           <select data-dcorr aria-label="Koreksi kategori barang">${corrOptions(it.conf === "koreksi" ? it.corr : null)}</select></div>
         <div class="fields"><label class="f">Jumlah<input type="number" min="1" step="1" value="${qty(it)}" data-dqty></label><label class="f">Berat (kg)<input type="number" min="0" step="0.1" value="${it.kg ?? ""}" data-dkg placeholder="opsional"></label></div>`}
         <details class="why"><summary>Kenapa kategori ini? ${same} dari 5 nearest neighbor ada di cluster yang sama</summary>
@@ -326,6 +355,7 @@
       <div class="acts">${s.done ? "" : '<button class="btn danger" type="button" data-ddel>Hapus</button>'}<button class="btn pri" type="button" data-close>Tutup</button></div></div>`;
     const q = sel => dlg.querySelector(sel);
     q("[data-dconf]")?.addEventListener("click", () => { setConf(it, "benar"); dlg.close(); render(); toast("Tersimpan."); });
+    q("[data-dlearn]")?.addEventListener("click", () => { toType(it, t); dlg.close(); render(); toast(`Masuk ${t.name}.`); });
     q("[data-dcorr]")?.addEventListener("change", e => { if (!e.target.value) return; setConf(it, "koreksi", parseCorr(e.target.value)); detail(it); render(); });
     q("[data-dqty]")?.addEventListener("change", e => { it.qty = Math.max(1, Math.round(+e.target.value || 1)); putI(it); render(); });
     q("[data-dkg]")?.addEventListener("change", e => { it.kg = e.target.value === "" ? null : Math.max(0, +e.target.value); putI(it); render(); });
@@ -409,7 +439,12 @@
   let found = null;  // last /discover answer, kept in memory: { k, silhouette, groups, ids }
   const thumb = it => `<img src="${imgURL(it)}" alt="" loading="lazy" data-open="${it.id}">`;
   function jenisBaru() {
-    const P = pool(), ts = types(), demoHeld = [...I.values()].filter(i => held(i) && S.get(i.sid)?.demo).length;
+    const all = pool(), ts = types(), demoHeld = [...I.values()].filter(i => held(i) && S.get(i.sid)?.demo).length;
+    // photos that match a kind already named go to that kind; only the rest are clustered into new candidates
+    const M = new Map(), P = all.filter(i => { const t = suggest(i); if (t) M.set(t.id, [...(M.get(t.id) || []), i]); return !t; });
+    const matched = [...M].map(([id, its]) => { const t = typeOf(id);
+      return `<section class="cand"><div class="sechead"><h2>${its.length} barang mirip ${esc(t.name)}</h2><button class="btn pri" type="button" data-act="learn-all" data-type="${id}">Masukkan ke ${esc(t.name)}</button></div>
+        <p class="small muted">Dekat dengan barang yang sudah kamu namai ${esc(t.name)}, jadi tidak perlu di-cluster ulang.</p><div class="thumbs">${its.map(thumb).join("")}</div></section>`; }).join("");
     const grp = (g, k) => {
       const its = g.members.map(m => I.get(found.ids[m])).filter(Boolean);
       return `<section class="cand"><div class="sechead"><h2>Kandidat kategori ${String.fromCharCode(65 + k)} · ${its.length} barang</h2></div>
@@ -422,13 +457,14 @@
     main.innerHTML = `<div class="page">
       <div class="head"><div class="t"><h1>Kategori baru</h1><p class="meta">Barang berstatus perlu dicek dari semua sesi. SENTRA melakukan clustering ulang tanpa label; kamu memberi nama dan memilih jalurnya.</p></div></div>
       ${ts.length ? `<p class="sum">${ts.map(t => tag({ label: (t.b3 ? "B3 · " : "Non-B3 · ") + t.name, cls: t.b3 ? "b3" : "" })).join("")}</p>` : ""}
+      ${matched}
       ${found ? found.groups.map(grp).join("") + `<p class="small muted section">${found.k > 1 ? `Agglomerative clustering (cosine) pada embedding CMRE; K = ${found.k} dipilih otomatis lewat silhouette ${fmt(found.silhouette)}.` : "Barang ini belum membentuk cluster yang jelas, jadi tampil sebagai satu grup."}</p>`
         : P.length >= 4 ? `<div class="sechead"><h2>${P.length} barang perlu dicek</h2><button class="btn pri" type="button" data-act="discover">Cluster ${P.length} barang</button></div><div class="thumbs">${P.map(thumb).join("")}</div>`
         : `<p class="empty">Butuh minimal 4 barang berstatus perlu dicek; sekarang ada ${P.length}.${demoHeld ? " Barang dari sesi demo tidak ikut karena embedding-nya tidak tersimpan." : ""} Upload foto barang di luar 16 kategori, misalnya setrika atau kipas angin.</p>`}
     </div>`;
   }
   async function discover() {
-    const P = pool(), btn = main.querySelector("[data-act=discover]");
+    const P = pool().filter(i => !suggest(i)), btn = main.querySelector("[data-act=discover]");
     if (btn) { btn.disabled = true; btn.textContent = "Clustering…"; }
     if (!online && !(await ping())) { toast("Server AI offline."); return render(); }
     try {
@@ -560,7 +596,7 @@
   // ================= events (delegated) =================
   let quick = false;  // a session is made only once photos are chosen, so a cancelled picker leaves nothing behind
   document.addEventListener("click", e => {
-    const el = e.target.closest("[data-new],[data-act],[data-conf],[data-open],[data-filter],[data-close],[data-pick],[data-jenis]");
+    const el = e.target.closest("[data-new],[data-act],[data-conf],[data-learn],[data-open],[data-filter],[data-close],[data-pick],[data-jenis]");
     if (!el) return;
     const s = view.sid && S.get(view.sid);
     if (el.dataset.new) return newSetoran();
@@ -569,6 +605,7 @@
     if (el.dataset.filter) { filter = el.dataset.filter; return render(); }
     if (el.dataset.pick) { el.checked ? picked.add(el.dataset.pick) : picked.delete(el.dataset.pick); return render(); }
     if (el.dataset.conf) { setConf(I.get(el.dataset.conf), "benar"); render(); return toast("Tersimpan."); }
+    if (el.dataset.learn) { const it = I.get(el.dataset.learn), t = suggest(it); if (t) toType(it, t); render(); return toast(t ? `Masuk ${t.name}.` : "Tidak ada kategori yang cocok."); }
     if (el.dataset.open) return detail(I.get(el.dataset.open));
     const a = el.dataset.act;
     if (a === "quick-cam" || a === "quick-files") { quick = true; view = {}; $(a === "quick-cam" && coarse ? "#pickCam" : "#pickFiles").click(); }
@@ -577,6 +614,7 @@
     else if (a === "pick-dir") $("#pickDir").click();
     else if (a === "discover") discover();
     else if (a === "not-ewaste") { applyGroup(+el.dataset.group, "bukan"); toast("Ditandai bukan e-waste."); }
+    else if (a === "learn-all") { const t = typeOf(el.dataset.type), its = pool().filter(i => suggest(i)?.id === t.id); its.forEach(i => toType(i, t)); render(); toast(`${its.length} barang masuk ${t.name}.`); }
     else if (a === "retry") retry(s.id);
     else if (a === "unit") unitDialog();
     else if (a === "demo") demo();
@@ -621,8 +659,9 @@
     e.preventDefault();
     const name = f.elements.kind.value.trim();
     if (!name) return;
-    const t = { id: uid(), name, b3: f.elements.bin.value === "1", created: Date.now() };
-    saveTypes([...types(), t]);
+    const b3 = f.elements.bin.value === "1";  // the same name on the same route adds to that kind instead of making a twin
+    const t = types().find(x => x.name.toLowerCase() === name.toLowerCase() && x.b3 === b3) || { id: uid(), name, b3, created: Date.now() };
+    if (!typeOf(t.id)) saveTypes([...types(), t]);
     applyGroup(+f.dataset.group, "baru", t.id);
     toast(`Kategori "${name}" tersimpan.`);
   });
@@ -641,6 +680,11 @@
   Promise.all([tx("sessions", "readonly", s => s.getAll()), tx("items", "readonly", s => s.getAll())]).then(([ss, its]) => {
     ss.forEach(s => S.set(s.id, s));
     its.forEach(i => { if (i.state === "proses") i.state = "gagal"; I.set(i.id, i); });  // uploads cut off by a reload can be retried
+    // one kind per name and route: merge twins saved before same-name kinds were reused
+    const keep = new Map(), ts = types();
+    ts.forEach(t => { const k = t.name.toLowerCase() + (t.b3 ? "|b3" : "");
+      if (!keep.has(k)) keep.set(k, t); else I.forEach(i => { if (i.newType === t.id) { i.newType = keep.get(k).id; putI(i); } }); });
+    if (keep.size < ts.length) saveTypes([...keep.values()]);
     render();
   }).catch(e => { main.innerHTML = `<div class="page"><p class="empty">Penyimpanan perangkat tidak tersedia (${esc(e.message)}). Buka di browser biasa, bukan mode privat.</p></div>`; });
   // no ping on load: the GPU backend wakes only when a photo is sent, since every wake-up costs Modal credit
