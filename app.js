@@ -89,10 +89,11 @@
   const sumLine = t => `<p class="sum"><span><b>${t.n}</b>barang</span><span><b>${t.b3}</b>B3</span>${t.held ? `<span class="warn"><b>${t.held}</b>perlu dicek</span>` : ""}<span><b>${t.open}</b>belum dikonfirmasi</span></p>`;
 
   // ================= backend =================
-  let online = false, pinging = null;
+  let online = false, pinging = null, tried = false;
   function srv(cls, text) { document.querySelectorAll("[data-srv]").forEach(e => { e.className = "srv " + cls; e.lastElementChild.textContent = text; }); }
   function ping() {
     if (pinging) return pinging;
+    tried = true;
     srv("wait", "Menyalakan server AI…");
     pinging = fetch(API + "/health", { signal: AbortSignal.timeout(150000) }).then(r => r.ok).catch(() => false)
       .then(ok => { online = ok; pinging = null; srv(ok ? "on" : "off", ok ? "Server AI siap" : "Server AI offline"); return ok; });
@@ -173,7 +174,7 @@
   const picked = new Set();
   function render() {
     const h = location.hash.replace(/^#\/?/, "").split("/");
-    const nav = { riwayat: "riwayat", jenis: "jenis", baru: "baru", uji: "home", riset: "riset", "": "home" }[h[0]] || "";
+    const nav = { riwayat: "riwayat", jenis: "jenis", baru: "baru", uji: "riset", riset: "riset", "": "home" }[h[0]] || "";
     document.querySelectorAll("[data-nav]").forEach(a => a.dataset.nav === nav ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
     if (h[0] === "s" && S.has(h[1])) {
       const s = S.get(h[1]);
@@ -207,39 +208,35 @@
   }
 
   function home() {
-    const ss = [...S.values()].sort((a, b) => b.created - a.created), u = unit();
+    const ss = [...S.values()].sort((a, b) => b.created - a.created);
     const todayItems = [...I.values()].filter(i => today(i.t) && i.state !== "gagal").sort((a, b) => b.t - a.t);
     const demo = ss.find(s => s.demo);
+    // one job on this screen: start sorting. Kategori baru and server status live in the navbar, Uji in the dashboard,
+    // unit settings next to the receipts they print on
     main.innerHTML = `<div class="page">
       <section class="scan">
         <div class="capture" data-drop="home">
-          <h1>Foto barangnya,<br><span>langsung tahu kategori dan jalurnya.</span></h1>
-          <p>Satu barang per foto. Pilih banyak foto sekaligus kalau barangnya banyak.</p>
-          <div class="row"><button class="btn pri big" type="button" data-act="quick-cam">${ico("cam")}Ambil foto</button><button class="btn big" type="button" data-act="quick-files">${ico("img")}Pilih dari galeri</button></div>
-          ${coarse ? "" : `<p class="small">Atau drag foto ke kotak ini.</p>`}
-        </div>
-        <div class="links">
-          <span class="srv wait" data-srv><i></i><span>Menyalakan server AI…</span></span>
-          <button type="button" data-new="setoran">Catat setoran warga<span>Isi nama penyetor, lalu cetak tanda terima.</span></button>
-          <a href="#/baru">Kategori baru${pool().length ? ` · ${pool().length} perlu dicek` : ""}<span>Cluster ulang barang yang belum dikenali, lalu beri nama.</span></a>
-          <a href="#/uji">Uji dengan dataset sendiri<span>Bandingkan hasil clustering dengan dan tanpa CMRE.</span></a>
-          <button type="button" data-act="demo">${demo ? "Buka sesi demo" : "Coba demo 12 foto"}<span>Hasil pipeline yang sudah dihitung, jalan tanpa server.</span></button>
-          <button type="button" data-act="unit">${esc(u.unit || "Atur nama unit")}<span>${u.officer ? "Petugas " + esc(u.officer) : "Nama unit dan petugas tercetak di tanda terima."}</span></button>
+          <h1>Pilah e-waste cukup dari foto.</h1>
+          <p>Upload foto barang, lalu lihat kategorinya dan apakah termasuk limbah B3. Satu barang per foto, bisa banyak foto sekaligus.</p>
+          <div class="row">${coarse ? `<button class="btn pri big" type="button" data-act="quick-cam">${ico("cam")}Ambil foto</button><button class="btn big" type="button" data-act="quick-files">${ico("img")}Upload foto</button>`
+            : `<button class="btn pri big" type="button" data-act="quick-files">${ico("img")}Upload foto</button>`}
+            <button class="btn big" type="button" data-new="setoran">${ico("doc")}Catat setoran warga</button></div>
+          <p class="small">${coarse ? "" : "Bisa juga drag & drop foto ke sini. "}Belum punya foto? <button class="linkbtn" type="button" data-act="demo">${demo ? "Buka sesi demo" : "Coba demo dengan 12 foto"}</button></p>
         </div>
       </section>
       <section class="section"><div class="sechead"><h2>Hari ini</h2>${todayItems.length ? `<a href="#/riwayat">Riwayat</a>` : ""}</div>
         ${todayItems.length ? sumLine(tally(todayItems)) + `<div class="list">${todayItems.slice(0, 8).map(i => row(i)).join("")}</div>`
-          : `<p class="empty">Belum ada barang hari ini. Foto barang pertama untuk mulai.</p>`}</section>
+          : `<p class="empty">Belum ada barang hari ini.</p>`}</section>
       ${ss.length ? `<section class="section"><div class="sechead"><h2>Sesi terakhir</h2></div><div class="rows">${ss.slice(0, 5).map(srow).join("")}</div></section>` : ""}
     </div>`;
-    if (!online && !pinging) srv("off", "Server AI offline"); else if (online) srv("on", "Server AI siap");
+    if (online) srv("on", "Server AI siap"); else if (!pinging) srv(tried ? "off" : "idle", tried ? "Server AI offline" : "Server AI siaga");
   }
 
   function history() {
     const ss = [...S.values()].sort((a, b) => b.created - a.created), all = ss.flatMap(s => itemsOf(s.id)), g = byRoute(all), max = Math.max(1, ...g.map(r => r.n));
     main.innerHTML = `<div class="page">
       <div class="head"><div class="t"><h1>Riwayat</h1><p class="meta">${ss.length} sesi tersimpan di perangkat ini.</p></div>
-        <div class="acts"><button class="btn" type="button" data-act="csv-all" ${all.length ? "" : "disabled"}>${ico("doc")}Unduh semua (CSV)</button></div></div>
+        <div class="acts"><button class="btn" type="button" data-act="unit">Atur unit & petugas</button><button class="btn" type="button" data-act="csv-all" ${all.length ? "" : "disabled"}>${ico("doc")}Unduh semua (CSV)</button></div></div>
       ${all.length ? sumLine(tally(all)) : ""}
       ${g.length ? `<section><div class="sechead"><h2>Per jalur</h2></div><div class="bars">${g.map(r => `<div class="bar-r">${tag(r)}<span class="tr"><i class="${r.cls}" style="width:${100 * r.n / max}%"></i></span><span class="n">${r.n}</span></div>`).join("")}</div></section>` : ""}
       <section class="section"><div class="sechead"><h2>Semua sesi</h2></div>${ss.length ? `<div class="rows">${ss.map(srow).join("")}</div>` : '<p class="empty">Belum ada sesi.</p>'}</section></div>`;
@@ -331,7 +328,7 @@
     const its = itemsOf(s.id).filter(isRes), g = byRoute(its), t = tally(its), u = unit(), batch = s.type === "batch";
     main.innerHTML = `<div class="page">
       <div class="head noprint"><a class="iconbtn" href="#/s/${s.id}" aria-label="Kembali ke sesi">${ico("back")}</a><div class="t"><h1>${batch ? "Manifest" : "Tanda terima"}</h1></div>
-        <div class="acts"><button class="btn" type="button" data-act="csv">Unduh CSV</button><button class="btn pri" type="button" data-act="print">${ico("doc")}Cetak atau simpan PDF</button></div></div>
+        <div class="acts"><button class="btn" type="button" data-act="unit">Atur unit & petugas</button><button class="btn" type="button" data-act="csv">Unduh CSV</button><button class="btn pri" type="button" data-act="print">${ico("doc")}Cetak atau simpan PDF</button></div></div>
       <article class="doc">
         <div class="dh"><div><h1>${batch ? "Manifest Pemilahan E-Waste" : "Tanda Terima Setoran E-Waste"}</h1><p class="muted small" style="margin:4px 0 0">${esc(u.unit || "Nama unit belum diatur")}${u.officer ? " · petugas " + esc(u.officer) : ""}</p></div>
           <div class="small" style="text-align:right"><b>No. ${esc(s.no)}</b><br>${day(s.created)}, ${clock(s.created)}<br>${batch ? "Batch" : "Penyetor"}: ${esc(s.label || "-")}${s.place ? "<br>" + esc(s.place) : ""}</div></div>
@@ -377,7 +374,7 @@
     if (main.querySelector("iframe.dash")?.dataset.sub === sub) return;  // re-renders must not reload the dashboard
     main.innerHTML = `<div class="page">
       <div class="head"><div class="t"><h1>Dashboard riset</h1><p class="meta">Peta 3.792 foto BDC, 16 cluster, cara kerja CMRE, dan hasil pengujian dari paper tim untuk BDC Satria Data 2026.</p></div>
-        <div class="acts"><a class="btn" href="#/">Kembali ke Pilah</a></div></div>
+        <div class="acts"><a class="btn" href="#/uji">Uji dengan dataset sendiri</a></div></div>
       <iframe class="dash" data-sub="${esc(sub)}" src="riset.html?embed=dash&v=18#${encodeURIComponent(sub)}" title="Dashboard riset CMRE"></iframe></div>`;
   }
   addEventListener("message", e => {
@@ -430,7 +427,7 @@
   // ================= Uji metode: the officer's (or jury's) own labelled folder, with vs without CMRE =================
   function ujiSetup() {
     main.innerHTML = `<div class="page article">
-      <div class="head"><a class="iconbtn" href="#/" aria-label="Kembali">${ico("back")}</a><div class="t"><h1>Uji dengan dataset sendiri</h1>
+      <div class="head"><a class="iconbtn" href="#/riset" aria-label="Kembali ke dashboard riset">${ico("back")}</a><div class="t"><h1>Uji dengan dataset sendiri</h1>
         <p class="meta">Cek apakah foto barang sejenis dari dua sumber masuk cluster yang sama, dengan dan tanpa CMRE.</p></div></div>
       <ol class="pipe three">
         <li><i>1</i><b>Satu subfolder per label</b><span>Nama subfolder jadi label, mis. mouse, keyboard, baterai.</span></li>
@@ -623,6 +620,6 @@
     its.forEach(i => { if (i.state === "proses") i.state = "gagal"; I.set(i.id, i); });  // uploads cut off by a reload can be retried
     render();
   }).catch(e => { main.innerHTML = `<div class="page"><p class="empty">Penyimpanan perangkat tidak tersedia (${esc(e.message)}). Buka di browser biasa, bukan mode privat.</p></div>`; });
-  ping();
+  // no ping on load: the GPU backend wakes only when a photo is sent, since every wake-up costs Modal credit
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 })();

@@ -1,6 +1,6 @@
 # Dashboard: Cross-Model Residual Erasure untuk Pengelompokan Sampah Elektronik tanpa Label yang Tahan Bias Sumber Foto
 
-**Buka aplikasi:** [https://elzaff.github.io/cross-model-residual-erasure-clustering-bdc-ewaste-dashboard/](https://elzaff.github.io/cross-model-residual-erasure-clustering-bdc-ewaste-dashboard/) · dashboard riset: [`riset.html`](https://elzaff.github.io/cross-model-residual-erasure-clustering-bdc-ewaste-dashboard/riset.html) · repositori utama (kode, hasil, reproduksi): [https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste](https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste)
+**Buka aplikasi:** [https://sentra-ewaste.vercel.app](https://sentra-ewaste.vercel.app) · dashboard riset: [`#/riset`](https://sentra-ewaste.vercel.app/#/riset) · repositori utama (kode, hasil, reproduksi): [https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste](https://github.com/elzaff/cross-model-residual-erasure-clustering-bdc-ewaste)
 
 ## Aplikasi SENTRA (`index.html`)
 

@@ -76,6 +76,9 @@ iframe.dash { display: block; width: 100%; min-height: 70vh; border: 0; border-r
 /* ---- footer: team and competition only */
 .foot { padding: 24px 16px 32px; text-align: center; font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); }
 
+.linkbtn { all: unset; color: var(--pri-d); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.linkbtn:focus-visible { outline: 2px solid var(--pri); outline-offset: 2px; border-radius: 4px; }
+
 /* ---- controls */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--card); color: var(--ink); font: 600 14px var(--sans); cursor: pointer; text-decoration: none; white-space: nowrap; }
 .btn:hover { background: var(--bg-2); }
@@ -116,6 +119,7 @@ label.f { display: grid; gap: 6px; font-size: 13px; font-weight: 600; color: var
 .srv i { width: 8px; height: 8px; border-radius: 50%; background: var(--amber-dot); flex: none; box-shadow: 0 0 0 3px rgba(232, 147, 12, .15); }
 .srv.on i { background: #22a65a; box-shadow: 0 0 0 3px rgba(34, 166, 90, .15); }
 .srv.off i { background: var(--err); box-shadow: 0 0 0 3px rgba(180, 35, 24, .12); }
+.srv.idle i { background: #9aa7af; box-shadow: 0 0 0 3px rgba(154, 167, 175, .2); }  /* standby: GPU off until a photo is sent */
 .srv.wait i { animation: blink 1.2s infinite; }
 @keyframes blink { 50% { opacity: .3; } }
 
@@ -136,22 +140,14 @@ label.f { display: grid; gap: 6px; font-size: 13px; font-weight: 600; color: var
 .empty { padding: 20px; color: var(--muted); background: var(--card); border: 1px dashed var(--line-2); border-radius: 16px; }
 
 /* ---- home: the capture surface is the focal point */
-.scan { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: stretch; }
-@media (max-width: 900px) { .scan { grid-template-columns: 1fr; } }
-.capture { position: relative; background: var(--card); color: var(--text); border-radius: 24px; padding: 44px; display: grid; gap: 16px; align-content: center; min-height: 340px; border: 1px solid var(--line); outline: 2px dashed transparent; outline-offset: -10px; transition: outline-color .15s, background-color .15s; }
+.scan { display: block; }
+.capture { position: relative; background: var(--card); color: var(--text); border-radius: 24px; padding: 44px; display: grid; gap: 16px; align-content: center; min-height: 300px; border: 1px solid var(--line); outline: 2px dashed transparent; outline-offset: -10px; transition: outline-color .15s, background-color .15s; }
 .capture.over { outline-color: var(--pri); background-color: var(--pri-soft); }
 .capture h1 { font-size: clamp(30px, 3.6vw, 44px); line-height: 1.08; letter-spacing: -.035em; }
 .capture h1 span { color: var(--soft); }
 .capture p { color: var(--muted); margin: 0; max-width: 48ch; }
 .capture .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
-@media (max-width: 560px) { .capture { padding: 28px 20px; min-height: 0; border-radius: 20px; } .capture .row .btn { flex: 1; } }
-.links { display: grid; align-content: start; background: var(--card); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
-.links button, .links a { all: unset; box-sizing: border-box; cursor: pointer; display: grid; gap: 2px; padding: 14px 18px; border-bottom: 1px solid var(--line); font-weight: 700; font-size: 14.5px; color: var(--ink); transition: background-color .15s; }
-.links > :last-child { border-bottom: 0; }
-.links button:hover, .links a:hover { background: var(--bg); }
-.links button:focus-visible, .links a:focus-visible { outline: 2px solid var(--pri); outline-offset: -2px; }
-.links span { font-weight: 500; font-size: 13px; color: var(--muted); }
-.links .srv { padding: 14px 18px; border-bottom: 1px solid var(--line); background: var(--bg); }
+@media (max-width: 560px) { .capture { padding: 28px 20px; min-height: 0; border-radius: 20px; } .capture .row .btn { flex: 1 1 150px; } }
 
 /* ---- lists: item rows and session rows, inside a white panel */
 .list, .rows { display: grid; background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
