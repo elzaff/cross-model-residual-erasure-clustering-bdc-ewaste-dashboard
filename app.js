@@ -8,7 +8,7 @@
   const E = window.EWASTE, C = E.clusters;
   const CAT = { baterai: "Baterai", layar: "Layar dan monitor", besar: "Peralatan besar", kecil: "Peralatan kecil", ti: "TI dan telekomunikasi", komponen: "Komponen dan PCB" };
   const CHUNK = 8, SIDE = 768;
-  const $ = s => document.querySelector(s), main = $("#main"), dlg = $("#dlg");
+  const $ = s => document.querySelector(s), main = $("#appView"), researchPage = $("#researchPage"), researchContent = $("#researchContent"), dlg = $("#dlg");
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const fmt = (v, d = 2) => Number(v).toFixed(d).replace(".", ",");
   const ico = n => `<svg class="ico" aria-hidden="true"><use href="#i-${n}"/></svg>`;
@@ -177,6 +177,9 @@
   researchMenu?.addEventListener("focusout", () => { if (!researchMenu.matches(":hover") && !researchMenu.contains(document.activeElement)) researchMenu.open = false; });
   function render() {
     const h = location.hash.replace(/^#\/?/, "").split("/");
+    if (h[0] && !researchPage.hidden && researchContent.shadowRoot?.getElementById(h[0])) return;
+    const inResearch = h[0] === "riset";
+    main.hidden = inResearch; researchPage.hidden = !inResearch;
     const nav = { riwayat: "riwayat", jenis: "jenis", baru: "baru", uji: "home", riset: "riset", "": "home" }[h[0]] || "";
     document.querySelectorAll("[data-nav]").forEach(a => a.dataset.nav === nav ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
     document.querySelectorAll("[data-riset-sub]").forEach(a => a.dataset.risetSub === (h[1] || "beranda") && h[0] === "riset" ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
@@ -188,7 +191,7 @@
     }
     view = {};
     if (h[0] === "cara-kerja") return location.replace("#/riset/cara-kerja");  // old links: the walkthrough moved into the dashboard
-    if (h[0] === "riset") return dashboard(h[1] || "beranda");
+    if (h[0] === "riset") return dashboard();
     return ({ riwayat: history, jenis: jenis, baru: jenisBaru, uji: ujiSetup }[h[0]] || home)();
   }
 
@@ -376,23 +379,32 @@
     dlg.showModal();
   }
 
-  // ================= Dashboard riset: riset.html inside the app shell (embed=dash keeps its own tabs) =================
-  function dashboard(sub) {
-    if (main.querySelector("iframe.dash")?.dataset.sub === sub) return;  // re-renders must not reload the dashboard
-    main.innerHTML = `<div class="page">
-      <nav class="research-subnav" aria-label="Navigasi dashboard riset">
-        <a href="#/riset/beranda" data-riset-sub="beranda">Peta</a>
-        <a href="#/riset/coba" data-riset-sub="coba">Galeri uji</a>
-        <a href="#/riset/kelompok" data-riset-sub="kelompok">16 cluster</a>
-        <a href="#/riset/cara-kerja" data-riset-sub="cara-kerja">Cara kerja CMRE</a>
-        <a href="#/riset/analisis" data-riset-sub="analisis">Analisis</a>
-      </nav>
-      <iframe class="dash" data-sub="${esc(sub)}" src="riset.html?embed=dash&v=20#${encodeURIComponent(sub)}" title="Dashboard riset CMRE"></iframe></div>`;
-  }
-  addEventListener("message", e => {
-    if (e.origin !== location.origin || !e.data || !e.data.eraseH) return;
-    const f = main.querySelector("iframe"); if (f) f.style.height = Math.ceil(e.data.eraseH) + "px";
+  // ================= Dashboard riset: mount its native view once =================
+  let researchLoad;
+  const loadScript = src => new Promise((resolve, reject) => {
+    const script = Object.assign(document.createElement("script"), { src });
+    script.onload = resolve; script.onerror = reject; document.head.appendChild(script);
   });
+  function dashboard() {
+    if (researchLoad || researchContent.shadowRoot) return researchLoad;
+    researchLoad = (async () => {
+      const doc = new DOMParser().parseFromString(await fetch("riset.html").then(r => r.text()), "text/html");
+      const root = researchContent.attachShadow({ mode: "open" });
+      const style = document.createElement("style"); style.textContent = `:host { display:block; }\n${doc.querySelector("style").textContent.replace(":root {", ":host {")}\n.research { font:400 16px/1.55 var(--sans); color:var(--ink); -webkit-font-smoothing:antialiased; }`;
+      const content = document.createElement("div"); content.className = "research";
+      content.innerHTML = doc.querySelector("#dataError").outerHTML + doc.querySelector(".tip").outerHTML + doc.querySelector("main").innerHTML;
+      root.append(style, content);
+      if (!window.DEMO) await loadScript("demo.js?v=5");
+      window.__researchRoot = root;
+      try { await loadScript("riset.js?v=3"); } finally { delete window.__researchRoot; }
+    })().catch(e => {
+      const root = researchContent.shadowRoot;
+      if (root) root.textContent = "Dashboard riset gagal dimuat: " + e.message;
+      else researchContent.textContent = "Dashboard riset gagal dimuat: " + e.message;
+      researchLoad = null;
+    });
+    return researchLoad;
+  }
 
   // ================= Kategori baru: regroup held items into candidate new kinds (clustering, no labels) =================
   let found = null;  // last /discover answer, kept in memory: { k, silhouette, groups, ids }
@@ -624,7 +636,7 @@
     if (z.dataset.drop === "home") { view = { sid }; location.hash = "#/s/" + sid; }
     addFiles(sid, e.dataTransfer.files);
   });
-  addEventListener("hashchange", () => { if (dlg.open) dlg.close(); render(); main.focus({ preventScroll: true }); scrollTo(0, 0); });
+  addEventListener("hashchange", () => { if (dlg.open) dlg.close(); render(); if (!main.hidden) main.focus({ preventScroll: true }); scrollTo(0, 0); });
 
   // ================= start =================
   Promise.all([tx("sessions", "readonly", s => s.getAll()), tx("items", "readonly", s => s.getAll())]).then(([ss, its]) => {
