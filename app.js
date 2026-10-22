@@ -87,7 +87,7 @@
     }).filter(Boolean);
   }
   function suggest(it) {  // reach is at least the BDC OOD threshold, so a kind with tight members still catches new photos
-    if (!held(it) || !it.res.z) return null;
+    if (!(held(it) || (it.conf === "koreksi" && it.corr === "lain")) || !it.res?.z) return null;  // held, or filed as "not in the list"
     let best = null;
     for (const k of learned()) { const d = dist(it.res.z, k.c); if (d <= Math.max(k.r, it.res.threshold) && (!best || d < best.d)) best = { t: k.t, d }; }
     return best && best.t;
@@ -184,8 +184,14 @@
     putS(s);
     return s;
   }
-  function setConf(it, conf, corr = null) { it.conf = conf; it.corr = conf === "koreksi" ? corr : null; putI(it); feedback(it); }
+  function setConf(it, conf, corr = null) {
+    it.conf = conf; it.corr = conf === "koreksi" ? corr : null;
+    if (it.corr !== "baru") it.newType = null;  // a photo moved out of a learned kind must stop shaping its centre
+    putI(it); feedback(it);
+  }
+  // learned kinds are listed too, so a slip in this dropdown can be undone and a photo can be filed into one by hand
   const corrOptions = sel => `<option value="">Koreksi kategori…</option>${C.map(c => `<option value="${c.id}" ${sel === c.id ? "selected" : ""}>${esc(c.name)}</option>`).join("")}
+    ${types().length ? `<optgroup label="Kategori baru di perangkat ini">${types().map(t => `<option value="t:${t.id}" ${sel === "t:" + t.id ? "selected" : ""}>${esc(t.name)} (${t.b3 ? "B3" : "non-B3"})</option>`).join("")}</optgroup>` : ""}
     <option value="bukan" ${sel === "bukan" ? "selected" : ""}>Bukan e-waste</option><option value="lain" ${sel === "lain" ? "selected" : ""}>Kategori lain (tidak ada di daftar)</option>`;
   const parseCorr = v => v === "bukan" || v === "lain" ? v : Number(v);
 
@@ -338,7 +344,7 @@
           <p class="hand">Dekat dengan barang yang sudah kamu namai ${esc(t.name)}.</p>
           <button class="btn ok" type="button" data-dlearn style="margin-top:10px">${ico("check")}Ya, ${esc(t.name)}</button></div>` : ""}
         ${s.done ? "" : `<div class="confirm"><button class="btn${t ? "" : " ok"}" type="button" data-dconf>${ico("check")}${h ? "Ya, kategorinya ini" : "Benar"}</button>
-          <select data-dcorr aria-label="Koreksi kategori barang">${corrOptions(it.conf === "koreksi" ? it.corr : null)}</select></div>
+          <select data-dcorr aria-label="Koreksi kategori barang">${corrOptions(it.conf === "koreksi" ? (it.corr === "baru" ? "t:" + it.newType : it.corr) : null)}</select></div>
         <div class="fields"><label class="f">Jumlah<input type="number" min="1" step="1" value="${qty(it)}" data-dqty></label><label class="f">Berat (kg)<input type="number" min="0" step="0.1" value="${it.kg ?? ""}" data-dkg placeholder="opsional"></label></div>`}
         <details class="why"><summary>Kenapa kategori ini? ${same} dari 5 nearest neighbor ada di cluster yang sama</summary>
           <div class="ev"><h3>5 nearest neighbor dari data BDC</h3><p class="h">Angka di bawah foto: cosine similarity (1 = identik). Bingkai ungu: cluster yang sama.</p>
@@ -356,7 +362,9 @@
     const q = sel => dlg.querySelector(sel);
     q("[data-dconf]")?.addEventListener("click", () => { setConf(it, "benar"); dlg.close(); render(); toast("Tersimpan."); });
     q("[data-dlearn]")?.addEventListener("click", () => { toType(it, t); dlg.close(); render(); toast(`Masuk ${t.name}.`); });
-    q("[data-dcorr]")?.addEventListener("change", e => { if (!e.target.value) return; setConf(it, "koreksi", parseCorr(e.target.value)); detail(it); render(); });
+    q("[data-dcorr]")?.addEventListener("change", e => { const v = e.target.value; if (!v) return;
+      const k = v.startsWith("t:") && typeOf(v.slice(2));
+      k ? toType(it, k) : setConf(it, "koreksi", parseCorr(v)); learnt = null; detail(it); render(); });
     q("[data-dqty]")?.addEventListener("change", e => { it.qty = Math.max(1, Math.round(+e.target.value || 1)); putI(it); render(); });
     q("[data-dkg]")?.addEventListener("change", e => { it.kg = e.target.value === "" ? null : Math.max(0, +e.target.value); putI(it); render(); });
     q("[data-ddel]")?.addEventListener("click", () => { I.delete(it.id); drop("items", it.id); dlg.close(); render(); toast("Barang dihapus."); });
