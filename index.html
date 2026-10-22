@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="app.css?v=23">
+<link rel="stylesheet" href="app.css?v=24">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -52,7 +52,19 @@
   <span class="srv wait" data-srv role="status" aria-live="polite" aria-label="Mengecek status AI" title="Mengecek status AI"><i aria-hidden="true"></i><span>Mengecek status AI</span></span>
 </header>
 
-<main id="main" tabindex="-1"></main>
+<main id="main">
+  <div id="appView" tabindex="-1"></div>
+  <div id="researchPage" hidden>
+    <nav class="research-subnav" aria-label="Navigasi dashboard riset">
+      <a href="#/riset/beranda" data-riset-sub="beranda">Peta</a>
+      <a href="#/riset/coba" data-riset-sub="coba">Galeri uji</a>
+      <a href="#/riset/kelompok" data-riset-sub="kelompok">16 cluster</a>
+      <a href="#/riset/cara-kerja" data-riset-sub="cara-kerja">Cara kerja CMRE</a>
+      <a href="#/riset/analisis" data-riset-sub="analisis">Analisis</a>
+    </nav>
+    <div id="researchContent"></div>
+  </div>
+</main>
 <footer class="foot">Tim SD2026040000100 · BDC Satria Data 2026</footer>
 
 <nav class="tabs" aria-label="Navigasi bawah">
@@ -70,6 +82,6 @@
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script src="data.js?v=21"></script>
-<script src="app.js?v=23"></script>
+<script src="app.js?v=27"></script>
 </body>
 </html>
